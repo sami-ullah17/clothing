@@ -5,7 +5,7 @@ import { ProductCard } from './ProductCard';
 import { Flame, Clock, ArrowRight, Tag, Copy, Check } from 'lucide-react';
 
 export const SpecialOffers: React.FC = () => {
-  const { setCurrentView, showToast, applyPromo } = useShop();
+  const { setCurrentView, showToast, applyPromo, t, isRTL } = useShop();
 
   // Interactive sale countdown timer
   const [timeLeft, setTimeLeft] = useState({
@@ -53,13 +53,13 @@ export const SpecialOffers: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 text-rose-400 text-xs font-bold uppercase tracking-widest mb-2">
               <Flame className="w-4 h-4" />
-              <span>Limited Mid-Season Event</span>
+              <span>{t('offers.tag')}</span>
             </div>
             <h2 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
-              Special Offers & Archive Sale
+              {t('offers.title')}
             </h2>
             <p className="text-neutral-400 text-sm sm:text-base mt-2 max-w-xl">
-              Enjoy up to 40% off select statement pieces, crafted with the same uncompromising Italian fabrics.
+              {t('offers.subtitle')}
             </p>
           </div>
 
@@ -67,7 +67,9 @@ export const SpecialOffers: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center gap-2 bg-neutral-800/80 px-4 py-3 rounded-2xl border border-white/10">
               <Clock className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-neutral-400 uppercase tracking-wider mr-1">Ends in:</span>
+              <span className="text-xs text-neutral-400 uppercase tracking-wider mr-1">
+                {t('offers.endsIn')}:
+              </span>
               <div className="flex items-center gap-1.5 font-mono text-base sm:text-lg font-bold text-white">
                 <span className="bg-neutral-900 px-2 py-1 rounded border border-white/10">
                   {String(timeLeft.hours).padStart(2, '0')}h
@@ -90,7 +92,7 @@ export const SpecialOffers: React.FC = () => {
               title="Click to copy and apply discount"
             >
               <Tag className="w-4 h-4" />
-              <span>Code: <strong>NEST15</strong> (-15%)</span>
+              <span>{t('offers.codePill')}</span>
               {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-neutral-400" />}
             </button>
           </div>
@@ -112,8 +114,8 @@ export const SpecialOffers: React.FC = () => {
             }}
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-neutral-950 font-bold text-xs uppercase tracking-widest rounded-xl hover:bg-neutral-100 transition-all shadow-xl"
           >
-            <span>Explore All Sale Items</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>{t('offers.viewAll')}</span>
+            <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
           </button>
         </div>
       </div>

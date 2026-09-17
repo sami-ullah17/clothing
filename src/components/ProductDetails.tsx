@@ -30,7 +30,12 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
     isInWishlist,
     setCurrentView,
     setIsCheckoutOpen,
+    formatPrice,
     showToast,
+    t,
+    isRTL,
+    getProductName,
+    getSubcategoryName,
   } = useShop();
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -55,6 +60,9 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
 
   const currentPrice = product.discountPrice ?? product.price;
 
+  const localizedName = getProductName(product.id, product.name);
+  const localizedSubcategory = getSubcategoryName(product.subcategory, product.subcategory);
+
   // Related products from same category or same subcategory
   const relatedProducts = SAMPLE_PRODUCTS.filter(
     (p) => p.id !== product.id && (p.category === product.category || p.subcategory === product.subcategory)
@@ -73,7 +81,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `StyleNest — ${product.name}`,
+          title: `StyleNest — ${localizedName}`,
           text: product.description,
           url: window.location.href,
         });
@@ -82,7 +90,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
-      showToast('Product link copied to clipboard!', 'info');
+      showToast(t('product.share'), 'info');
     }
   };
 
@@ -119,20 +127,20 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
           onClick={() => setCurrentView('home')}
           className="hover:text-neutral-900 transition-colors"
         >
-          Home
+          {t('nav.home')}
         </button>
-        <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+        <ChevronRight className={`w-3.5 h-3.5 text-neutral-400 ${isRTL ? 'rotate-180' : ''}`} />
         <button
           onClick={() => setCurrentView(product.category)}
           className="capitalize hover:text-neutral-900 transition-colors"
         >
-          {product.category}
+          {t(`nav.${product.category}`)}
         </button>
-        <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
-        <span className="text-neutral-400">{product.subcategory}</span>
-        <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+        <ChevronRight className={`w-3.5 h-3.5 text-neutral-400 ${isRTL ? 'rotate-180' : ''}`} />
+        <span className="text-neutral-400">{localizedSubcategory}</span>
+        <ChevronRight className={`w-3.5 h-3.5 text-neutral-400 ${isRTL ? 'rotate-180' : ''}`} />
         <span className="text-neutral-900 font-medium truncate max-w-[200px]">
-          {product.name}
+          {localizedName}
         </span>
       </nav>
 
@@ -154,7 +162,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
               >
                 <img
                   src={img}
-                  alt={`${product.name} view ${idx + 1}`}
+                  alt={`${localizedName} view ${idx + 1}`}
                   className="w-full h-full object-cover object-center"
                 />
               </button>
@@ -171,21 +179,21 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                 exit={{ opacity: 0.8 }}
                 transition={{ duration: 0.3 }}
                 src={product.images[activeImageIndex] || product.images[0]}
-                alt={product.name}
+                alt={localizedName}
                 className="w-full h-full object-cover object-center"
               />
             </AnimatePresence>
 
             {/* Badges on main image */}
-            <div className="absolute top-4 left-4 flex flex-col gap-2">
+            <div className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'} flex flex-col gap-2`}>
               {product.discountPrice && (
                 <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-rose-600 text-white rounded-lg shadow">
-                  Save {discountPercent}%
+                  {t('product.save')} {discountPercent}%
                 </span>
               )}
               {product.isNewArrival && (
                 <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-neutral-900 text-white rounded-lg shadow">
-                  New Season
+                  {t('product.newSeason')}
                 </span>
               )}
             </div>
@@ -193,7 +201,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
             {/* Wishlist Button */}
             <button
               onClick={() => toggleWishlist(product.id)}
-              className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md shadow-md transition-all ${
+              className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} p-3 rounded-full backdrop-blur-md shadow-md transition-all ${
                 inWishlist
                   ? 'bg-white text-rose-600'
                   : 'bg-white/80 text-neutral-700 hover:bg-white hover:text-neutral-950'
@@ -210,7 +218,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
           {/* Subcategory & Rating */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">
-              StyleNest Studio • {product.subcategory}
+              StyleNest Studio • {localizedSubcategory}
             </span>
             <div className="flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/60">
               <div className="flex text-amber-500">
@@ -232,14 +240,14 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                 onClick={() => setActiveTab('reviews')}
                 className="text-xs text-neutral-500 hover:underline"
               >
-                ({localReviews.length} reviews)
+                ({localReviews.length} {t('product.reviewsTab')})
               </button>
             </div>
           </div>
 
           {/* Product Name */}
           <h1 className="font-serif-luxury text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-950 tracking-tight mb-4">
-            {product.name}
+            {localizedName}
           </h1>
 
           {/* Pricing */}
@@ -247,23 +255,23 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
             {product.discountPrice ? (
               <>
                 <span className="text-3xl font-extrabold text-neutral-950 tracking-tight">
-                  ${product.discountPrice}
+                  {formatPrice(product.discountPrice)}
                 </span>
                 <span className="text-lg text-neutral-400 line-through">
-                  ${product.price}
+                  {formatPrice(product.price)}
                 </span>
-                <span className="px-2 py-0.5 text-xs font-semibold text-rose-700 bg-rose-100 rounded-md">
-                  Save ${(product.price - product.discountPrice).toFixed(0)}
+                <span className="px-2.5 py-0.5 text-xs font-semibold text-rose-700 bg-rose-100 rounded-md">
+                  {t('product.save')} {formatPrice(product.price - product.discountPrice)}
                 </span>
               </>
             ) : (
               <span className="text-3xl font-extrabold text-neutral-950 tracking-tight">
-                ${product.price}
+                {formatPrice(product.price)}
               </span>
             )}
-            <span className="text-xs text-neutral-500 ml-auto flex items-center gap-1">
+            <span className={`text-xs text-neutral-500 ${isRTL ? 'mr-auto' : 'ml-auto'} flex items-center gap-1`}>
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              Tax included
+              {t('product.inclusiveGst')}
             </span>
           </div>
 
@@ -276,7 +284,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
-                Color: <span className="font-normal text-neutral-600">{selectedColor.name}</span>
+                {t('product.color')}: <span className="font-normal text-neutral-600">{selectedColor.name}</span>
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -304,14 +312,14 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
-                Size: <span className="font-normal text-neutral-600">{selectedSize}</span>
+                {t('product.size')}: <span className="font-normal text-neutral-600">{selectedSize}</span>
               </span>
               <button
                 onClick={() => setIsSizeGuideOpen(true)}
                 className="flex items-center gap-1 text-xs font-medium text-neutral-500 hover:text-neutral-900 underline transition-colors"
               >
                 <Ruler className="w-3.5 h-3.5" />
-                <span>Size Guide</span>
+                <span>{t('product.sizeGuide')}</span>
               </button>
             </div>
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
@@ -362,7 +370,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                 className="flex-1 py-3 px-6 bg-neutral-950 hover:bg-neutral-800 text-white font-semibold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:shadow-xl active:scale-[0.99]"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Add to Cart • ${(currentPrice * quantity).toFixed(0)}</span>
+                <span>{t('product.addToBag')} • {formatPrice(currentPrice * quantity)}</span>
               </button>
 
               {/* Share */}
@@ -381,7 +389,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
               onClick={handleBuyNow}
               className="w-full py-3 px-6 bg-amber-700 hover:bg-amber-800 text-white font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.99]"
             >
-              Buy Now with 1-Click Checkout
+              {t('product.buyNow')}
             </button>
           </div>
 
@@ -390,22 +398,22 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
             <div className="flex items-center gap-2.5">
               <Truck className="w-4 h-4 text-neutral-700 flex-shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-neutral-900">Free Express Delivery</p>
-                <p className="text-[11px] text-neutral-500">Orders over $75</p>
+                <p className="text-xs font-semibold text-neutral-900">{t('hero.freeDelivery')}</p>
+                <p className="text-[11px] text-neutral-500">{t('hero.freeDeliverySub')}</p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
               <RotateCcw className="w-4 h-4 text-neutral-700 flex-shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-neutral-900">30-Day Free Returns</p>
-                <p className="text-[11px] text-neutral-500">Hassle-free guarantee</p>
+                <p className="text-xs font-semibold text-neutral-900">{t('hero.easyExchange')}</p>
+                <p className="text-[11px] text-neutral-500">{t('hero.easyExchangeSub')}</p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
               <ShieldCheck className="w-4 h-4 text-neutral-700 flex-shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-neutral-900">Verified Authenticity</p>
-                <p className="text-[11px] text-neutral-500">100% genuine luxury</p>
+                <p className="text-xs font-semibold text-neutral-900">{t('hero.artisanalQuality')}</p>
+                <p className="text-[11px] text-neutral-500">{t('hero.artisanalQualitySub')}</p>
               </div>
             </div>
           </div>
@@ -423,7 +431,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                 : 'text-neutral-400 hover:text-neutral-700'
             }`}
           >
-            Description & Details
+            {t('product.descTab')}
           </button>
           <button
             onClick={() => setActiveTab('shipping')}
@@ -433,7 +441,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                 : 'text-neutral-400 hover:text-neutral-700'
             }`}
           >
-            Fabric & Shipping
+            {t('product.fabricTab')}
           </button>
           <button
             onClick={() => setActiveTab('reviews')}
@@ -443,7 +451,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                 : 'text-neutral-400 hover:text-neutral-700'
             }`}
           >
-            Customer Reviews ({localReviews.length})
+            {t('product.reviewsTab')} ({localReviews.length})
           </button>
         </div>
 
@@ -456,7 +464,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
               </p>
               <div>
                 <h4 className="text-sm font-bold uppercase tracking-wider text-neutral-900 mb-3">
-                  Highlights & Construction
+                  {t('product.highlights')}
                 </h4>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                   {product.details.map((detail, idx) => (
@@ -486,9 +494,9 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                   Delivery Estimates
                 </h4>
                 <div className="text-sm text-neutral-600 space-y-2">
-                  <p>• <strong>Standard Express:</strong> 2-4 business days (Complimentary over $75)</p>
-                  <p>• <strong>Next-Day White Glove:</strong> Available at checkout for major metropolitan areas.</p>
-                  <p>• <strong>Carbon-Neutral Packing:</strong> 100% recyclable garment bags and FSC-certified boxes.</p>
+                  <p>• <strong>Nationwide Express Courier (TCS / Leopards / Trax):</strong> 2-4 business days (Complimentary over Rs. 4,999)</p>
+                  <p>• <strong>Same-Day / Next-Day Delivery:</strong> Available for Lahore, Karachi, and Islamabad / Rawalpindi.</p>
+                  <p>• <strong>Payment on Delivery:</strong> Cash on Delivery (COD), JazzCash, and Easypaisa accepted at checkout.</p>
                 </div>
               </div>
             </motion.div>
@@ -507,7 +515,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                           <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                         ))}
                       </div>
-                      <p className="text-xs text-neutral-500">Based on {localReviews.length} verified ratings</p>
+                      <p className="text-xs text-neutral-500">Based on {localReviews.length} ratings</p>
                     </div>
                   </div>
                 </div>
@@ -516,7 +524,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
                   className="px-5 py-2.5 bg-neutral-950 hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                   <MessageSquarePlus className="w-4 h-4" />
-                  <span>Write a Review</span>
+                  <span>{t('product.writeReview')}</span>
                 </button>
               </div>
 

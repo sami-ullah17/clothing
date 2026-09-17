@@ -8,6 +8,18 @@
   h1, h2, h3, .font-serif-luxury {
     font-family: 'Playfair Display', Georgia, Cambria, 'Times New Roman', Times, serif;
   }
+
+  [dir="rtl"] body,
+  [dir="rtl"] {
+    font-family: 'Noto Sans Arabic', 'Noto Nastaliq Urdu', 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] .font-serif-luxury {
+    font-family: 'Noto Sans Arabic', 'Noto Nastaliq Urdu', 'Playfair Display', serif;
+  }
 }
 
 /* Custom smooth scrollbar */

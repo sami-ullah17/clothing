@@ -4,7 +4,7 @@ import { ArrowRight, ShieldCheck, Sparkles, Truck, RefreshCw } from 'lucide-reac
 import { motion } from 'motion/react';
 
 export const HeroBanner: React.FC = () => {
-  const { setCurrentView } = useShop();
+  const { setCurrentView, t, isRTL } = useShop();
 
   return (
     <div className="relative overflow-hidden bg-neutral-900 text-white">
@@ -30,7 +30,7 @@ export const HeroBanner: React.FC = () => {
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-neutral-200 text-xs font-semibold uppercase tracking-widest mb-6"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>Autumn / Winter Capsule 2026</span>
+            <span>{t('hero.tag')}</span>
           </motion.div>
 
           {/* Heading */}
@@ -38,9 +38,9 @@ export const HeroBanner: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="font-serif-luxury text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.1] mb-6"
+            className="font-serif-luxury text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.15] mb-6"
           >
-            Define Your Style.
+            {t('hero.title')}
           </motion.h1>
 
           {/* Subtitle */}
@@ -50,7 +50,7 @@ export const HeroBanner: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-base sm:text-lg lg:text-xl text-neutral-300 font-normal leading-relaxed mb-8 max-w-xl"
           >
-            Timeless silhouettes crafted from conscious, high-grade fabrics. Designed to elevate your daily wardrobe with effortless, modern sophistication.
+            {t('hero.subtitle')}
           </motion.p>
 
           {/* Action Buttons */}
@@ -68,8 +68,8 @@ export const HeroBanner: React.FC = () => {
               }}
               className="px-8 py-4 bg-white hover:bg-neutral-100 text-neutral-950 font-bold text-sm tracking-wider uppercase rounded-xl shadow-2xl flex items-center gap-3 transition-all hover:gap-4 hover:shadow-white/10 active:scale-[0.98]"
             >
-              <span>Shop Now</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>{t('hero.shopNow')}</span>
+              <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
             </button>
 
             <button
@@ -80,7 +80,7 @@ export const HeroBanner: React.FC = () => {
               }}
               className="px-6 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm tracking-wider uppercase rounded-xl backdrop-blur-md border border-white/20 transition-all active:scale-[0.98]"
             >
-              Women's Line
+              {t('hero.womenLine')}
             </button>
 
             <button
@@ -91,7 +91,7 @@ export const HeroBanner: React.FC = () => {
               }}
               className="px-6 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm tracking-wider uppercase rounded-xl backdrop-blur-md border border-white/20 transition-all active:scale-[0.98]"
             >
-              Men's Line
+              {t('hero.menLine')}
             </button>
           </motion.div>
         </div>
@@ -103,29 +103,29 @@ export const HeroBanner: React.FC = () => {
           <div className="flex items-center gap-3">
             <Truck className="w-5 h-5 text-amber-300 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-white">Free Express Shipping</p>
-              <p className="text-[11px] text-neutral-400">On all orders over $75</p>
+              <p className="font-semibold text-white">{t('hero.freeDelivery')}</p>
+              <p className="text-[11px] text-neutral-400">{t('hero.freeDeliverySub')}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <RefreshCw className="w-5 h-5 text-amber-300 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-white">30-Day Free Returns</p>
-              <p className="text-[11px] text-neutral-400">Pre-paid shipping labels</p>
+              <p className="font-semibold text-white">{t('hero.easyExchange')}</p>
+              <p className="text-[11px] text-neutral-400">{t('hero.easyExchangeSub')}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-amber-300 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-white">Artisanal Quality</p>
-              <p className="text-[11px] text-neutral-400">Certified organic fabrics</p>
+              <p className="font-semibold text-white">{t('hero.artisanalQuality')}</p>
+              <p className="text-[11px] text-neutral-400">{t('hero.artisanalQualitySub')}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-amber-300 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-white">Style Concierge</p>
-              <p className="text-[11px] text-neutral-400">Personal sizing advice</p>
+              <p className="font-semibold text-white">{t('hero.styleConcierge')}</p>
+              <p className="text-[11px] text-neutral-400">{t('hero.styleConciergeSub')}</p>
             </div>
           </div>
         </div>

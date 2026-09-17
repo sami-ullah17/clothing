@@ -1,5 +1,6 @@
 import React from 'react';
 import { Size, SortOption } from '../types';
+import { useShop } from '../context/ShopContext';
 import { SlidersHorizontal, RotateCcw, Check, Sparkles } from 'lucide-react';
 
 interface FilterSidebarProps {
@@ -64,6 +65,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   resetFilters,
   activeFilterCount,
 }) => {
+  const { formatPrice, t, getSubcategoryName } = useShop();
+
   return (
     <aside className="w-full space-y-7 p-6 bg-white rounded-2xl border border-neutral-200/80 shadow-sm">
       {/* Header */}
@@ -71,7 +74,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-neutral-900" />
           <h3 className="font-bold text-sm tracking-wider uppercase text-neutral-900">
-            Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+            {t('catalog.filters')} {activeFilterCount > 0 && `(${activeFilterCount})`}
           </h3>
         </div>
 
@@ -81,7 +84,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             className="flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-950 font-medium transition-colors"
           >
             <RotateCcw className="w-3 h-3" />
-            <span>Reset</span>
+            <span>{t('catalog.clearAll')}</span>
           </button>
         )}
       </div>
@@ -89,14 +92,14 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {/* Categories */}
       <div>
         <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-3">
-          Department
+          {t('catalog.category')}
         </h4>
         <div className="flex flex-wrap gap-1.5">
           {[
-            { id: 'all', label: 'All' },
-            { id: 'women', label: 'Women' },
-            { id: 'men', label: 'Men' },
-            { id: 'kids', label: 'Kids' },
+            { id: 'all', label: t('nav.home') === 'Home' ? 'All' : 'All' },
+            { id: 'women', label: t('nav.women') },
+            { id: 'men', label: t('nav.men') },
+            { id: 'kids', label: t('nav.kids') },
           ].map((item) => (
             <button
               key={item.id}
@@ -116,7 +119,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {/* Subcategory */}
       <div>
         <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-2.5">
-          Clothing Type
+          {t('catalog.category')}
         </h4>
         <div className="space-y-1">
           {SUBCATEGORIES.map((sub) => {
@@ -133,7 +136,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     : 'text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50'
                 }`}
               >
-                <span>{sub}</span>
+                <span>{sub === 'All Styles' ? sub : getSubcategoryName(sub)}</span>
                 {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-neutral-950" />}
               </button>
             );
@@ -151,7 +154,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             className="w-4 h-4 rounded text-neutral-900 focus:ring-neutral-950 border-neutral-300"
           />
           <span className="text-xs font-semibold text-neutral-800">
-            On Sale Items Only
+            {t('catalog.onlySale')}
           </span>
           <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-rose-100 text-rose-700 rounded">
             PROMO
@@ -166,7 +169,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             className="w-4 h-4 rounded text-neutral-900 focus:ring-neutral-950 border-neutral-300"
           />
           <span className="text-xs font-semibold text-neutral-800 flex items-center gap-1">
-            <span>New Arrivals Only</span>
+            <span>{t('catalog.onlyNew')}</span>
             <Sparkles className="w-3 h-3 text-amber-500" />
           </span>
         </label>
@@ -176,7 +179,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       <div className="pt-4 border-t border-neutral-100">
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-            Size
+            {t('catalog.size')}
           </h4>
           {selectedSizes.length > 0 && (
             <span className="text-[11px] text-neutral-400">
@@ -207,7 +210,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {/* Color Filter */}
       <div className="pt-4 border-t border-neutral-100">
         <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-3">
-          Color Palette
+          {t('catalog.color')}
         </h4>
         <div className="grid grid-cols-4 gap-2.5">
           {AVAILABLE_COLORS.map((col) => {
@@ -252,15 +255,15 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       <div className="pt-4 border-t border-neutral-100">
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-            Max Price: <span className="font-extrabold text-neutral-950">${priceRange[1]}</span>
+            {t('catalog.maxPrice')}: <span className="font-extrabold text-neutral-950">{formatPrice(priceRange[1])}</span>
           </h4>
-          <span className="text-[11px] text-neutral-400">${priceRange[0]} - $500</span>
+          <span className="text-[11px] text-neutral-400">Up to {formatPrice(60000)}</span>
         </div>
         <input
           type="range"
-          min={30}
-          max={500}
-          step={10}
+          min={3000}
+          max={60000}
+          step={1000}
           value={priceRange[1]}
           onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
           className="w-full accent-neutral-950 cursor-pointer"

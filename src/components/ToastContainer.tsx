@@ -4,12 +4,12 @@ import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export const ToastContainer: React.FC = () => {
-  const { toasts, removeToast } = useShop();
+  const { toasts, removeToast, isRTL } = useShop();
 
   return (
     <div
       id="toast-container"
-      className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4"
+      className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4`}
     >
       <AnimatePresence>
         {toasts.map(toast => {

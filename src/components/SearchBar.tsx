@@ -11,6 +11,11 @@ export const SearchBar: React.FC = () => {
     searchQuery,
     setSearchQuery,
     openProductDetails,
+    formatPrice,
+    t,
+    isRTL,
+    getProductName,
+    getSubcategoryName,
   } = useShop();
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +73,7 @@ export const SearchBar: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search clothing styles, colors, materials..."
+            placeholder={t('search.placeholder')}
             className="flex-1 text-base text-neutral-900 placeholder:text-neutral-400 focus:outline-none bg-transparent"
           />
           {searchQuery && (
@@ -90,7 +95,7 @@ export const SearchBar: React.FC = () => {
         {/* Popular Tags */}
         <div className="px-6 py-3 bg-neutral-50/80 border-b border-neutral-100 flex items-center gap-2 overflow-x-auto text-xs">
           <span className="text-neutral-400 font-medium flex items-center gap-1">
-            <Tag className="w-3.5 h-3.5" /> Popular:
+            <Tag className="w-3.5 h-3.5" /> {t('search.popular')}:
           </span>
           {popularSearches.map((term) => (
             <button
@@ -109,7 +114,7 @@ export const SearchBar: React.FC = () => {
             filteredProducts.length > 0 ? (
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-neutral-400 px-2 uppercase tracking-wider mb-2">
-                  Found {filteredProducts.length} matching pieces
+                  {t('search.results')} ({filteredProducts.length})
                 </p>
                 {filteredProducts.map((p) => (
                   <div
@@ -130,29 +135,29 @@ export const SearchBar: React.FC = () => {
                       <div className="flex items-center gap-2 text-xs text-neutral-400">
                         <span className="uppercase font-medium">{p.category}</span>
                         <span>•</span>
-                        <span>{p.subcategory}</span>
+                        <span>{getSubcategoryName(p.subcategory)}</span>
                       </div>
                       <h4 className="font-semibold text-sm text-neutral-900 group-hover:text-amber-800 transition-colors truncate">
-                        {p.name}
+                        {getProductName(p)}
                       </h4>
                       <p className="text-xs font-bold text-neutral-950 mt-0.5">
-                        ${p.discountPrice ?? p.price}
+                        {formatPrice(p.discountPrice ?? p.price)}
                         {p.discountPrice && (
                           <span className="text-neutral-400 line-through font-normal ml-1.5">
-                            ${p.price}
+                            {formatPrice(p.price)}
                           </span>
                         )}
                       </p>
                     </div>
                     <div className="w-8 h-8 rounded-full bg-neutral-100 group-hover:bg-neutral-900 group-hover:text-white flex items-center justify-center transition-colors">
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="py-12 text-center text-neutral-400">
-                <p className="text-sm font-medium text-neutral-700">No matching garments found for "{searchQuery}"</p>
+                <p className="text-sm font-medium text-neutral-700">{t('search.noResults')} "{searchQuery}"</p>
                 <p className="text-xs mt-1 text-neutral-400">Try searching for generic terms like "wool", "jacket", or "silk".</p>
               </div>
             )

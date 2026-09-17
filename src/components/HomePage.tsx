@@ -10,7 +10,7 @@ import { Newsletter } from './Newsletter';
 import { ArrowRight, Sparkles, Flame } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
-  const { setCurrentView } = useShop();
+  const { setCurrentView, t, isRTL } = useShop();
 
   // Curate New Arrivals and Best Sellers
   const newArrivals = SAMPLE_PRODUCTS.filter((p) => p.isNewArrival).slice(0, 4);
@@ -30,13 +30,13 @@ export const HomePage: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5 text-emerald-800 text-xs font-bold uppercase tracking-widest mb-1">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Just Dropped</span>
+              <span>{t('sections.newArrivalsTag')}</span>
             </div>
             <h2 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-950">
-              New Season Arrivals
+              {t('sections.newArrivalsTitle')}
             </h2>
             <p className="text-neutral-500 text-sm mt-1">
-              Fresh additions crafted with lightweight virgin wools and pure Mulberry silk.
+              {t('sections.newArrivalsSubtitle')}
             </p>
           </div>
 
@@ -47,8 +47,8 @@ export const HomePage: React.FC = () => {
             }}
             className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-neutral-950 hover:text-amber-800 transition-colors underline-offset-8 hover:underline"
           >
-            <span>View All New Arrivals ({SAMPLE_PRODUCTS.filter(p => p.isNewArrival).length})</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>{t('sections.viewAllNew')}</span>
+            <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
           </button>
         </div>
 
@@ -68,13 +68,13 @@ export const HomePage: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5 text-amber-800 text-xs font-bold uppercase tracking-widest mb-1">
               <Flame className="w-3.5 h-3.5" />
-              <span>Timeless Favorites</span>
+              <span>{t('sections.bestSellersTag')}</span>
             </div>
             <h2 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-950">
-              Best Sellers
+              {t('sections.bestSellersTitle')}
             </h2>
             <p className="text-neutral-500 text-sm mt-1">
-              The foundational wardrobe silhouettes most coveted by our clientele.
+              {t('sections.bestSellersSubtitle')}
             </p>
           </div>
 
@@ -85,8 +85,8 @@ export const HomePage: React.FC = () => {
             }}
             className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-neutral-950 hover:text-amber-800 transition-colors underline-offset-8 hover:underline"
           >
-            <span>Explore All Essentials</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>{t('sections.exploreEssentials')}</span>
+            <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
           </button>
         </div>
 

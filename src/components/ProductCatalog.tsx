@@ -22,14 +22,14 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   forceOnlySale = false,
   forceOnlyNew = false,
 }) => {
-  const { currentView, setCurrentView } = useShop();
+  const { currentView, setCurrentView, t, isRTL, getSubcategoryName } = useShop();
 
   // Filters
   const [category, setCategory] = useState<string>(initialCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const [selectedSizes, setSelectedSizes] = useState<Size[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 60000]);
   const [onlySale, setOnlySale] = useState<boolean>(forceOnlySale);
   const [onlyNew, setOnlyNew] = useState<boolean>(forceOnlyNew);
   const [sortBy, setSortBy] = useState<SortOption>('featured');
@@ -66,7 +66,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
     setSelectedSubcategory('');
     setSelectedSizes([]);
     setSelectedColors([]);
-    setPriceRange([0, 500]);
+    setPriceRange([0, 60000]);
     setOnlySale(false);
     setOnlyNew(false);
   };
@@ -76,7 +76,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
     (selectedSubcategory ? 1 : 0) +
     selectedSizes.length +
     selectedColors.length +
-    (priceRange[1] < 500 ? 1 : 0) +
+    (priceRange[1] < 60000 ? 1 : 0) +
     (onlySale ? 1 : 0) +
     (onlyNew ? 1 : 0);
 
@@ -153,15 +153,15 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   const computedTitle =
     title ||
     (currentView === 'men'
-      ? "Men's Tailoring & Casuals"
+      ? `${t('nav.men')} - StyleNest`
       : currentView === 'women'
-      ? "Women's Collection"
+      ? `${t('nav.women')} - StyleNest`
       : currentView === 'kids'
-      ? 'Kids & Teens Apparel'
+      ? `${t('nav.kids')} - StyleNest`
       : currentView === 'sale'
-      ? 'Archive Sale • Up to 40% Off'
+      ? `${t('nav.sale')} • Up to 40% Off`
       : currentView === 'new-arrivals'
-      ? 'Autumn / Winter New Arrivals'
+      ? `${t('nav.newArrivals')}`
       : 'All Clothing Collections');
 
   const computedSubtitle =
@@ -194,7 +194,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
             className="lg:hidden flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider bg-neutral-100 hover:bg-neutral-200 text-neutral-900 rounded-xl"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span>Filters {activeFilterCount > 0 && `(${activeFilterCount})`}</span>
+            <span>{t('catalog.filters')} {activeFilterCount > 0 && `(${activeFilterCount})`}</span>
           </button>
 
           {/* Sort Selector */}
@@ -205,11 +205,11 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               onChange={(e) => setSortBy(e.target.value as SortOption)}
               className="text-xs font-medium text-neutral-800 bg-transparent focus:outline-none cursor-pointer"
             >
-              <option value="featured">Featured First</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="newest">Newest Arrivals</option>
-              <option value="rating">Highest Rated</option>
+              <option value="featured">{t('catalog.featured')}</option>
+              <option value="price-asc">{t('catalog.priceLowHigh')}</option>
+              <option value="price-desc">{t('catalog.priceHighLow')}</option>
+              <option value="newest">{t('catalog.newest')}</option>
+              <option value="rating">{t('catalog.rating')}</option>
             </select>
           </div>
 
@@ -322,7 +322,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
           {/* Active Filter Chips */}
           {activeFilterCount > 0 && (
             <div className="flex flex-wrap items-center gap-2 mb-6">
-              <span className="text-xs text-neutral-400 font-medium">Active Filters:</span>
+              <span className="text-xs text-neutral-400 font-medium">{t('catalog.filters')}:</span>
               {category !== 'all' && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800">
                   <span className="capitalize">{category}</span>
@@ -331,19 +331,19 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               )}
               {selectedSubcategory && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800">
-                  <span>{selectedSubcategory}</span>
+                  <span>{getSubcategoryName(selectedSubcategory)}</span>
                   <button onClick={() => setSelectedSubcategory('')}>×</button>
                 </span>
               )}
               {onlySale && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-800">
-                  <span>On Sale</span>
+                  <span>{t('catalog.onlySale')}</span>
                   <button onClick={() => setOnlySale(false)}>×</button>
                 </span>
               )}
               {onlyNew && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                  <span>New Arrivals</span>
+                  <span>{t('catalog.onlyNew')}</span>
                   <button onClick={() => setOnlyNew(false)}>×</button>
                 </span>
               )}
@@ -352,7 +352,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                   key={s}
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800"
                 >
-                  <span>Size {s}</span>
+                  <span>{t('catalog.size')} {s}</span>
                   <button onClick={() => toggleSize(s)}>×</button>
                 </span>
               ))}
@@ -369,7 +369,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                 onClick={resetFilters}
                 className="text-xs text-neutral-500 hover:text-neutral-900 underline ml-2 font-medium"
               >
-                Clear all
+                {t('catalog.clearAll')}
               </button>
             </div>
           )}
@@ -391,7 +391,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                 onClick={resetFilters}
                 className="px-6 py-2.5 bg-neutral-950 text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-neutral-800 transition-colors shadow"
               >
-                Reset All Filters
+                {t('catalog.resetFilters')}
               </button>
             </div>
           ) : (

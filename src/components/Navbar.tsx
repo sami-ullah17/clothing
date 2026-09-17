@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import { PageView } from '../types';
+import { SUPPORTED_LANGUAGES, Language } from '../i18n/translations';
 import {
   ShoppingBag,
   Heart,
@@ -13,6 +14,8 @@ import {
   LogOut,
   PackageCheck,
   Percent,
+  Globe,
+  Check,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -28,19 +31,25 @@ export const Navbar: React.FC = () => {
     logout,
     setIsAuthModalOpen,
     setIsSearchOpen,
+    language,
+    setLanguage,
+    t,
   } = useShop();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
-  const navLinks: { label: string; view: PageView; highlight?: 'sale' | 'new' }[] = [
-    { label: 'Home', view: 'home' },
-    { label: 'Men', view: 'men' },
-    { label: 'Women', view: 'women' },
-    { label: 'Kids', view: 'kids' },
-    { label: 'New Arrivals', view: 'new-arrivals', highlight: 'new' },
-    { label: 'Sale', view: 'sale', highlight: 'sale' },
-    { label: 'Contact', view: 'contact' },
+  const currentLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === language) || SUPPORTED_LANGUAGES[0];
+
+  const navLinks: { labelKey: string; view: PageView; highlight?: 'sale' | 'new' }[] = [
+    { labelKey: 'nav.home', view: 'home' },
+    { labelKey: 'nav.men', view: 'men' },
+    { labelKey: 'nav.women', view: 'women' },
+    { labelKey: 'nav.kids', view: 'kids' },
+    { labelKey: 'nav.newArrivals', view: 'new-arrivals', highlight: 'new' },
+    { labelKey: 'nav.sale', view: 'sale', highlight: 'sale' },
+    { labelKey: 'nav.contact', view: 'contact' },
   ];
 
   const handleNavClick = (view: PageView) => {
@@ -53,25 +62,83 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-200/80 transition-all">
       {/* Top Banner */}
       <div className="bg-neutral-950 text-neutral-200 text-xs py-2 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
           <div className="hidden sm:flex items-center gap-2 text-neutral-400">
-            <span>Customer Concierge: +1 (800) 582-NEST</span>
+            <span>{t('top.concierge')}</span>
           </div>
+
           <div className="flex-1 sm:flex-initial text-center flex items-center justify-center gap-2">
             <span className="inline-flex items-center gap-1 font-medium text-amber-200">
-              <Sparkles className="w-3.5 h-3.5" />
-              Complimentary Global Delivery on orders over $75
+              <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>{t('top.delivery')}</span>
             </span>
-            <span className="hidden md:inline text-neutral-400">• Use code <strong className="text-white tracking-wider">NEST15</strong> for 15% off</span>
           </div>
-          <div className="hidden sm:flex items-center gap-4 text-neutral-400">
+
+          <div className="flex items-center gap-3 sm:gap-4 text-neutral-400">
             <button
               onClick={() => handleNavClick('contact')}
-              className="hover:text-white transition-colors"
+              className="hidden md:inline-block hover:text-white transition-colors"
             >
-              Need Help?
+              {t('top.help')}
             </button>
-            <span>USD $</span>
+
+            {/* Language Switcher Dropdown */}
+            <div className="relative">
+              <button
+                id="language-selector-btn"
+                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-900 hover:bg-neutral-800 text-white font-medium transition-colors border border-neutral-800"
+                aria-label="Select Language"
+              >
+                <span>{currentLangObj.flag}</span>
+                <span className="text-xs font-semibold">{currentLangObj.nativeName}</span>
+                <ChevronDown className="w-3 h-3 text-neutral-400" />
+              </button>
+
+              <AnimatePresence>
+                {isLangMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    className="absolute right-0 mt-1.5 w-44 bg-white text-neutral-900 rounded-xl shadow-2xl border border-neutral-200 py-1.5 z-50 overflow-hidden text-left"
+                  >
+                    <div className="px-3 py-1 border-b border-neutral-100 text-[10px] uppercase font-bold tracking-wider text-neutral-400">
+                      Select Language
+                    </div>
+                    {SUPPORTED_LANGUAGES.map((lang) => {
+                      const isSelected = language === lang.code;
+                      return (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            setLanguage(lang.code);
+                            setIsLangMenuOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 text-xs flex items-center justify-between hover:bg-neutral-50 transition-colors ${
+                            isSelected ? 'bg-amber-50/70 font-bold text-amber-900' : 'text-neutral-700'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span>{lang.flag}</span>
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium text-xs">{lang.nativeName}</span>
+                              <span className="text-[10px] text-neutral-400 font-normal">{lang.name}</span>
+                            </div>
+                          </div>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-amber-700" />}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <span className="hidden sm:flex font-semibold text-white items-center gap-1">
+              <span>🇵🇰</span>
+              <span>PKR (₨)</span>
+            </span>
           </div>
         </div>
       </div>
@@ -129,15 +196,15 @@ export const Navbar: React.FC = () => {
                 }`}
               >
                 <span className="flex items-center gap-1.5">
-                  {link.label}
+                  {t(link.labelKey)}
                   {link.highlight === 'sale' && (
                     <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-700 rounded">
-                      Sale
+                      {t('card.sale')}
                     </span>
                   )}
                   {link.highlight === 'new' && (
                     <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 rounded">
-                      New
+                      {t('card.new')}
                     </span>
                   )}
                 </span>
@@ -163,7 +230,7 @@ export const Navbar: React.FC = () => {
             aria-label="Search catalog"
           >
             <Search className="w-4 h-4 text-neutral-400" />
-            <span className="text-xs">Search coats, dresses, knitwear...</span>
+            <span className="text-xs">{t('nav.searchPlaceholder')}</span>
             <kbd className="hidden xl:inline-block text-[10px] bg-white border border-neutral-300 rounded px-1.5 py-0.5 text-neutral-400">
               /
             </kbd>
@@ -225,7 +292,7 @@ export const Navbar: React.FC = () => {
                       className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-neutral-200 py-2 z-50 text-left"
                     >
                       <div className="px-4 py-2 border-b border-neutral-100">
-                        <p className="text-xs text-neutral-400 uppercase tracking-wider">Signed in as</p>
+                        <p className="text-xs text-neutral-400 uppercase tracking-wider">{t('nav.signedInAs')}</p>
                         <p className="text-sm font-semibold text-neutral-900 truncate">{user.email}</p>
                       </div>
 
@@ -238,7 +305,7 @@ export const Navbar: React.FC = () => {
                           className="w-full px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 flex items-center gap-2.5"
                         >
                           <Heart className="w-4 h-4 text-neutral-400" />
-                          <span>Saved Wishlist ({wishlist.length})</span>
+                          <span>{t('nav.savedWishlist')} ({wishlist.length})</span>
                         </button>
                         <button
                           onClick={() => {
@@ -248,7 +315,7 @@ export const Navbar: React.FC = () => {
                           className="w-full px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 flex items-center gap-2.5"
                         >
                           <Percent className="w-4 h-4 text-neutral-400" />
-                          <span>Member Exclusive Offers</span>
+                          <span>{t('nav.memberOffers')}</span>
                         </button>
                       </div>
 
@@ -256,10 +323,10 @@ export const Navbar: React.FC = () => {
                         <div className="px-4 py-2 bg-neutral-50 border-t border-neutral-100">
                           <p className="text-xs font-medium text-neutral-700 flex items-center gap-1.5 mb-1">
                             <PackageCheck className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Recent Orders ({user.orders.length})</span>
+                            <span>{t('nav.recentOrders')} ({user.orders.length})</span>
                           </p>
                           <p className="text-[11px] text-neutral-500">
-                            Latest: #{user.orders[0].id} ({user.orders[0].status})
+                            #{user.orders[0].id} ({user.orders[0].status})
                           </p>
                         </div>
                       )}
@@ -273,7 +340,7 @@ export const Navbar: React.FC = () => {
                           className="w-full px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2.5"
                         >
                           <LogOut className="w-4 h-4" />
-                          <span>Sign Out</span>
+                          <span>{t('nav.signOut')}</span>
                         </button>
                       </div>
                     </motion.div>
@@ -287,7 +354,7 @@ export const Navbar: React.FC = () => {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium text-neutral-800 hover:text-neutral-950 hover:bg-neutral-100 transition-colors"
               >
                 <User className="w-4 h-4" />
-                <span className="hidden sm:inline">Sign In</span>
+                <span className="hidden sm:inline">{t('nav.signIn')}</span>
               </button>
             )}
           </div>
@@ -304,6 +371,29 @@ export const Navbar: React.FC = () => {
             className="lg:hidden bg-white border-b border-neutral-200 overflow-hidden"
           >
             <div className="px-4 pt-2 pb-6 space-y-1">
+              {/* Mobile Language Switcher Row */}
+              <div className="p-2 mb-2 bg-neutral-50 rounded-xl border border-neutral-200">
+                <span className="text-[10px] uppercase font-bold text-neutral-400 block mb-1 px-1">
+                  Language / زبان
+                </span>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => setLanguage(lang.code)}
+                      className={`py-1.5 px-2 rounded-lg text-xs flex flex-col items-center justify-center font-medium transition-colors ${
+                        language === lang.code
+                          ? 'bg-neutral-950 text-white font-bold'
+                          : 'bg-white border border-neutral-200 text-neutral-700'
+                      }`}
+                    >
+                      <span className="text-sm">{lang.flag}</span>
+                      <span className="text-[11px] truncate mt-0.5">{lang.nativeName}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {navLinks.map(link => (
                 <button
                   key={link.view}
@@ -314,15 +404,15 @@ export const Navbar: React.FC = () => {
                       : 'text-neutral-700 hover:bg-neutral-50'
                   }`}
                 >
-                  <span>{link.label}</span>
+                  <span>{t(link.labelKey)}</span>
                   {link.highlight === 'sale' && (
                     <span className="px-2 py-0.5 text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-700 rounded">
-                      Sale
+                      {t('card.sale')}
                     </span>
                   )}
                   {link.highlight === 'new' && (
                     <span className="px-2 py-0.5 text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 rounded">
-                      New
+                      {t('card.new')}
                     </span>
                   )}
                 </button>
@@ -341,7 +431,7 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-2 text-sm text-neutral-700 font-medium py-2 px-3"
                 >
                   <User className="w-4 h-4" />
-                  <span>{user ? `Account (${user.name})` : 'Sign In / Register'}</span>
+                  <span>{user ? `${t('nav.account')} (${user.name})` : t('nav.signIn')}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -351,7 +441,7 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-2 text-sm text-neutral-700 font-medium py-2 px-3"
                 >
                   <Heart className="w-4 h-4" />
-                  <span>Wishlist ({wishlist.length})</span>
+                  <span>{t('wishlist.title')} ({wishlist.length})</span>
                 </button>
               </div>
             </div>

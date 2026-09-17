@@ -53,9 +53,20 @@ export interface Address {
   phone: string;
   street: string;
   city: string;
-  state: string;
+  state: string; // Province / Region
   zip: string;
   country: string;
+}
+
+export type PaymentMethod = 'jazzcash' | 'easypaisa' | 'bank_transfer' | 'cod' | 'card';
+
+export interface PaymentDetails {
+  method: PaymentMethod;
+  mobileNumber?: string;
+  accountTitle?: string;
+  bankName?: string;
+  transactionRef?: string;
+  lastFourDigits?: string;
 }
 
 export interface Order {
@@ -68,11 +79,15 @@ export interface Order {
   total: number;
   status: 'Processing' | 'Shipped' | 'Delivered';
   shippingAddress: Address;
+  paymentMethod: PaymentMethod;
+  paymentDetails?: PaymentDetails;
 }
 
 export interface User {
   name: string;
   email: string;
+  phone?: string;
+  city?: string;
   orders: Order[];
 }
 

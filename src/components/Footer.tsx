@@ -4,7 +4,7 @@ import { PageView } from '../types';
 import { Heart, ShieldCheck, Instagram, Facebook, Twitter } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { setCurrentView } = useShop();
+  const { setCurrentView, t } = useShop();
 
   const handleNav = (view: PageView) => {
     setCurrentView(view);
@@ -27,7 +27,7 @@ export const Footer: React.FC = () => {
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-600 mb-1" />
             </button>
             <p className="text-neutral-400 text-sm leading-relaxed max-w-sm mb-6">
-              Contemporary high-end fashion engineered for versatility, ethical craftsmanship, and enduring elegance. Defining personal style across generations.
+              {t('footer.about')}
             </p>
             <div className="flex items-center gap-3 text-neutral-400">
               <a
@@ -60,7 +60,7 @@ export const Footer: React.FC = () => {
           {/* Shop Column */}
           <div>
             <h4 className="font-bold text-xs uppercase tracking-widest text-white mb-4">
-              Collections
+              {t('footer.collections')}
             </h4>
             <ul className="space-y-2.5 text-sm text-neutral-400">
               <li>
@@ -68,7 +68,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('women')}
                   className="hover:text-white transition-colors"
                 >
-                  Women's Line
+                  {t('nav.women')}
                 </button>
               </li>
               <li>
@@ -76,7 +76,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('men')}
                   className="hover:text-white transition-colors"
                 >
-                  Men's Tailoring
+                  {t('nav.men')}
                 </button>
               </li>
               <li>
@@ -84,7 +84,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('kids')}
                   className="hover:text-white transition-colors"
                 >
-                  Kids & Teens
+                  {t('nav.kids')}
                 </button>
               </li>
               <li>
@@ -92,7 +92,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('new-arrivals')}
                   className="hover:text-white transition-colors flex items-center gap-1.5"
                 >
-                  <span>New Arrivals</span>
+                  <span>{t('nav.newArrivals')}</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 </button>
               </li>
@@ -101,7 +101,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('sale')}
                   className="hover:text-rose-400 transition-colors"
                 >
-                  Archive Sale (-40%)
+                  {t('nav.sale')} (-40%)
                 </button>
               </li>
             </ul>
@@ -110,7 +110,7 @@ export const Footer: React.FC = () => {
           {/* Customer Care Column */}
           <div>
             <h4 className="font-bold text-xs uppercase tracking-widest text-white mb-4">
-              Client Concierge
+              {t('footer.concierge')}
             </h4>
             <ul className="space-y-2.5 text-sm text-neutral-400">
               <li>
@@ -118,7 +118,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('contact')}
                   className="hover:text-white transition-colors"
                 >
-                  Contact & Store Flagships
+                  {t('footer.contactStores')}
                 </button>
               </li>
               <li>
@@ -126,7 +126,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('contact')}
                   className="hover:text-white transition-colors"
                 >
-                  Shipping & Customs
+                  {t('footer.shipping')}
                 </button>
               </li>
               <li>
@@ -134,7 +134,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('contact')}
                   className="hover:text-white transition-colors"
                 >
-                  30-Day Hassle-Free Returns
+                  {t('footer.returns')}
                 </button>
               </li>
               <li>
@@ -142,7 +142,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('contact')}
                   className="hover:text-white transition-colors"
                 >
-                  Sustainability & Sourcing
+                  {t('footer.sustainability')}
                 </button>
               </li>
               <li>
@@ -150,7 +150,7 @@ export const Footer: React.FC = () => {
                   onClick={() => handleNav('contact')}
                   className="hover:text-white transition-colors"
                 >
-                  FAQ & Care Guides
+                  {t('footer.faq')}
                 </button>
               </li>
             </ul>
@@ -159,17 +159,18 @@ export const Footer: React.FC = () => {
           {/* Store Flags & Hours */}
           <div>
             <h4 className="font-bold text-xs uppercase tracking-widest text-white mb-4">
-              Global Flagship
+              {t('footer.pakistanStores')}
             </h4>
             <div className="text-sm text-neutral-400 space-y-2">
-              <p className="text-neutral-200 font-medium">StyleNest Fifth Avenue</p>
-              <p>740 5th Avenue, New York, NY</p>
+              <p className="text-neutral-200 font-medium">{t('footer.lahoreStore')}</p>
+              <p>{t('footer.lahoreAddress')}</p>
+              <p className="text-neutral-200 font-medium pt-1">{t('footer.karachiStore')}</p>
+              <p>{t('footer.karachiAddress')}</p>
               <p className="pt-2 text-xs text-neutral-500">
-                Mon - Sat: 10:00 AM – 8:00 PM<br />
-                Sunday: 11:00 AM – 6:00 PM
+                {t('footer.hours')}
               </p>
               <p className="pt-1 text-xs text-neutral-400">
-                Direct: concierge@stylenest.com
+                {t('footer.helpline')}
               </p>
             </div>
           </div>
@@ -178,20 +179,30 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar: Copyright and Payment methods */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
           <div className="flex items-center gap-2">
-            <span>© {new Date().getFullYear()} StyleNest Apparel Inc. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} {t('footer.copyright')}</span>
             <span className="hidden sm:inline">•</span>
             <span className="flex items-center gap-1">
-              Crafted with <Heart className="w-3 h-3 text-rose-500 fill-rose-500" /> for modern fashion
+              {t('footer.nationwide')}
             </span>
           </div>
 
-          {/* Payment Badges */}
-          <div className="flex items-center gap-2 font-mono text-[11px] text-neutral-400">
-            <span className="px-2 py-1 bg-neutral-900 rounded border border-neutral-800">VISA</span>
-            <span className="px-2 py-1 bg-neutral-900 rounded border border-neutral-800">MASTERCARD</span>
-            <span className="px-2 py-1 bg-neutral-900 rounded border border-neutral-800">AMEX</span>
-            <span className="px-2 py-1 bg-neutral-900 rounded border border-neutral-800">APPLE PAY</span>
-            <span className="px-2 py-1 bg-neutral-900 rounded border border-neutral-800">PAYPAL</span>
+          {/* Payment Badges in Pakistan */}
+          <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] text-neutral-300">
+            <span className="px-2.5 py-1 bg-red-950/80 text-red-300 rounded border border-red-800/80 font-bold">
+              JAZZCASH
+            </span>
+            <span className="px-2.5 py-1 bg-emerald-950/80 text-emerald-300 rounded border border-emerald-800/80 font-bold">
+              EASYPAISA
+            </span>
+            <span className="px-2.5 py-1 bg-blue-950/80 text-blue-300 rounded border border-blue-800/80 font-bold">
+              RAAST / BANK
+            </span>
+            <span className="px-2.5 py-1 bg-amber-950/80 text-amber-300 rounded border border-amber-800/80 font-bold">
+              COD (CASH ON DELIVERY)
+            </span>
+            <span className="px-2 py-1 bg-neutral-900 rounded border border-neutral-800">
+              VISA / 1LINK
+            </span>
           </div>
         </div>
       </div>

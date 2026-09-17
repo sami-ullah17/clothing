@@ -14,10 +14,13 @@ import { SearchBar } from './components/SearchBar';
 import { ToastContainer } from './components/ToastContainer';
 
 const AppContent: React.FC = () => {
-  const { currentView, selectedProduct } = useShop();
+  const { currentView, selectedProduct, isRTL, t } = useShop();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-neutral-900 font-sans selection:bg-amber-100 selection:text-amber-900">
+    <div
+      dir={isRTL ? 'rtl' : 'ltr'}
+      className="min-h-screen flex flex-col bg-[#FAF9F6] text-neutral-900 font-sans selection:bg-amber-100 selection:text-amber-900"
+    >
       {/* Navigation */}
       <Navbar />
 
@@ -29,8 +32,8 @@ const AppContent: React.FC = () => {
           <ProductCatalog
             key="men-catalog"
             initialCategory="men"
-            title="Men's Collection"
-            subtitle="Italian tailored outerwear, crisp organic poplin shirts, and heritage Okayama selvedge denim."
+            title={t('categories.men')}
+            subtitle={t('categories.menDesc')}
           />
         )}
 
@@ -38,8 +41,8 @@ const AppContent: React.FC = () => {
           <ProductCatalog
             key="women-catalog"
             initialCategory="women"
-            title="Women's Collection"
-            subtitle="Pure Mulberry silk slip dresses, sculpted trench coats, and plush Mongolian cashmere sweaters."
+            title={t('categories.women')}
+            subtitle={t('categories.womenDesc')}
           />
         )}
 
@@ -47,8 +50,8 @@ const AppContent: React.FC = () => {
           <ProductCatalog
             key="kids-catalog"
             initialCategory="kids"
-            title="Kids & Teens Collection"
-            subtitle="Hypoallergenic organic cotton knitwear and resilient playground-ready stretch chinos."
+            title={t('categories.kids')}
+            subtitle={t('categories.kidsDesc')}
           />
         )}
 
@@ -57,8 +60,8 @@ const AppContent: React.FC = () => {
             key="new-arrivals-catalog"
             initialCategory="all"
             forceOnlyNew={true}
-            title="New Season Arrivals"
-            subtitle="The newest silhouettes from the Autumn/Winter capsule, fresh from our Italian ateliers."
+            title={t('sections.newArrivalsTitle')}
+            subtitle={t('sections.newArrivalsSubtitle')}
           />
         )}
 
@@ -67,8 +70,8 @@ const AppContent: React.FC = () => {
             key="sale-catalog"
             initialCategory="all"
             forceOnlySale={true}
-            title="Archive & Mid-Season Sale"
-            subtitle="Special pricing on selected garments. Use code NEST15 at checkout for an extra 15% off."
+            title={t('offers.title')}
+            subtitle={t('offers.subtitle')}
           />
         )}
 

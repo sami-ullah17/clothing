@@ -14,6 +14,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     toggleWishlist,
     isInWishlist,
     openProductDetails,
+    formatPrice,
+    t,
+    getProductName,
+    getSubcategoryName,
   } = useShop();
 
   const [selectedColor, setSelectedColor] = useState<ProductColor>(product.colors[0]);
@@ -33,6 +37,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     setIsSizeSelectorOpen(false);
   };
 
+  const localizedName = getProductName(product);
+  const localizedSubcategory = getSubcategoryName(product.subcategory);
+
   return (
     <motion.div
       id={`product-card-${product.id}`}
@@ -49,7 +56,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       >
         <img
           src={product.images[currentImageIndex] || product.images[0]}
-          alt={product.name}
+          alt={localizedName}
           className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
           loading="lazy"
         />
@@ -58,17 +65,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           {product.discountPrice && (
             <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-rose-600 text-white rounded-md shadow-sm">
-              -{discountPercent}% OFF
+              -{discountPercent}% {t('card.sale')}
             </span>
           )}
           {product.isNewArrival && (
             <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-neutral-900 text-white rounded-md shadow-sm">
-              New Arrival
+              {t('card.new')}
             </span>
           )}
           {product.isBestSeller && !product.discountPrice && (
             <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-amber-700 text-white rounded-md shadow-sm">
-              Best Seller
+              {t('card.bestseller')}
             </span>
           )}
         </div>
@@ -101,7 +108,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="flex-1 py-2.5 px-3 bg-white/95 hover:bg-white text-neutral-900 text-xs font-semibold rounded-xl shadow-lg backdrop-blur-md flex items-center justify-center gap-1.5 transition-colors border border-neutral-200/50"
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>View Details</span>
+            <span>{t('card.viewDetails')}</span>
           </button>
 
           <button
@@ -124,7 +131,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="absolute inset-x-3 bottom-3 bg-white/95 backdrop-blur-md p-3 rounded-xl shadow-xl border border-neutral-200 z-30 animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold text-neutral-600 uppercase tracking-wider">Select Size:</span>
+              <span className="text-[11px] font-semibold text-neutral-600 uppercase tracking-wider">
+                {t('card.selectSize')}:
+              </span>
               <button
                 onClick={() => setIsSizeSelectorOpen(false)}
                 className="text-[11px] text-neutral-400 hover:text-neutral-700"
@@ -152,7 +161,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="w-full py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 shadow"
             >
               <Check className="w-3.5 h-3.5" />
-              <span>Confirm & Add to Cart</span>
+              <span>{t('card.confirmAdd')}</span>
             </button>
           </div>
         )}
@@ -164,7 +173,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Subcategory & Rating */}
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-medium text-neutral-400 tracking-wide uppercase">
-              {product.subcategory}
+              {localizedSubcategory}
             </span>
             <div className="flex items-center gap-1 text-amber-500">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -178,7 +187,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             onClick={() => openProductDetails(product)}
             className="text-sm sm:text-base font-medium text-neutral-900 hover:text-neutral-600 cursor-pointer transition-colors line-clamp-1 mb-2"
           >
-            {product.name}
+            {localizedName}
           </h3>
 
           {/* Color Swatches */}
@@ -204,7 +213,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               />
             ))}
             <span className="text-[11px] text-neutral-400 ml-1">
-              {product.colors.length} {product.colors.length === 1 ? 'color' : 'colors'}
+              {product.colors.length} {t('card.colors')}
             </span>
           </div>
         </div>
@@ -215,15 +224,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {product.discountPrice ? (
               <>
                 <span className="text-base sm:text-lg font-bold text-neutral-950">
-                  ${product.discountPrice}
+                  {formatPrice(product.discountPrice)}
                 </span>
                 <span className="text-xs sm:text-sm text-neutral-400 line-through">
-                  ${product.price}
+                  {formatPrice(product.price)}
                 </span>
               </>
             ) : (
               <span className="text-base sm:text-lg font-bold text-neutral-950">
-                ${product.price}
+                {formatPrice(product.price)}
               </span>
             )}
           </div>
@@ -243,7 +252,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               aria-label="Add to cart"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Add</span>
+              <span>{t('card.add')}</span>
             </button>
           </div>
 
@@ -252,7 +261,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             onClick={() => openProductDetails(product)}
             className="hidden md:inline-flex text-xs font-medium text-neutral-500 hover:text-neutral-950 transition-colors underline-offset-4 hover:underline"
           >
-            Details →
+            {t('card.viewDetails')} →
           </button>
         </div>
       </div>

@@ -15,25 +15,25 @@ import { motion, AnimatePresence } from 'motion/react';
 
 const FAQS = [
   {
+    q: 'What payment methods do you accept in Pakistan?',
+    a: 'We accept JazzCash mobile accounts, Easypaisa wallet, Raast Instant Transfers, direct online Bank Transfers (Meezan Bank, HBL, MCB, Bank Alfalah, etc.), Credit/Debit cards, and Cash on Delivery (COD) across all cities.',
+  },
+  {
     q: 'What is your return & exchange policy?',
-    a: 'We offer complimentary 30-day returns and exchanges for all unworn garments with original tags attached. Simply access your order confirmation email or contact our concierge to generate a pre-paid FedEx return label.',
+    a: 'We offer hassle-free 14-day exchanges for all unworn garments with original tags attached. We provide doorstep exchange pickup via our courier partners (TCS & Leopards) in all major cities.',
   },
   {
-    q: 'How long does standard delivery take?',
-    a: 'Orders placed before 2:00 PM EST ship the same day. Standard delivery arrives within 2-4 business days throughout the continental US. Express overnight delivery is available at checkout.',
+    q: 'How long does delivery take across Pakistan?',
+    a: 'Standard courier delivery takes 2-4 business days across Pakistan. Same-day or next-day express delivery is available for orders within Lahore, Karachi, and Islamabad / Rawalpindi.',
   },
   {
-    q: 'Where are StyleNest garments manufactured?',
-    a: 'Our wool and cashmere pieces are knit in Biella and Prato, Italy. Our selvedge denim is woven on vintage shuttle looms in Okayama, Japan, and our organic cotton shirts are tailored in Portugal.',
-  },
-  {
-    q: 'How do I care for my cashmere and silk pieces?',
-    a: 'We recommend gentle hand washing in lukewarm water with a specialized wool or silk detergent, pressing excess moisture with a clean towel (never wringing), and drying flat away from direct sunlight.',
+    q: 'Are your fabrics authentic and high-quality?',
+    a: 'Yes. StyleNest sources premium natural fibers including combed Egyptian cotton, hand-spun wool, raw silk, and artisanal linens crafted to international luxury specifications.',
   },
 ];
 
 export const ContactPage: React.FC = () => {
-  const { showToast } = useShop();
+  const { showToast, t, isRTL } = useShop();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -62,10 +62,10 @@ export const ContactPage: React.FC = () => {
           Client Care
         </span>
         <h1 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-950 mt-1 mb-4">
-          Contact Our Atelier
+          {t('contact.title')}
         </h1>
         <p className="text-neutral-600 text-sm sm:text-base leading-relaxed">
-          Whether you need bespoke sizing recommendations, styling consultations, or order assistance, our stylists are available 7 days a week.
+          {t('contact.subtitle')}
         </p>
       </div>
 
@@ -76,7 +76,7 @@ export const ContactPage: React.FC = () => {
           <div className="bg-neutral-900 text-white p-8 rounded-3xl shadow-xl space-y-6">
             <div className="flex items-center gap-2 text-amber-300 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-4 h-4" />
-              <span>Personal Concierge</span>
+              <span>{t('contact.concierge')}</span>
             </div>
 
             <h3 className="font-serif-luxury text-2xl font-bold">
@@ -87,16 +87,16 @@ export const ContactPage: React.FC = () => {
               <div className="flex items-start gap-3.5">
                 <MapPin className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-white">Flagship Boutique</p>
-                  <p className="text-neutral-400">740 5th Avenue, New York, NY 10019</p>
+                  <p className="font-semibold text-white">{t('contact.flagship')}</p>
+                  <p className="text-neutral-400">M.M. Alam Road, Gulberg III, Lahore, Pakistan</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5">
                 <Phone className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-white">Phone Inquiries</p>
-                  <p className="text-neutral-400">+1 (800) 582-NEST • Mon-Sat 9AM-8PM EST</p>
+                  <p className="font-semibold text-white">Direct WhatsApp & Helpline</p>
+                  <p className="text-neutral-400">+92 (042) 111-NEST • Mon-Sat 9AM-8PM PKT</p>
                 </div>
               </div>
 
@@ -104,15 +104,15 @@ export const ContactPage: React.FC = () => {
                 <Mail className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-white">Direct Email</p>
-                  <p className="text-neutral-400">concierge@stylenest.com</p>
+                  <p className="text-neutral-400">concierge@stylenest.pk</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5">
                 <Clock className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-white">Digital Styling Appointments</p>
-                  <p className="text-neutral-400">Virtual 1-on-1 wardrobe curation via video</p>
+                  <p className="font-semibold text-white">Express Nationwide Dispatch</p>
+                  <p className="text-neutral-400">Daily shipping via TCS, Leopards & Trax</p>
                 </div>
               </div>
             </div>
@@ -147,13 +147,13 @@ export const ContactPage: React.FC = () => {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <h3 className="font-serif-luxury text-2xl font-bold text-neutral-900 mb-2">
-                Send an Inquiry
+                {t('contact.sendInquiry')}
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
-                    Your Name *
+                    {t('contact.name')} *
                   </label>
                   <input
                     type="text"
@@ -166,7 +166,7 @@ export const ContactPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
-                    Email Address *
+                    {t('contact.email')} *
                   </label>
                   <input
                     type="email"
@@ -182,7 +182,7 @@ export const ContactPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
-                    Topic of Inquiry
+                    {t('contact.subject')}
                   </label>
                   <select
                     value={subject}
@@ -213,7 +213,7 @@ export const ContactPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
-                  Your Message *
+                  {t('contact.message')} *
                 </label>
                 <textarea
                   required
@@ -229,8 +229,8 @@ export const ContactPage: React.FC = () => {
                 type="submit"
                 className="px-8 py-3.5 bg-neutral-950 hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
               >
-                <span>Submit Inquiry</span>
-                <Send className="w-3.5 h-3.5" />
+                <span>{t('contact.submit')}</span>
+                <Send className={`w-3.5 h-3.5 ${isRTL ? 'rotate-180' : ''}`} />
               </button>
             </form>
           )}
@@ -244,7 +244,7 @@ export const ContactPage: React.FC = () => {
             Self-Service Help
           </span>
           <h2 className="font-serif-luxury text-3xl font-bold text-neutral-950 mt-1">
-            Frequently Asked Questions
+            {t('contact.faq')}
           </h2>
         </div>
 
@@ -269,7 +269,7 @@ export const ContactPage: React.FC = () => {
                     }`}
                   />
                 </button>
-                <AnimatePresence>
+                  <AnimatePresence>
                   {isOpen && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}

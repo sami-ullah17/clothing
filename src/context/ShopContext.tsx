@@ -1,6 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, CartItem, Size, ProductColor, User, Order, Address, PageView } from '../types';
+import {
+  Product,
+  CartItem,
+  Size,
+  ProductColor,
+  User,
+  Order,
+  Address,
+  PageView,
+  PaymentMethod,
+  PaymentDetails,
+} from '../types';
 import { SAMPLE_PRODUCTS } from '../data/products';
+import {
+  Language,
+  SUPPORTED_LANGUAGES,
+  TRANSLATIONS,
+  PRODUCT_NAME_TRANSLATIONS,
+  SUBCATEGORY_TRANSLATIONS,
+} from '../i18n/translations';
 
 interface Toast {
   id: string;
@@ -8,7 +26,23 @@ interface Toast {
   type: 'success' | 'info' | 'error';
 }
 
+export const FREE_SHIPPING_THRESHOLD_PKR = 4999;
+export const STANDARD_SHIPPING_PKR = 250;
+
 interface ShopContextType {
+  // Language & i18n
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string, fallback?: string) => string;
+  isRTL: boolean;
+  getProductName: (product: Product) => string;
+  getSubcategoryName: (sub: string) => string;
+
+  // Currency & Formatting
+  currency: 'PKR' | 'USD';
+  setCurrency: (curr: 'PKR' | 'USD') => void;
+  formatPrice: (amount: number) => string;
+
   // Cart
   cart: CartItem[];
   addToCart: (product: Product, size?: Size, color?: ProductColor, quantity?: number) => void;
@@ -38,7 +72,7 @@ interface ShopContextType {
 
   // User & Auth
   user: User | null;
-  login: (email: string, name: string) => void;
+  login: (email: string, name: string, phone?: string, city?: string) => void;
   logout: () => void;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
@@ -46,7 +80,11 @@ interface ShopContextType {
   // Checkout
   isCheckoutOpen: boolean;
   setIsCheckoutOpen: (open: boolean) => void;
-  placeOrder: (address: Address) => Order;
+  placeOrder: (
+    address: Address,
+    paymentMethod: PaymentMethod,
+    paymentDetails?: PaymentDetails
+  ) => Order;
 
   // Search
   searchQuery: string;
@@ -67,6 +105,65 @@ interface ShopContextType {
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Language state (en, ur, pa, ar)
+  const [language, setLanguageState] = useState<Language>(() => {
+    try {
+      const saved = localStorage.getItem('stylenest_lang');
+      if (saved && (saved === 'en' || saved === 'ur' || saved === 'pa' || saved === 'ar')) {
+        return saved as Language;
+      }
+    } catch {
+      // fallback
+    }
+    return 'en';
+  });
+
+  const isRTL = language === 'ur' || language === 'pa' || language === 'ar';
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    try {
+      localStorage.setItem('stylenest_lang', lang);
+    } catch {
+      // ignore
+    }
+  };
+
+  // Sync document direction and language code
+  useEffect(() => {
+    const rtl = language === 'ur' || language === 'pa' || language === 'ar';
+    document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [language]);
+
+  // Translation helper
+  const t = (key: string, fallback?: string): string => {
+    return TRANSLATIONS[language]?.[key] ?? TRANSLATIONS['en']?.[key] ?? fallback ?? key;
+  };
+
+  // Localized product name helper
+  const getProductName = (product: Product): string => {
+    return PRODUCT_NAME_TRANSLATIONS[language]?.[product.id] ?? product.name;
+  };
+
+  // Localized subcategory name helper
+  const getSubcategoryName = (sub: string): string => {
+    return SUBCATEGORY_TRANSLATIONS[language]?.[sub] ?? sub;
+  };
+
+  // Currency state (Default PKR as requested by user)
+  const [currency, setCurrency] = useState<'PKR' | 'USD'>('PKR');
+
+  // Helper to format prices
+  const formatPrice = (amount: number): string => {
+    if (currency === 'PKR') {
+      return `Rs. ${Math.round(amount).toLocaleString('en-PK')}`;
+    }
+    // approximate conversion if user switches to USD
+    const inUsd = (amount / 280).toFixed(0);
+    return `$${inUsd}`;
+  };
+
   // Initialize cart from localStorage
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -148,7 +245,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3800);
+    }, 4000);
   };
 
   const removeToast = (id: string) => {
@@ -198,7 +295,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeFromCart = (itemId: string) => {
     setCart(prev => prev.filter(item => item.id !== itemId));
-    showToast('Item removed from cart', 'info');
+    showToast('Item removed from bag', 'info');
   };
 
   const clearCart = () => {
@@ -216,7 +313,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const applyPromo = (code: string) => {
     const clean = code.trim().toUpperCase();
-    if (clean === 'NEST15' || clean === 'STYLE15') {
+    if (clean === 'NEST15' || clean === 'STYLE15' || clean === 'PAK15') {
       setPromoCode(clean);
       setDiscountPercent(15);
       showToast('Promo code applied: 15% off your order!', 'success');
@@ -249,16 +346,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
   // User authentication
-  const login = (email: string, name: string) => {
+  const login = (email: string, name: string, phone?: string, city?: string) => {
     const existingOrders = user?.orders || [];
     const updatedUser: User = {
       name,
       email,
+      phone: phone || user?.phone || '0300-1234567',
+      city: city || user?.city || 'Lahore',
       orders: existingOrders,
     };
     setUser(updatedUser);
     setIsAuthModalOpen(false);
-    showToast(`Welcome back, ${name}!`, 'success');
+    showToast(`Welcome to StyleNest, ${name}!`, 'success');
   };
 
   const logout = () => {
@@ -267,14 +366,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Order placement
-  const placeOrder = (address: Address): Order => {
-    const shipping = cartSubtotal >= 75 ? 0 : 9.99;
+  const placeOrder = (
+    address: Address,
+    paymentMethod: PaymentMethod = 'jazzcash',
+    paymentDetails?: PaymentDetails
+  ): Order => {
+    const shipping = cartSubtotal >= FREE_SHIPPING_THRESHOLD_PKR ? 0 : STANDARD_SHIPPING_PKR;
     const orderTotal = Math.max(0, cartSubtotal - discountAmount + shipping);
-    const orderId = 'SN-' + Math.floor(100000 + Math.random() * 900000);
+    const orderId = 'PK-' + Math.floor(100000 + Math.random() * 900000);
 
     const newOrder: Order = {
       id: orderId,
-      date: new Date().toLocaleDateString('en-US', {
+      date: new Date().toLocaleDateString('en-PK', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -286,6 +389,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       total: orderTotal,
       status: 'Processing',
       shippingAddress: address,
+      paymentMethod,
+      paymentDetails,
     };
 
     if (user) {
@@ -308,6 +413,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <ShopContext.Provider
       value={{
+        language,
+        setLanguage,
+        t,
+        isRTL,
+        getProductName,
+        getSubcategoryName,
+        currency,
+        setCurrency,
+        formatPrice,
         cart,
         addToCart,
         updateCartQuantity,

@@ -264,8 +264,13 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         });
 
         if (res.ok) {
-          const data = await res.json();
-          finalUrl = data.url;
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const data = await res.json();
+            if (data?.url) {
+              finalUrl = data.url;
+            }
+          }
         }
       } catch (err) {
         console.warn('Using client data URL fallback:', err);

@@ -87,6 +87,7 @@ export interface CustomerOrder {
   items: CustomerOrderItem[];
   totalAmount: number;
   date: string;
+  createdAt?: string;
   status: OrderStatus;
   notes?: string;
 }

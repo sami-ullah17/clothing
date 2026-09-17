@@ -125,9 +125,15 @@ export const AdminSettings: React.FC = () => {
         });
 
         if (res.ok) {
-          const data = await res.json();
-          handleChange('storeLogo', data.url);
-          showToast('Store logo uploaded!', 'success');
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const data = await res.json();
+            handleChange('storeLogo', data.url || base64Data);
+            showToast('Store logo uploaded!', 'success');
+          } else {
+            handleChange('storeLogo', base64Data);
+            showToast('Store logo updated!', 'success');
+          }
         } else {
           handleChange('storeLogo', base64Data);
         }

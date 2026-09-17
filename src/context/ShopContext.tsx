@@ -77,6 +77,8 @@ interface ShopContextType {
   addProduct: (productData: Omit<Product, 'id'> & { id?: string }) => Promise<Product | null>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<Product | null>;
   deleteProduct: (id: string) => Promise<boolean>;
+  clearDemoPhotos: () => Promise<boolean>;
+  clearAllProducts: () => Promise<boolean>;
 
   // Admin Authentication & Session
   adminUser: AdminUser | null;
@@ -436,6 +438,58 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err) {
       showToast('Network error deleting product', 'error');
+      return false;
+    }
+  };
+
+  const clearDemoPhotos = async (): Promise<boolean> => {
+    try {
+      const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
+      const res = await fetch('/api/products/clear-demo-photos', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setProducts(data.products || []);
+        showToast(`Removed demo photos from ${data.count} products.`, 'success');
+        return true;
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to clear demo photos', 'error');
+        return false;
+      }
+    } catch (err) {
+      showToast('Network error clearing demo photos', 'error');
+      return false;
+    }
+  };
+
+  const clearAllProducts = async (): Promise<boolean> => {
+    try {
+      const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
+      const res = await fetch('/api/products/clear-all', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        setProducts([]);
+        if (selectedProduct) setSelectedProduct(null);
+        showToast('All demo products cleared! Catalog is ready for boutique products.', 'success');
+        return true;
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to clear products', 'error');
+        return false;
+      }
+    } catch (err) {
+      showToast('Network error clearing all products', 'error');
       return false;
     }
   };
@@ -824,6 +878,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addProduct,
         updateProduct,
         deleteProduct,
+        clearDemoPhotos,
+        clearAllProducts,
         adminUser,
         adminLogin,
         adminLogout,

@@ -165,6 +165,16 @@ app.delete('/api/products/:id', requireAdmin, (req: Request, res: Response) => {
   res.json({ message: 'Product successfully deleted', id: req.params.id });
 });
 
+app.post('/api/products/clear-demo-photos', requireAdmin, (req: Request, res: Response) => {
+  const count = db.clearDemoPhotos();
+  res.json({ message: `Removed demo photos from ${count} products`, count, products: db.getProducts() });
+});
+
+app.post('/api/products/clear-all', requireAdmin, (req: Request, res: Response) => {
+  db.clearAllProducts();
+  res.json({ message: 'All demo products cleared successfully', products: [] });
+});
+
 // ----------------------------------------------------
 // ORDERS API
 // ----------------------------------------------------

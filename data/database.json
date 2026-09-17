@@ -1,0 +1,402 @@
+{
+  "admin": {
+    "email": "admin@pri-buteeq.com",
+    "passwordHash": "423c74a77e42b25f5bda95b1d6b22e142b8cdb6cf53a3fa6d1f0b0daee4a1ef631f6391cad71439e1795c3cc5a545f32d54153e0bfceca46e92b4f8a27d7789e",
+    "passwordSalt": "04db2555e91b5574c246105a20293bdb",
+    "role": "owner"
+  },
+  "settings": {
+    "storeName": "Pri-Buteeq",
+    "storeTagline": "Contemporary Haute Couture & Luxury Pret",
+    "storeDescription": "Exclusive designer collection crafted with exceptional artisanal fabrics and timeless silhouettes.",
+    "storeLogo": "",
+    "whatsappNumber": "923001234567",
+    "instagramUrl": "https://instagram.com/pributeeq",
+    "tiktokUrl": "https://tiktok.com/@pributeeq",
+    "address": "Pakpattan, Punjab, Pakistan",
+    "currency": "PKR",
+    "currencySymbol": "Rs."
+  },
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "Tailored Wool-Blend Overcoat",
+      "category": "men",
+      "subcategory": "Jackets & Coats",
+      "price": 28500,
+      "discountPrice": 22900,
+      "rating": 4.9,
+      "reviewCount": 42,
+      "images": [],
+      "colors": [
+        {
+          "name": "Camel",
+          "hex": "#C19A6B"
+        },
+        {
+          "name": "Charcoal",
+          "hex": "#36454F"
+        },
+        {
+          "name": "Midnight Navy",
+          "hex": "#1B263B"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "isNewArrival": true,
+      "isBestSeller": true,
+      "isSale": true,
+      "description": "A refined single-breasted overcoat tailored in an Italian wool-cashmere blend. Features notched lapels, horn-effect buttons, and a smooth satin lining for comfortable layering.",
+      "details": [
+        "Notched lapels with subtle pick-stitching",
+        "Two exterior welt pockets, interior ticket pocket",
+        "Back single vent for ease of motion",
+        "Fully lined with premium Bemberg cupro"
+      ],
+      "composition": "75% Virgin Wool, 20% Polyamide, 5% Cashmere. Dry clean only.",
+      "stock": 14,
+      "status": "in_stock"
+    },
+    {
+      "id": "prod-2",
+      "name": "Silk Slip Midi Dress",
+      "category": "women",
+      "subcategory": "Dresses",
+      "price": 18900,
+      "discountPrice": 14900,
+      "rating": 4.8,
+      "reviewCount": 67,
+      "images": [],
+      "colors": [
+        {
+          "name": "Champagne",
+          "hex": "#F7E7CE"
+        },
+        {
+          "name": "Emerald",
+          "hex": "#046307"
+        },
+        {
+          "name": "Noir Black",
+          "hex": "#111111"
+        }
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "isNewArrival": false,
+      "isBestSeller": true,
+      "isSale": true,
+      "description": "Cut on the bias from 100% pure Mulberry silk for an effortlessly fluid drape. Features delicate adjustable straps, a soft cowl neckline, and French-seam interior construction.",
+      "details": [
+        "100% 19mm grade 6A Mulberry silk",
+        "Adjustable spaghetti straps with subtle gold sliders",
+        "Bias cut contours gently to natural curves",
+        "Subtle side slit for fluid movement"
+      ],
+      "composition": "100% Mulberry Silk. Hand wash cold or dry clean.",
+      "stock": 9,
+      "status": "in_stock"
+    },
+    {
+      "id": "prod-3",
+      "name": "Cashmere Ribbed Turtleneck",
+      "category": "women",
+      "subcategory": "Knitwear",
+      "price": 15500,
+      "rating": 4.9,
+      "reviewCount": 38,
+      "images": [],
+      "colors": [
+        {
+          "name": "Oatmeal",
+          "hex": "#E3DAC9"
+        },
+        {
+          "name": "Black",
+          "hex": "#1C1C1C"
+        },
+        {
+          "name": "Mocha",
+          "hex": "#826644"
+        }
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L"
+      ],
+      "isNewArrival": true,
+      "isBestSeller": false,
+      "description": "Spun from grade-A Mongolian cashmere with dense 12-gauge knit structure. Provides sumptuous warmth with an ultra-soft handle that will not pill with proper care.",
+      "details": [
+        "Fold-over ribbed turtleneck collar",
+        "Tubular knit hem and cuffs for lasting shape retention",
+        "Slightly relaxed silhouette for easy layering"
+      ],
+      "composition": "100% Mongolian Cashmere. Hand wash lukewarm.",
+      "stock": 12,
+      "status": "in_stock"
+    },
+    {
+      "id": "prod-4",
+      "name": "Crisp Cotton Oxford Shirt",
+      "category": "men",
+      "subcategory": "Shirts",
+      "price": 7800,
+      "rating": 4.7,
+      "reviewCount": 89,
+      "images": [],
+      "colors": [
+        {
+          "name": "Optic White",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Sky Blue",
+          "hex": "#87CEEB"
+        },
+        {
+          "name": "Pink Tint",
+          "hex": "#FADADD"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "isNewArrival": false,
+      "isBestSeller": true,
+      "description": "A benchmark men wardrobe essential crafted from 100% long-staple Egyptian cotton basketweave. Designed with a timeless button-down collar and mother-of-pearl buttons.",
+      "details": [
+        "Button-down collar with gentle roll",
+        "Box pleat and locker loop at back yoke",
+        "Curved hem designed to stay neatly tucked or worn casually untucked"
+      ],
+      "composition": "100% Long-Staple Egyptian Cotton. Machine wash 30°C.",
+      "stock": 25,
+      "status": "in_stock"
+    },
+    {
+      "id": "prod-5",
+      "name": "Pleated High-Waist Wide-Leg Trousers",
+      "category": "women",
+      "subcategory": "Pants",
+      "price": 13500,
+      "discountPrice": 10800,
+      "rating": 4.9,
+      "reviewCount": 54,
+      "images": [],
+      "colors": [
+        {
+          "name": "Sand Taupe",
+          "hex": "#B38B6D"
+        },
+        {
+          "name": "Black",
+          "hex": "#111111"
+        },
+        {
+          "name": "Olive Drab",
+          "hex": "#556B2F"
+        }
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L"
+      ],
+      "isNewArrival": false,
+      "isBestSeller": true,
+      "isSale": true,
+      "description": "Dramatic double-pleated front with a fluid wide leg that pools slightly over footwear. Woven from breathable stretch gabardine that resists creasing throughout the day.",
+      "details": [
+        "Extended waistband with concealed hook-and-bar closure",
+        "Dual deep front pleats with sharp pressed creases",
+        "Discreet side slant pockets and rear jetted pockets"
+      ],
+      "composition": "68% Polyester, 28% Viscose, 4% Elastane. Machine wash gentle.",
+      "stock": 18,
+      "status": "in_stock"
+    },
+    {
+      "id": "prod-6",
+      "name": "Organic Cotton Breton Stripe Tee",
+      "category": "kids",
+      "subcategory": "Tops & Tees",
+      "price": 3800,
+      "rating": 4.8,
+      "reviewCount": 29,
+      "images": [],
+      "colors": [
+        {
+          "name": "Navy & White",
+          "hex": "#1E2A38"
+        },
+        {
+          "name": "Red & Cream",
+          "hex": "#A82828"
+        }
+      ],
+      "sizes": [
+        "2-3Y",
+        "4-5Y",
+        "6-7Y",
+        "8-9Y",
+        "10-12Y"
+      ],
+      "isNewArrival": true,
+      "isBestSeller": false,
+      "description": "Super-soft combed organic cotton jersey gentle on sensitive young skin. Features classic maritime horizontal stripes and reinforced shoulder seams to withstand active play.",
+      "details": [
+        "100% GOTS-certified organic cotton",
+        "Ribbed bound crew neck with back neck tape",
+        "Hypoallergenic tagless collar printing"
+      ],
+      "composition": "100% Organic Cotton. Machine wash 40°C.",
+      "stock": 30,
+      "status": "in_stock"
+    },
+    {
+      "id": "prod-7",
+      "name": "Japanese Selvedge Denim Jacket",
+      "category": "men",
+      "subcategory": "Jackets & Coats",
+      "price": 19500,
+      "rating": 4.9,
+      "reviewCount": 46,
+      "images": [],
+      "colors": [
+        {
+          "name": "Raw Indigo",
+          "hex": "#1A2A44"
+        },
+        {
+          "name": "Washed Black",
+          "hex": "#2B2B2B"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "isNewArrival": false,
+      "isBestSeller": true,
+      "description": "Constructed from 13.5oz vintage shuttle-loomed Japanese selvedge denim. Unwashed raw finish will mold uniquely to the wearers body with distinctive fading over years.",
+      "details": [
+        "Red-line selvedge visible along interior placket",
+        "Custom copper donut buttons and donut rivet reinforcement",
+        "Pleated front with iconic box-stitch details"
+      ],
+      "composition": "100% Kuroki Mills Cotton Denim. Dry clean or cold soak only.",
+      "stock": 8,
+      "status": "in_stock"
+    },
+    {
+      "id": "prod-8",
+      "name": "Kids Quilted Puffer Jacket",
+      "category": "kids",
+      "subcategory": "Outerwear",
+      "price": 8900,
+      "discountPrice": 6900,
+      "rating": 4.8,
+      "reviewCount": 31,
+      "images": [],
+      "colors": [
+        {
+          "name": "Forest Green",
+          "hex": "#228B22"
+        },
+        {
+          "name": "Mustard Yellow",
+          "hex": "#E1AD01"
+        },
+        {
+          "name": "Navy",
+          "hex": "#000080"
+        }
+      ],
+      "sizes": [
+        "3-4Y",
+        "5-6Y",
+        "7-8Y",
+        "9-10Y"
+      ],
+      "isNewArrival": true,
+      "isBestSeller": false,
+      "isSale": true,
+      "description": "Featherlight recycled down-alternative insulation encased in water-resistant micro-ripstop shell. Keeps little ones cozy and dry during chilly school days and outdoor weekend explorations.",
+      "details": [
+        "Fleece-lined storm hood and cozy chin guard",
+        "Heavy-duty YKK zipper with easy-pull cord for small fingers",
+        "Reflective safety piping along back hem"
+      ],
+      "composition": "100% Recycled Polyester shell and thermal padding. Machine washable.",
+      "stock": 0,
+      "status": "out_of_stock"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-7291",
+      "customerName": "Muhammad Rizwan",
+      "phone": "03017654321",
+      "whatsappNumber": "923017654321",
+      "deliveryAddress": "House 14, Ward 5, Pakpattan Sharif",
+      "city": "Pakpattan",
+      "items": [
+        {
+          "productId": "prod-4",
+          "productName": "Crisp Cotton Oxford Shirt",
+          "color": "Sky Blue",
+          "size": "L",
+          "quantity": 2,
+          "price": 7800
+        }
+      ],
+      "totalAmount": 15600,
+      "date": "2026-09-17T12:52:08.436Z",
+      "status": "Pending",
+      "notes": "Please confirm size measurements before dispatch."
+    },
+    {
+      "id": "ORD-7290",
+      "customerName": "Fatima Zahra",
+      "phone": "03219876543",
+      "whatsappNumber": "923219876543",
+      "deliveryAddress": "Canal Road, Near Model Town",
+      "city": "Sahiwal",
+      "items": [
+        {
+          "productId": "prod-2",
+          "productName": "Silk Slip Midi Dress",
+          "color": "Emerald",
+          "size": "M",
+          "quantity": 1,
+          "price": 14900
+        }
+      ],
+      "totalAmount": 14900,
+      "date": "2026-09-16T15:52:08.437Z",
+      "status": "Confirmed",
+      "notes": "Order confirmed on WhatsApp."
+    }
+  ]
+}

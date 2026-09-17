@@ -17,6 +17,7 @@ import {
   MessageCircle,
   AlertTriangle,
   MapPin,
+  Shirt,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -178,67 +179,111 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product: initial
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-16">
         {/* Left Column: Image Gallery (7 cols) */}
         <div className="lg:col-span-7 flex flex-col-reverse sm:flex-row gap-4">
-          {/* Thumbnails */}
-          <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:max-h-[580px] pb-2 sm:pb-0 scrollbar-none">
-            {product.images.map((img, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveImageIndex(index)}
-                className={`relative flex-shrink-0 w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 transition-all ${
-                  activeImageIndex === index
-                    ? 'border-neutral-950 ring-2 ring-neutral-950/20 shadow-sm'
-                    : 'border-transparent hover:border-neutral-300 opacity-70 hover:opacity-100'
-                }`}
-              >
+          {product.images && product.images.length > 0 ? (
+            <>
+              {/* Thumbnails */}
+              {product.images.length > 1 && (
+                <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:max-h-[580px] pb-2 sm:pb-0 scrollbar-none">
+                  {product.images.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveImageIndex(index)}
+                      className={`relative flex-shrink-0 w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 transition-all ${
+                        activeImageIndex === index
+                          ? 'border-neutral-950 ring-2 ring-neutral-950/20 shadow-sm'
+                          : 'border-transparent hover:border-neutral-300 opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`${localizedName} view ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Primary View */}
+              <div className="flex-1 relative aspect-[3/4] sm:aspect-auto sm:h-[580px] rounded-3xl overflow-hidden bg-neutral-100 border border-neutral-200 shadow-sm">
                 <img
-                  src={img}
-                  alt={`${localizedName} view ${index + 1}`}
+                  src={product.images[activeImageIndex] || product.images[0]}
+                  alt={localizedName}
                   className="w-full h-full object-cover"
                 />
+
+                {/* Badges */}
+                <div className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'} flex flex-col gap-2`}>
+                  {isOutOfStock ? (
+                    <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-rose-600 text-white rounded-lg shadow">
+                      Out of Stock
+                    </span>
+                  ) : (product.isSale || product.discountPrice) ? (
+                    <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-rose-600 text-white rounded-lg shadow flex items-center gap-1">
+                      <span>🔥 {t('product.save')} {product.salePercentage || discountPercent}%</span>
+                    </span>
+                  ) : null}
+
+                  {product.isNewArrival && (
+                    <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-neutral-900 text-white rounded-lg shadow">
+                      {t('product.newSeason')}
+                    </span>
+                  )}
+                </div>
+
+                {/* Wishlist Button */}
+                <button
+                  onClick={() => toggleWishlist(product.id)}
+                  className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} p-3 rounded-full backdrop-blur-md shadow-md transition-all ${
+                    inWishlist
+                      ? 'bg-white text-rose-600'
+                      : 'bg-white/80 text-neutral-700 hover:bg-white hover:text-neutral-950'
+                  }`}
+                  aria-label="Toggle Wishlist"
+                >
+                  <Heart className={`w-5 h-5 ${inWishlist ? 'fill-rose-500' : ''}`} />
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 relative aspect-[3/4] sm:aspect-auto sm:h-[580px] rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-100 via-stone-50 to-amber-50/50 border border-neutral-200 shadow-sm flex flex-col items-center justify-center p-8 text-center select-none">
+              <div className="w-24 h-24 rounded-3xl bg-white shadow-md border border-neutral-200 flex items-center justify-center text-amber-800 mb-6">
+                <Shirt className="w-12 h-12 text-neutral-800" />
+              </div>
+              <h3 className="font-serif-luxury text-2xl font-bold text-neutral-900 mb-2">
+                {localizedName}
+              </h3>
+              <p className="text-xs text-amber-900 font-semibold tracking-widest uppercase mb-1">
+                {settings.storeName || 'Pri-Buteeq'} • Pakpattan
+              </p>
+              <p className="text-xs text-neutral-500 max-w-sm">
+                Authentic Pakistani Boutique Apparel. Original piece available at our boutique shop.
+              </p>
+
+              {/* Badges */}
+              <div className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'} flex flex-col gap-2`}>
+                {(product.isSale || product.discountPrice) && (
+                  <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-rose-600 text-white rounded-lg shadow">
+                    🔥 -{product.salePercentage || discountPercent}% SALE
+                  </span>
+                )}
+                {product.isNewArrival && (
+                  <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-neutral-900 text-white rounded-lg shadow">
+                    {t('product.newSeason')}
+                  </span>
+                )}
+              </div>
+
+              {/* Wishlist Button */}
+              <button
+                onClick={() => toggleWishlist(product.id)}
+                className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} p-3 rounded-full bg-white/90 shadow-md text-neutral-700 hover:text-neutral-950`}
+                aria-label="Toggle Wishlist"
+              >
+                <Heart className={`w-5 h-5 ${inWishlist ? 'fill-rose-500' : ''}`} />
               </button>
-            ))}
-          </div>
-
-          {/* Primary View */}
-          <div className="flex-1 relative aspect-[3/4] sm:aspect-auto sm:h-[580px] rounded-3xl overflow-hidden bg-neutral-100 border border-neutral-200 shadow-sm">
-            <img
-              src={product.images[activeImageIndex] || product.images[0]}
-              alt={localizedName}
-              className="w-full h-full object-cover"
-            />
-
-            {/* Badges */}
-            <div className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'} flex flex-col gap-2`}>
-              {isOutOfStock ? (
-                <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-rose-600 text-white rounded-lg shadow">
-                  Out of Stock
-                </span>
-              ) : product.discountPrice ? (
-                <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-rose-600 text-white rounded-lg shadow">
-                  {t('product.save')} {discountPercent}%
-                </span>
-              ) : null}
-
-              {product.isNewArrival && (
-                <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-neutral-900 text-white rounded-lg shadow">
-                  {t('product.newSeason')}
-                </span>
-              )}
             </div>
-
-            {/* Wishlist Button */}
-            <button
-              onClick={() => toggleWishlist(product.id)}
-              className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} p-3 rounded-full backdrop-blur-md shadow-md transition-all ${
-                inWishlist
-                  ? 'bg-white text-rose-600'
-                  : 'bg-white/80 text-neutral-700 hover:bg-white hover:text-neutral-950'
-              }`}
-              aria-label="Toggle Wishlist"
-            >
-              <Heart className={`w-5 h-5 ${inWishlist ? 'fill-rose-500' : ''}`} />
-            </button>
-          </div>
+          )}
         </div>
 
         {/* Right Column: Product Info & Purchase Form (5 cols) */}

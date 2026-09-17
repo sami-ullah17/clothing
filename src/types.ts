@@ -33,6 +33,7 @@ export interface Product {
   isNewArrival?: boolean;
   isBestSeller?: boolean;
   isSale?: boolean;
+  salePercentage?: number;
   description: string;
   details: string[];
   composition: string;

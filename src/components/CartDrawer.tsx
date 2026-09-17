@@ -14,6 +14,7 @@ import {
   Tag,
   Check,
   MessageCircle,
+  Shirt,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -156,11 +157,18 @@ export const CartDrawer: React.FC = () => {
                   key={item.id}
                   className="flex gap-4 p-3.5 rounded-2xl border border-neutral-100 bg-white hover:border-neutral-200 transition-colors shadow-sm"
                 >
-                  <img
-                    src={item.product.images[0]}
-                    alt={localizedName}
-                    className="w-20 h-24 object-cover rounded-xl bg-neutral-100 flex-shrink-0"
-                  />
+                  {item.product.images && item.product.images.length > 0 ? (
+                    <img
+                      src={item.product.images[0]}
+                      alt={localizedName}
+                      className="w-20 h-24 object-cover rounded-xl bg-neutral-100 flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-20 h-24 rounded-xl bg-gradient-to-br from-neutral-100 to-amber-50/50 border border-neutral-200/80 flex flex-col items-center justify-center text-amber-800 flex-shrink-0">
+                      <Shirt className="w-6 h-6 text-neutral-600" />
+                      <span className="text-[8px] font-bold text-neutral-500 mt-1">Boutique</span>
+                    </div>
+                  )}
 
                   <div className="flex-1 flex flex-col justify-between">
                     <div>

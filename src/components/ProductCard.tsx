@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Product, ProductColor, Size } from '../types';
 import { useShop } from '../context/ShopContext';
-import { Heart, Star, ShoppingBag, Eye, Check, AlertTriangle } from 'lucide-react';
+import { Heart, Star, ShoppingBag, Eye, Check, AlertTriangle, Shirt } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface ProductCardProps {
@@ -64,12 +64,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         className="relative aspect-[3/4] w-full overflow-hidden bg-neutral-100 cursor-pointer"
         onClick={() => openProductDetails(product)}
       >
-        <img
-          src={product.images[currentImageIndex] || product.images[0]}
-          alt={localizedName}
-          className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-          loading="lazy"
-        />
+        {product.images && product.images.length > 0 ? (
+          <img
+            src={product.images[currentImageIndex] || product.images[0]}
+            alt={localizedName}
+            className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-neutral-100 via-stone-50 to-amber-50/40 p-6 text-center select-none">
+            <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-neutral-200/80 flex items-center justify-center text-amber-800 mb-2.5 group-hover:scale-110 transition-transform">
+              <Shirt className="w-7 h-7 text-neutral-700" />
+            </div>
+            <span className="text-xs font-serif-luxury font-bold text-neutral-900 tracking-wide line-clamp-1">
+              {localizedName}
+            </span>
+            <span className="text-[10px] text-amber-900 font-semibold uppercase tracking-wider mt-0.5">
+              Pri-Buteeq
+            </span>
+            <span className="text-[9px] text-neutral-400 mt-1">
+              Pakpattan Collection
+            </span>
+          </div>
+        )}
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
@@ -79,9 +96,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </span>
           ) : (
             <>
-              {product.discountPrice && (
-                <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-rose-600 text-white rounded-md shadow-sm">
-                  -{discountPercent}% {t('card.sale')}
+              {(product.isSale || product.discountPrice) && (
+                <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-rose-600 text-white rounded-md shadow-sm flex items-center gap-1">
+                  <span>🔥 -{product.salePercentage || discountPercent}%</span>
+                  <span>{t('card.sale')}</span>
                 </span>
               )}
               {product.isNewArrival && (
@@ -89,7 +107,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   {t('card.new')}
                 </span>
               )}
-              {product.isBestSeller && !product.discountPrice && (
+              {product.isBestSeller && !product.discountPrice && !product.isSale && (
                 <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-amber-700 text-white rounded-md shadow-sm">
                   {t('card.bestseller')}
                 </span>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { MessageCircle, X, MapPin, User, Phone, CheckCircle2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { MessageCircle, X, MapPin, User, Phone, CheckCircle2, ShoppingBag, ArrowRight, Shirt } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export const WhatsAppOrderModal: React.FC = () => {
@@ -240,12 +240,16 @@ export const WhatsAppOrderModal: React.FC = () => {
                   {orderItems.map((item, idx) => (
                     <div key={idx} className="pt-2 first:pt-0 flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2.5">
-                        {item.image && (
+                        {item.image ? (
                           <img
                             src={item.image}
                             alt={item.productName}
-                            className="w-8 h-10 object-cover rounded-lg border border-neutral-200"
+                            className="w-8 h-10 object-cover rounded-lg border border-neutral-200 flex-shrink-0"
                           />
+                        ) : (
+                          <div className="w-8 h-10 rounded-lg bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-500 flex-shrink-0">
+                            <Shirt className="w-4 h-4" />
+                          </div>
                         )}
                         <div>
                           <p className="font-semibold text-neutral-900 line-clamp-1">

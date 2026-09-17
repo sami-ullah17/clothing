@@ -10,11 +10,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     discountPrice: 22900,
     rating: 4.9,
     reviewCount: 42,
-    images: [
-      'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Camel', hex: '#C19A6B' },
       { name: 'Charcoal', hex: '#36454F' },
@@ -63,11 +59,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     discountPrice: 14900,
     rating: 4.8,
     reviewCount: 67,
-    images: [
-      'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Champagne', hex: '#F7E7CE' },
       { name: 'Emerald', hex: '#046307' },
@@ -106,10 +98,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     price: 24500,
     rating: 4.9,
     reviewCount: 53,
-    images: [
-      'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Oatmeal', hex: '#E3DAC9' },
       { name: 'Warm Cream', hex: '#FFFDD0' },
@@ -137,10 +126,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     price: 7900,
     rating: 4.7,
     reviewCount: 88,
-    images: [
-      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Sky Blue', hex: '#87CEEB' },
       { name: 'Optic White', hex: '#FFFFFF' },
@@ -169,10 +155,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     discountPrice: 11500,
     rating: 4.8,
     reviewCount: 39,
-    images: [
-      'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1551803091-e20673f15770?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Taupe Melange', hex: '#8B8589' },
       { name: 'Classic Black', hex: '#1C1C1C' },
@@ -201,10 +184,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     discountPrice: 39500,
     rating: 5.0,
     reviewCount: 31,
-    images: [
-      'https://images.unsplash.com/photo-1521223890158-f9f7c3d5d504?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Washed Black', hex: '#222222' },
       { name: 'Dark Cognac', hex: '#5C3317' },
@@ -232,10 +212,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     discountPrice: 6900,
     rating: 4.9,
     reviewCount: 45,
-    images: [
-      'https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Mustard Yellow', hex: '#FFDB58' },
       { name: 'Forest Green', hex: '#228B22' },
@@ -263,10 +240,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     price: 9500,
     rating: 4.7,
     reviewCount: 94,
-    images: [
-      'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Heather Grey', hex: '#A8A9AD' },
       { name: 'Washed Olive', hex: '#556B2F' },
@@ -294,10 +268,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     price: 5500,
     rating: 4.8,
     reviewCount: 38,
-    images: [
-      'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Terracotta', hex: '#E2725B' },
       { name: 'Sage Green', hex: '#9CAF88' },
@@ -326,10 +297,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     discountPrice: 25500,
     rating: 4.9,
     reviewCount: 51,
-    images: [
-      'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Heritage Khaki', hex: '#BDB76B' },
       { name: 'Obsidian Black', hex: '#1B1B1B' },
@@ -356,10 +324,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     price: 15500,
     rating: 4.6,
     reviewCount: 74,
-    images: [
-      'https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1582552938357-32b906df40cb?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Raw Indigo', hex: '#1F2937' },
       { name: 'Washed Medium Blue', hex: '#4A6984' },
@@ -388,10 +353,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     discountPrice: 4800,
     rating: 4.9,
     reviewCount: 29,
-    images: [
-      'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1471286174890-9c112ffca564?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Blush Pink', hex: '#FFD1DC' },
       { name: 'Ivory White', hex: '#FFFFF0' },
@@ -419,10 +381,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     price: 13500,
     rating: 4.8,
     reviewCount: 40,
-    images: [
-      'https://images.unsplash.com/photo-1614676471928-2ed0ad1061a4?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1516257984-b1b4d707412e?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Espresso Brown', hex: '#3E2723' },
       { name: 'Dark Olive', hex: '#3B4D3C' },
@@ -451,10 +410,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     discountPrice: 8500,
     rating: 4.7,
     reviewCount: 36,
-    images: [
-      'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Botanical Noir', hex: '#2C3539' },
       { name: 'Floral Cream', hex: '#FFF8DC' },
@@ -481,10 +437,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     price: 4200,
     rating: 4.7,
     reviewCount: 52,
-    images: [
-      'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1471286174890-9c112ffca564?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Classic Khaki', hex: '#C3B091' },
       { name: 'Deep Navy', hex: '#1F2937' },
@@ -512,10 +465,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     price: 16500,
     rating: 4.8,
     reviewCount: 44,
-    images: [
-      'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1000&q=80',
-    ],
+    images: [],
     colors: [
       { name: 'Crisp White', hex: '#FFFFFF' },
       { name: 'Sky Stripe', hex: '#779ECB' },

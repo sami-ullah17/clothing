@@ -23,6 +23,7 @@ export interface Product {
   isNewArrival?: boolean;
   isBestSeller?: boolean;
   isSale?: boolean;
+  salePercentage?: number;
   description: string;
   details: string[];
   composition: string;
@@ -561,6 +562,37 @@ class Database {
       return true;
     }
     return false;
+  }
+
+  clearDemoPhotos(): number {
+    let count = 0;
+    this.data.products = this.data.products.map((prod) => {
+      // Remove Unsplash demo images
+      const cleanedImages = (prod.images || []).filter(
+        (img) => !img.includes('images.unsplash.com')
+      );
+      const cleanedColors = (prod.colors || []).map((col) => {
+        if (col.image && col.image.includes('images.unsplash.com')) {
+          return { ...col, image: undefined };
+        }
+        return col;
+      });
+      if (cleanedImages.length !== (prod.images || []).length) {
+        count++;
+      }
+      return {
+        ...prod,
+        images: cleanedImages,
+        colors: cleanedColors,
+      };
+    });
+    this.persist();
+    return count;
+  }
+
+  clearAllProducts(): void {
+    this.data.products = [];
+    this.persist();
   }
 
   // Orders

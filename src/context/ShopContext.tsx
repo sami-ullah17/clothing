@@ -8,8 +8,10 @@ import {
   Order,
   Address,
   PageView,
-  PaymentMethod,
-  PaymentDetails,
+  StoreSettings,
+  CustomerOrder,
+  OrderStatus,
+  AdminUser,
 } from '../types';
 import { SAMPLE_PRODUCTS } from '../data/products';
 import {
@@ -29,19 +31,81 @@ interface Toast {
 export const FREE_SHIPPING_THRESHOLD_PKR = 4999;
 export const STANDARD_SHIPPING_PKR = 250;
 
+export const DEFAULT_STORE_SETTINGS: StoreSettings = {
+  storeName: 'Pri-Buteeq',
+  storeTagline: 'Contemporary Haute Couture & Luxury Pret',
+  storeDescription: 'Exclusive designer collection crafted with exceptional artisanal fabrics and timeless silhouettes.',
+  storeLogo: '',
+  whatsappNumber: '923001234567',
+  instagramUrl: 'https://instagram.com/pributeeq',
+  tiktokUrl: 'https://tiktok.com/@pributeeq',
+  address: 'Pakpattan, Punjab, Pakistan',
+  currency: 'PKR',
+  currencySymbol: 'Rs.',
+};
+
+interface WhatsAppModalPayload {
+  product?: Product;
+  color?: ProductColor;
+  size?: Size;
+  quantity?: number;
+  fromCart?: boolean;
+}
+
 interface ShopContextType {
   // Language & i18n
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string, fallback?: string) => string;
   isRTL: boolean;
-  getProductName: (product: Product) => string;
-  getSubcategoryName: (sub: string) => string;
+  getProductName: (product: Product | { id: string; name: string }, fallbackName?: string) => string;
+  getSubcategoryName: (sub: string, fallbackSub?: string) => string;
 
   // Currency & Formatting
   currency: 'PKR' | 'USD';
   setCurrency: (curr: 'PKR' | 'USD') => void;
   formatPrice: (amount: number) => string;
+
+  // Store Settings (Managed via Admin Dashboard)
+  settings: StoreSettings;
+  updateStoreSettings: (partial: Partial<StoreSettings>) => Promise<boolean>;
+
+  // Products (Database Synced)
+  products: Product[];
+  isLoadingProducts: boolean;
+  refreshProducts: () => Promise<void>;
+  addProduct: (productData: Omit<Product, 'id'> & { id?: string }) => Promise<Product | null>;
+  updateProduct: (id: string, updates: Partial<Product>) => Promise<Product | null>;
+  deleteProduct: (id: string) => Promise<boolean>;
+
+  // Admin Authentication & Session
+  adminUser: AdminUser | null;
+  adminLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  adminLogout: () => void;
+  isAdminAuthenticated: boolean;
+
+  // Customer Orders (Database Synced for Admin & Customer)
+  orders: CustomerOrder[];
+  refreshOrders: () => Promise<void>;
+  createCustomerOrder: (orderData: {
+    customerName: string;
+    phone: string;
+    whatsappNumber?: string;
+    deliveryAddress: string;
+    city: string;
+    items: Array<{
+      productId: string;
+      productName: string;
+      color: string;
+      size: string;
+      quantity: number;
+      price: number;
+      image?: string;
+    }>;
+    totalAmount: number;
+    notes?: string;
+  }) => Promise<CustomerOrder | null>;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<boolean>;
 
   // Cart
   cart: CartItem[];
@@ -70,21 +134,22 @@ interface ShopContextType {
   selectedProduct: Product | null;
   openProductDetails: (product: Product) => void;
 
-  // User & Auth
+  // Customer Account (Optional for guest)
   user: User | null;
   login: (email: string, name: string, phone?: string, city?: string) => void;
   logout: () => void;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
 
-  // Checkout
-  isCheckoutOpen: boolean;
-  setIsCheckoutOpen: (open: boolean) => void;
-  placeOrder: (
-    address: Address,
-    paymentMethod: PaymentMethod,
-    paymentDetails?: PaymentDetails
-  ) => Order;
+  // WhatsApp Order Flow
+  isWhatsAppModalOpen: boolean;
+  setIsWhatsAppModalOpen: (open: boolean) => void;
+  whatsAppPayload: WhatsAppModalPayload | null;
+  openWhatsAppOrder: (payload: WhatsAppModalPayload) => void;
+  getCleanWhatsAppNumber: () => string;
+  buildProductWhatsAppMessage: (product: Product, colorName: string, size: string, quantity: number, orderId?: string) => string;
+  buildCartWhatsAppMessage: (items: CartItem[], grandTotal: number, orderId?: string) => string;
+  launchDirectWhatsApp: (message: string) => void;
 
   // Search
   searchQuery: string;
@@ -92,7 +157,7 @@ interface ShopContextType {
   isSearchOpen: boolean;
   setIsSearchOpen: (open: boolean) => void;
 
-  // Quick View / Modal
+  // Quick View
   quickViewProduct: Product | null;
   setQuickViewProduct: (product: Product | null) => void;
 
@@ -129,42 +194,345 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Sync document direction and language code
   useEffect(() => {
     const rtl = language === 'ur' || language === 'pa' || language === 'ar';
     document.documentElement.dir = rtl ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
   }, [language]);
 
-  // Translation helper
   const t = (key: string, fallback?: string): string => {
     return TRANSLATIONS[language]?.[key] ?? TRANSLATIONS['en']?.[key] ?? fallback ?? key;
   };
 
-  // Localized product name helper
-  const getProductName = (product: Product): string => {
-    return PRODUCT_NAME_TRANSLATIONS[language]?.[product.id] ?? product.name;
+  const getProductName = (product: Product | { id: string; name: string }, fallbackName?: string): string => {
+    const id = product.id;
+    return PRODUCT_NAME_TRANSLATIONS[language]?.[id] ?? product.name ?? fallbackName ?? 'Garment';
   };
 
-  // Localized subcategory name helper
-  const getSubcategoryName = (sub: string): string => {
-    return SUBCATEGORY_TRANSLATIONS[language]?.[sub] ?? sub;
+  const getSubcategoryName = (sub: string, fallbackSub?: string): string => {
+    return SUBCATEGORY_TRANSLATIONS[language]?.[sub] ?? sub ?? fallbackSub ?? 'Apparel';
   };
 
-  // Currency state (Default PKR as requested by user)
+  // Currency
   const [currency, setCurrency] = useState<'PKR' | 'USD'>('PKR');
 
-  // Helper to format prices
   const formatPrice = (amount: number): string => {
     if (currency === 'PKR') {
       return `Rs. ${Math.round(amount).toLocaleString('en-PK')}`;
     }
-    // approximate conversion if user switches to USD
     const inUsd = (amount / 280).toFixed(0);
     return `$${inUsd}`;
   };
 
-  // Initialize cart from localStorage
+  // Store Settings
+  const [settings, setSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(data);
+      }
+    } catch (err) {
+      console.warn('Could not fetch settings from backend:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  // Admin User & Auth
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('pributeeq_admin_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const adminLogin = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Invalid credentials' };
+      }
+
+      const adminObj: AdminUser = {
+        email: data.user.email,
+        role: 'owner',
+        token: data.token,
+      };
+
+      setAdminUser(adminObj);
+      try {
+        localStorage.setItem('pributeeq_admin_user', JSON.stringify(adminObj));
+        localStorage.setItem('pributeeq_admin_token', data.token);
+      } catch (e) {
+        console.warn('Failed to store admin credentials:', e);
+      }
+
+      showToast('Welcome back, Store Owner!', 'success');
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error during login' };
+    }
+  };
+
+  const adminLogout = () => {
+    setAdminUser(null);
+    try {
+      localStorage.removeItem('pributeeq_admin_user');
+      localStorage.removeItem('pributeeq_admin_token');
+    } catch (e) {
+      console.warn('Failed to remove admin token:', e);
+    }
+    setCurrentView('home');
+    showToast('Admin logged out successfully', 'info');
+  };
+
+  const updateStoreSettings = async (partial: Partial<StoreSettings>): Promise<boolean> => {
+    try {
+      const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(partial),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setSettings(updated);
+        showToast('Store settings updated successfully!', 'success');
+        return true;
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to update settings', 'error');
+        return false;
+      }
+    } catch (err) {
+      showToast('Network error while saving settings', 'error');
+      return false;
+    }
+  };
+
+  // Products State
+  const [products, setProducts] = useState<Product[]>(SAMPLE_PRODUCTS);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+
+  const refreshProducts = async () => {
+    setIsLoadingProducts(true);
+    try {
+      const res = await fetch('/api/products');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setProducts(data);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch products from backend, using current state:', err);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshProducts();
+  }, []);
+
+  const addProduct = async (productData: Omit<Product, 'id'> & { id?: string }): Promise<Product | null> => {
+    try {
+      const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(productData),
+      });
+
+      if (res.ok) {
+        const newProduct = await res.json();
+        setProducts((prev) => [newProduct, ...prev]);
+        showToast(`Product "${newProduct.name}" added!`, 'success');
+        return newProduct;
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to add product', 'error');
+        return null;
+      }
+    } catch (err) {
+      showToast('Network error adding product', 'error');
+      return null;
+    }
+  };
+
+  const updateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
+    try {
+      const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+        if (selectedProduct && selectedProduct.id === id) {
+          setSelectedProduct(updated);
+        }
+        showToast('Product successfully updated', 'success');
+        return updated;
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to update product', 'error');
+        return null;
+      }
+    } catch (err) {
+      showToast('Network error updating product', 'error');
+      return null;
+    }
+  };
+
+  const deleteProduct = async (id: string): Promise<boolean> => {
+    try {
+      const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        setProducts((prev) => prev.filter((p) => p.id !== id));
+        if (selectedProduct && selectedProduct.id === id) {
+          setSelectedProduct(null);
+          setCurrentView('home');
+        }
+        showToast('Product deleted', 'info');
+        return true;
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to delete product', 'error');
+        return false;
+      }
+    } catch (err) {
+      showToast('Network error deleting product', 'error');
+      return false;
+    }
+  };
+
+  // Orders State (Database Synced)
+  const [orders, setOrders] = useState<CustomerOrder[]>([]);
+
+  const refreshOrders = async () => {
+    try {
+      const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
+      if (!token) return;
+      const res = await fetch('/api/orders', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch orders:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (adminUser) {
+      refreshOrders();
+    }
+  }, [adminUser]);
+
+  const createCustomerOrder = async (orderData: {
+    customerName: string;
+    phone: string;
+    whatsappNumber?: string;
+    deliveryAddress: string;
+    city: string;
+    items: Array<{
+      productId: string;
+      productName: string;
+      color: string;
+      size: string;
+      quantity: number;
+      price: number;
+      image?: string;
+    }>;
+    totalAmount: number;
+    notes?: string;
+  }): Promise<CustomerOrder | null> => {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
+      });
+
+      if (res.ok) {
+        const newOrder = await res.json();
+        setOrders((prev) => [newOrder, ...prev]);
+        return newOrder;
+      }
+      return null;
+    } catch (err) {
+      console.error('Error logging order to database:', err);
+      return null;
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, status: OrderStatus): Promise<boolean> => {
+    try {
+      const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
+      const res = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setOrders((prev) => prev.map((o) => (o.id === orderId ? updated : o)));
+        showToast(`Order ${orderId} marked as ${status}`, 'success');
+        return true;
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to update order status', 'error');
+        return false;
+      }
+    } catch (err) {
+      showToast('Network error updating status', 'error');
+      return false;
+    }
+  };
+
+  // Cart
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem('stylenest_cart');
@@ -174,7 +542,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
-  // Initialize wishlist from localStorage
   const [wishlist, setWishlist] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('stylenest_wishlist');
@@ -184,7 +551,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
-  // Initialize user from localStorage
   const [user, setUser] = useState<User | null>(() => {
     try {
       const saved = localStorage.getItem('stylenest_user');
@@ -201,16 +567,17 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // WhatsApp Modal State
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [whatsAppPayload, setWhatsAppPayload] = useState<WhatsAppModalPayload | null>(null);
+
   const [promoCode, setPromoCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
-
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  // Persistence effects
   useEffect(() => {
     try {
       localStorage.setItem('stylenest_cart', JSON.stringify(cart));
@@ -227,43 +594,35 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [wishlist]);
 
-  useEffect(() => {
-    try {
-      if (user) {
-        localStorage.setItem('stylenest_user', JSON.stringify(user));
-      } else {
-        localStorage.removeItem('stylenest_user');
-      }
-    } catch (e) {
-      console.warn('Unable to persist user', e);
-    }
-  }, [user]);
-
-  // Toast notification system
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 5);
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
   };
 
   const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Cart operations
   const addToCart = (
     product: Product,
     size: Size = product.sizes[0] || 'M',
     color: ProductColor = product.colors[0],
     quantity: number = 1
   ) => {
+    // Check stock
+    if (product.stock <= 0 || product.status === 'out_of_stock') {
+      showToast(`Sorry, "${product.name}" is currently Out of Stock.`, 'error');
+      return;
+    }
+
     const itemId = `${product.id}-${size}-${color.name}`;
-    setCart(prev => {
-      const existing = prev.find(item => item.id === itemId);
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === itemId);
       if (existing) {
-        return prev.map(item =>
+        return prev.map((item) =>
           item.id === itemId ? { ...item, quantity: item.quantity + quantity } : item
         );
       } else {
@@ -280,7 +639,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    showToast(`Added ${quantity}x "${product.name}" (${size}, ${color.name}) to cart`);
+    showToast(`Added ${quantity}x "${product.name}" (${size}, ${color.name}) to bag`);
   };
 
   const updateCartQuantity = (itemId: string, newQty: number) => {
@@ -288,13 +647,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       removeFromCart(itemId);
       return;
     }
-    setCart(prev =>
-      prev.map(item => (item.id === itemId ? { ...item, quantity: newQty } : item))
+    setCart((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, quantity: newQty } : item))
     );
   };
 
   const removeFromCart = (itemId: string) => {
-    setCart(prev => prev.filter(item => item.id !== itemId));
+    setCart((prev) => prev.filter((item) => item.id !== itemId));
     showToast('Item removed from bag', 'info');
   };
 
@@ -328,14 +687,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Wishlist operations
   const toggleWishlist = (productId: string) => {
-    const product = SAMPLE_PRODUCTS.find(p => p.id === productId);
-    setWishlist(prev => {
+    const product = products.find((p) => p.id === productId);
+    setWishlist((prev) => {
       const exists = prev.includes(productId);
       if (exists) {
         showToast(product ? `Removed "${product.name}" from wishlist` : 'Removed from wishlist', 'info');
-        return prev.filter(id => id !== productId);
+        return prev.filter((id) => id !== productId);
       } else {
         showToast(product ? `Saved "${product.name}" to wishlist` : 'Added to wishlist', 'success');
         return [...prev, productId];
@@ -345,19 +703,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
-  // User authentication
   const login = (email: string, name: string, phone?: string, city?: string) => {
     const existingOrders = user?.orders || [];
     const updatedUser: User = {
       name,
       email,
       phone: phone || user?.phone || '0300-1234567',
-      city: city || user?.city || 'Lahore',
+      city: city || user?.city || 'Pakpattan',
       orders: existingOrders,
     };
     setUser(updatedUser);
     setIsAuthModalOpen(false);
-    showToast(`Welcome to StyleNest, ${name}!`, 'success');
+    showToast(`Welcome to ${settings.storeName}, ${name}!`, 'success');
   };
 
   const logout = () => {
@@ -365,49 +722,86 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showToast('Signed out successfully', 'info');
   };
 
-  // Order placement
-  const placeOrder = (
-    address: Address,
-    paymentMethod: PaymentMethod = 'jazzcash',
-    paymentDetails?: PaymentDetails
-  ): Order => {
-    const shipping = cartSubtotal >= FREE_SHIPPING_THRESHOLD_PKR ? 0 : STANDARD_SHIPPING_PKR;
-    const orderTotal = Math.max(0, cartSubtotal - discountAmount + shipping);
-    const orderId = 'PK-' + Math.floor(100000 + Math.random() * 900000);
-
-    const newOrder: Order = {
-      id: orderId,
-      date: new Date().toLocaleDateString('en-PK', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }),
-      items: [...cart],
-      subtotal: cartSubtotal,
-      discount: discountAmount,
-      shipping,
-      total: orderTotal,
-      status: 'Processing',
-      shippingAddress: address,
-      paymentMethod,
-      paymentDetails,
-    };
-
-    if (user) {
-      setUser({
-        ...user,
-        orders: [newOrder, ...user.orders],
-      });
-    }
-
-    clearCart();
-    return newOrder;
-  };
-
   const openProductDetails = (product: Product) => {
     setSelectedProduct(product);
     setCurrentView('product-detail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // WhatsApp Operations
+  const getCleanWhatsAppNumber = (): string => {
+    const raw = settings.whatsappNumber || '923001234567';
+    // Clean all non-digit characters
+    let digits = raw.replace(/\D/g, '');
+    // If starts with 0 (e.g. 03001234567), replace leading 0 with 92
+    if (digits.startsWith('0')) {
+      digits = '92' + digits.slice(1);
+    }
+    // If lacks country code and is 10 digits (e.g. 3001234567), prepend 92
+    if (digits.length === 10 && !digits.startsWith('92')) {
+      digits = '92' + digits;
+    }
+    return digits;
+  };
+
+  const buildProductWhatsAppMessage = (
+    product: Product,
+    colorName: string,
+    size: string,
+    quantity: number,
+    orderId?: string
+  ): string => {
+    const unitPrice = product.discountPrice ?? product.price;
+    const total = unitPrice * quantity;
+
+    let msg = `Hello, I want to place an order.\n\n`;
+    if (orderId) {
+      msg += `Order ID: ${orderId}\n`;
+    }
+    msg += `Product: ${product.name}\n`;
+    msg += `Color: ${colorName}\n`;
+    msg += `Size: ${size}\n`;
+    msg += `Quantity: ${quantity}\n`;
+    msg += `Price: ${formatPrice(unitPrice)} each\n`;
+    msg += `Total: ${formatPrice(total)}\n\n`;
+    msg += `Please confirm my order.`;
+
+    return msg;
+  };
+
+  const buildCartWhatsAppMessage = (
+    items: CartItem[],
+    grandTotal: number,
+    orderId?: string
+  ): string => {
+    let msg = `Hello, I want to place this order:\n\n`;
+    if (orderId) {
+      msg += `Order ID: ${orderId}\n\n`;
+    }
+
+    items.forEach((item, index) => {
+      const unitPrice = item.product.discountPrice ?? item.product.price;
+      msg += `${index + 1}. ${item.product.name}\n`;
+      msg += `Color: ${item.selectedColor.name}\n`;
+      msg += `Size: ${item.selectedSize}\n`;
+      msg += `Quantity: ${item.quantity}\n`;
+      msg += `Price: ${formatPrice(unitPrice * item.quantity)}\n\n`;
+    });
+
+    msg += `Total: ${formatPrice(grandTotal)}\n\n`;
+    msg += `Please confirm my order.`;
+    return msg;
+  };
+
+  const launchDirectWhatsApp = (message: string) => {
+    const cleanNumber = getCleanWhatsAppNumber();
+    const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const openWhatsAppOrder = (payload: WhatsAppModalPayload) => {
+    setWhatsAppPayload(payload);
+    setIsWhatsAppModalOpen(true);
   };
 
   return (
@@ -422,6 +816,22 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currency,
         setCurrency,
         formatPrice,
+        settings,
+        updateStoreSettings,
+        products,
+        isLoadingProducts,
+        refreshProducts,
+        addProduct,
+        updateProduct,
+        deleteProduct,
+        adminUser,
+        adminLogin,
+        adminLogout,
+        isAdminAuthenticated: !!adminUser,
+        orders,
+        refreshOrders,
+        createCustomerOrder,
+        updateOrderStatus,
         cart,
         addToCart,
         updateCartQuantity,
@@ -448,9 +858,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         isAuthModalOpen,
         setIsAuthModalOpen,
-        isCheckoutOpen,
-        setIsCheckoutOpen,
-        placeOrder,
+        isWhatsAppModalOpen,
+        setIsWhatsAppModalOpen,
+        whatsAppPayload,
+        openWhatsAppOrder,
+        getCleanWhatsAppNumber,
+        buildProductWhatsAppMessage,
+        buildCartWhatsAppMessage,
+        launchDirectWhatsApp,
         searchQuery,
         setSearchQuery,
         isSearchOpen,

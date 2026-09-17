@@ -1,6 +1,5 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
-import { SAMPLE_PRODUCTS } from '../data/products';
 import { Heart, X, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -9,6 +8,7 @@ export const WishlistDrawer: React.FC = () => {
     isWishlistOpen,
     setIsWishlistOpen,
     wishlist,
+    products,
     toggleWishlist,
     addToCart,
     openProductDetails,
@@ -22,7 +22,7 @@ export const WishlistDrawer: React.FC = () => {
 
   if (!isWishlistOpen) return null;
 
-  const wishlistProducts = SAMPLE_PRODUCTS.filter((p) => wishlist.includes(p.id));
+  const wishlistProducts = products.filter((p) => wishlist.includes(p.id));
 
   return (
     <div className={`fixed inset-0 z-50 flex ${isRTL ? 'justify-start' : 'justify-end'} bg-neutral-950/60 backdrop-blur-sm transition-opacity`}>

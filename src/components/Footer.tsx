@@ -1,208 +1,134 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
-import { PageView } from '../types';
-import { Heart, ShieldCheck, Instagram, Facebook, Twitter } from 'lucide-react';
+import {
+  MapPin,
+  MessageCircle,
+  Instagram,
+  Lock,
+  ExternalLink,
+  ShieldCheck,
+  Truck,
+} from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { setCurrentView, t } = useShop();
+  const { settings, setCurrentView, getCleanWhatsAppNumber } = useShop();
 
-  const handleNav = (view: PageView) => {
-    setCurrentView(view);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleOpenWhatsApp = () => {
+    const cleanNumber = getCleanWhatsAppNumber();
+    window.open(`https://wa.me/${cleanNumber}`, '_blank', 'noopener,noreferrer');
   };
 
   return (
     <footer id="main-footer" className="bg-neutral-950 text-neutral-300 pt-16 pb-12 border-t border-neutral-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-14 border-b border-neutral-800/80">
-          {/* Brand Column */}
-          <div className="lg:col-span-2">
-            <button
-              onClick={() => handleNav('home')}
-              className="flex items-baseline gap-1 text-left mb-4 group"
-            >
-              <span className="font-serif-luxury text-2xl sm:text-3xl font-bold tracking-tight text-white group-hover:text-neutral-200 transition-colors">
-                StyleNest
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-neutral-800/80">
+          {/* Column 1: Brand & Description */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-baseline gap-1">
+              <span className="font-serif-luxury text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                {settings.storeName}
               </span>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-600 mb-1" />
-            </button>
-            <p className="text-neutral-400 text-sm leading-relaxed max-w-sm mb-6">
-              {t('footer.about')}
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 mb-1" />
+            </div>
+
+            <p className="text-neutral-400 text-sm leading-relaxed max-w-md">
+              {settings.storeDescription ||
+                'Exclusive contemporary haute couture and bespoke luxury apparel crafted with exceptional artisanal fabrics and timeless aesthetics.'}
             </p>
-            <div className="flex items-center gap-3 text-neutral-400">
-              <a
-                href="#instagram"
-                onClick={(e) => e.preventDefault()}
-                className="w-9 h-9 rounded-full bg-neutral-900 hover:bg-neutral-800 hover:text-white flex items-center justify-center transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a
-                href="#facebook"
-                onClick={(e) => e.preventDefault()}
-                className="w-9 h-9 rounded-full bg-neutral-900 hover:bg-neutral-800 hover:text-white flex items-center justify-center transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a
-                href="#twitter"
-                onClick={(e) => e.preventDefault()}
-                className="w-9 h-9 rounded-full bg-neutral-900 hover:bg-neutral-800 hover:text-white flex items-center justify-center transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-4 h-4" />
-              </a>
+
+            {/* Nationwide delivery note */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-neutral-400">
+              <Truck className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+              <span>Fast Doorstep Delivery Across Pakistan</span>
             </div>
           </div>
 
-          {/* Shop Column */}
-          <div>
-            <h4 className="font-bold text-xs uppercase tracking-widest text-white mb-4">
-              {t('footer.collections')}
+          {/* Column 2: Location & WhatsApp Inquiry */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-xs uppercase tracking-widest text-white">
+              Boutique Location
             </h4>
-            <ul className="space-y-2.5 text-sm text-neutral-400">
-              <li>
+            <div className="space-y-3 text-sm text-neutral-400">
+              <div className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <span className="text-neutral-200 font-medium">
+                  {settings.address || 'Pakpattan, Punjab, Pakistan'}
+                </span>
+              </div>
+
+              <div className="pt-2">
+                <p className="text-xs text-neutral-500 mb-2">Order & Inquiry Line:</p>
                 <button
-                  onClick={() => handleNav('women')}
-                  className="hover:text-white transition-colors"
+                  onClick={handleOpenWhatsApp}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
                 >
-                  {t('nav.women')}
+                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <span>+{settings.whatsappNumber}</span>
                 </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNav('men')}
-                  className="hover:text-white transition-colors"
-                >
-                  {t('nav.men')}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNav('kids')}
-                  className="hover:text-white transition-colors"
-                >
-                  {t('nav.kids')}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNav('new-arrivals')}
-                  className="hover:text-white transition-colors flex items-center gap-1.5"
-                >
-                  <span>{t('nav.newArrivals')}</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNav('sale')}
-                  className="hover:text-rose-400 transition-colors"
-                >
-                  {t('nav.sale')} (-40%)
-                </button>
-              </li>
-            </ul>
+              </div>
+            </div>
           </div>
 
-          {/* Customer Care Column */}
-          <div>
-            <h4 className="font-bold text-xs uppercase tracking-widest text-white mb-4">
-              {t('footer.concierge')}
+          {/* Column 3: Social Media & Owner Portal */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-xs uppercase tracking-widest text-white">
+              Connect With Us
             </h4>
-            <ul className="space-y-2.5 text-sm text-neutral-400">
-              <li>
-                <button
-                  onClick={() => handleNav('contact')}
-                  className="hover:text-white transition-colors"
-                >
-                  {t('footer.contactStores')}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNav('contact')}
-                  className="hover:text-white transition-colors"
-                >
-                  {t('footer.shipping')}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNav('contact')}
-                  className="hover:text-white transition-colors"
-                >
-                  {t('footer.returns')}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNav('contact')}
-                  className="hover:text-white transition-colors"
-                >
-                  {t('footer.sustainability')}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => handleNav('contact')}
-                  className="hover:text-white transition-colors"
-                >
-                  {t('footer.faq')}
-                </button>
-              </li>
-            </ul>
-          </div>
 
-          {/* Store Flags & Hours */}
-          <div>
-            <h4 className="font-bold text-xs uppercase tracking-widest text-white mb-4">
-              {t('footer.pakistanStores')}
-            </h4>
-            <div className="text-sm text-neutral-400 space-y-2">
-              <p className="text-neutral-200 font-medium">{t('footer.lahoreStore')}</p>
-              <p>{t('footer.lahoreAddress')}</p>
-              <p className="text-neutral-200 font-medium pt-1">{t('footer.karachiStore')}</p>
-              <p>{t('footer.karachiAddress')}</p>
-              <p className="pt-2 text-xs text-neutral-500">
-                {t('footer.hours')}
-              </p>
-              <p className="pt-1 text-xs text-neutral-400">
-                {t('footer.helpline')}
-              </p>
+            <div className="flex flex-col gap-2.5 text-xs text-neutral-400">
+              {settings.instagramUrl && (
+                <a
+                  href={settings.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 hover:text-white transition-colors border border-neutral-800/80 group"
+                >
+                  <Instagram className="w-4 h-4 text-pink-400 group-hover:scale-110 transition-transform" />
+                  <span>Follow on Instagram</span>
+                  <ExternalLink className="w-3 h-3 ml-auto text-neutral-600" />
+                </a>
+              )}
+
+              {settings.tiktokUrl && (
+                <a
+                  href={settings.tiktokUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 hover:text-white transition-colors border border-neutral-800/80 group"
+                >
+                  <span className="font-black text-sm text-neutral-200">#</span>
+                  <span>Follow on TikTok</span>
+                  <ExternalLink className="w-3 h-3 ml-auto text-neutral-600" />
+                </a>
+              )}
+
+              {/* Owner Access Portal */}
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    setCurrentView('admin');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="inline-flex items-center gap-2 text-[11px] text-neutral-500 hover:text-amber-400 transition-colors py-1"
+                >
+                  <Lock className="w-3 h-3" />
+                  <span>Owner Admin Portal</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar: Copyright and Payment methods */}
+        {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
           <div className="flex items-center gap-2">
-            <span>© {new Date().getFullYear()} {t('footer.copyright')}</span>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1">
-              {t('footer.nationwide')}
-            </span>
+            <span>© {new Date().getFullYear()} {settings.storeName}. All rights reserved.</span>
+            <span>•</span>
+            <span>Pakpattan, Punjab, Pakistan</span>
           </div>
 
-          {/* Payment Badges in Pakistan */}
-          <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] text-neutral-300">
-            <span className="px-2.5 py-1 bg-red-950/80 text-red-300 rounded border border-red-800/80 font-bold">
-              JAZZCASH
-            </span>
-            <span className="px-2.5 py-1 bg-emerald-950/80 text-emerald-300 rounded border border-emerald-800/80 font-bold">
-              EASYPAISA
-            </span>
-            <span className="px-2.5 py-1 bg-blue-950/80 text-blue-300 rounded border border-blue-800/80 font-bold">
-              RAAST / BANK
-            </span>
-            <span className="px-2.5 py-1 bg-amber-950/80 text-amber-300 rounded border border-amber-800/80 font-bold">
-              COD (CASH ON DELIVERY)
-            </span>
-            <span className="px-2 py-1 bg-neutral-900 rounded border border-neutral-800">
-              VISA / 1LINK
-            </span>
+          <div className="flex items-center gap-3">
+            <span className="text-neutral-400 font-medium">Orders exclusively routed through WhatsApp</span>
           </div>
         </div>
       </div>

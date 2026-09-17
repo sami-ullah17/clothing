@@ -9,12 +9,23 @@ import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
 import { AuthModal } from './components/AuthModal';
-import { CheckoutModal } from './components/CheckoutModal';
+import { WhatsAppOrderModal } from './components/WhatsAppOrderModal';
 import { SearchBar } from './components/SearchBar';
 import { ToastContainer } from './components/ToastContainer';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 
 const AppContent: React.FC = () => {
   const { currentView, selectedProduct, isRTL, t } = useShop();
+
+  // If in Owner Admin view, render the dedicated full-screen Admin Dashboard
+  if (currentView === 'admin') {
+    return (
+      <div dir="ltr" className="min-h-screen bg-neutral-100 text-neutral-900 font-sans">
+        <AdminDashboard />
+        <ToastContainer />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -90,7 +101,7 @@ const AppContent: React.FC = () => {
       <CartDrawer />
       <WishlistDrawer />
       <AuthModal />
-      <CheckoutModal />
+      <WhatsAppOrderModal />
       <SearchBar />
       <ToastContainer />
 

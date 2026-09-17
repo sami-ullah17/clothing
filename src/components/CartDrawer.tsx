@@ -10,11 +10,10 @@ import {
   Plus,
   Minus,
   Trash2,
-  ArrowRight,
   Sparkles,
   Tag,
   Check,
-  ShieldCheck,
+  MessageCircle,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -29,9 +28,10 @@ export const CartDrawer: React.FC = () => {
     discountAmount,
     promoCode,
     applyPromo,
-    setIsCheckoutOpen,
+    openWhatsAppOrder,
     setCurrentView,
     formatPrice,
+    settings,
     t,
     isRTL,
     getProductName,
@@ -61,9 +61,9 @@ export const CartDrawer: React.FC = () => {
     setPromoMessage({ text: res.message, success: res.success });
   };
 
-  const handleProceedToCheckout = () => {
+  const handleOrderOnWhatsApp = () => {
     setIsCartOpen(false);
-    setIsCheckoutOpen(true);
+    openWhatsAppOrder({ fromCart: true });
   };
 
   return (
@@ -162,10 +162,10 @@ export const CartDrawer: React.FC = () => {
                     className="w-20 h-24 object-cover rounded-xl bg-neutral-100 flex-shrink-0"
                   />
 
-                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                  <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <h4 className="text-sm font-semibold text-neutral-900 truncate">
+                        <h4 className="text-xs font-bold text-neutral-900 leading-snug line-clamp-1">
                           {localizedName}
                         </h4>
                         <button
@@ -173,13 +173,11 @@ export const CartDrawer: React.FC = () => {
                           className="text-neutral-400 hover:text-rose-600 transition-colors p-0.5"
                           aria-label="Remove item"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
-                      <div className="flex items-center gap-2 mt-1 text-xs text-neutral-500">
-                        <span className="font-medium text-neutral-700">Size: {item.selectedSize}</span>
-                        <span>•</span>
+                      <div className="flex items-center gap-2 text-[11px] text-neutral-500 mt-1">
                         <span className="flex items-center gap-1">
                           <span
                             className="w-2.5 h-2.5 rounded-full border border-neutral-300"
@@ -187,11 +185,13 @@ export const CartDrawer: React.FC = () => {
                           />
                           <span>{item.selectedColor.name}</span>
                         </span>
+                        <span>•</span>
+                        <span>Size: <strong className="text-neutral-700">{item.selectedSize}</strong></span>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between mt-3">
-                      {/* Quantity Stepper */}
+                    <div className="flex items-center justify-between pt-2">
+                      {/* Quantity Controls */}
                       <div className="flex items-center border border-neutral-200 rounded-lg bg-neutral-50">
                         <button
                           onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
@@ -231,7 +231,7 @@ export const CartDrawer: React.FC = () => {
           )}
         </div>
 
-        {/* Cart Footer / Checkout Summary */}
+        {/* Cart Footer / WhatsApp Order Summary */}
         {cart.length > 0 && (
           <div className="border-t border-neutral-200 p-6 bg-neutral-50/70 space-y-4">
             {/* Promo Code Input */}
@@ -298,19 +298,18 @@ export const CartDrawer: React.FC = () => {
               </div>
             </div>
 
-            {/* Checkout Action Button */}
+            {/* WhatsApp Order Button */}
             <button
-              id="proceed-to-checkout-btn"
-              onClick={handleProceedToCheckout}
-              className="w-full py-3.5 bg-neutral-950 hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:shadow-xl active:scale-[0.99]"
+              id="order-on-whatsapp-cart-btn"
+              onClick={handleOrderOnWhatsApp}
+              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:shadow-xl active:scale-[0.99]"
             >
-              <span>{t('cart.checkout')}</span>
-              <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
+              <MessageCircle className="w-4 h-4 fill-white" />
+              <span>Order on WhatsApp • {formatPrice(grandTotal)}</span>
             </button>
 
             <div className="flex items-center justify-center gap-2 text-[11px] text-neutral-500">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>JazzCash • Easypaisa • Meezan Bank • COD</span>
+              <span>Direct WhatsApp inquiry with boutique: +{settings.whatsappNumber}</span>
             </div>
           </div>
         )}

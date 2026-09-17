@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Product, ProductColor, Size } from '../types';
 import { useShop } from '../context/ShopContext';
-import { Heart, Star, ShoppingBag, Eye, Check } from 'lucide-react';
+import { Heart, Star, ShoppingBag, Eye, Check, AlertTriangle } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface ProductCardProps {
@@ -18,6 +18,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     t,
     getProductName,
     getSubcategoryName,
+    showToast,
   } = useShop();
 
   const [selectedColor, setSelectedColor] = useState<ProductColor>(product.colors[0]);
@@ -26,6 +27,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const inWishlist = isInWishlist(product.id);
+  const isOutOfStock = product.stock <= 0 || product.status === 'out_of_stock';
 
   const discountPercent = product.discountPrice
     ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
@@ -33,6 +35,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isOutOfStock) {
+      showToast('Product is currently out of stock', 'error');
+      return;
+    }
     addToCart(product, selectedSize, selectedColor, 1);
     setIsSizeSelectorOpen(false);
   };
@@ -47,7 +53,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="group relative flex flex-col bg-white rounded-2xl border border-neutral-200/70 overflow-hidden hover:shadow-xl hover:border-neutral-300 transition-all duration-300"
+      className={`group relative flex flex-col bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${
+        isOutOfStock
+          ? 'border-neutral-200/50 opacity-90'
+          : 'border-neutral-200/70 hover:shadow-xl hover:border-neutral-300'
+      }`}
     >
       {/* Product Image Area */}
       <div
@@ -63,20 +73,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-          {product.discountPrice && (
+          {isOutOfStock ? (
             <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-rose-600 text-white rounded-md shadow-sm">
-              -{discountPercent}% {t('card.sale')}
+              Out of Stock
             </span>
-          )}
-          {product.isNewArrival && (
-            <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-neutral-900 text-white rounded-md shadow-sm">
-              {t('card.new')}
-            </span>
-          )}
-          {product.isBestSeller && !product.discountPrice && (
-            <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-amber-700 text-white rounded-md shadow-sm">
-              {t('card.bestseller')}
-            </span>
+          ) : (
+            <>
+              {product.discountPrice && (
+                <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-rose-600 text-white rounded-md shadow-sm">
+                  -{discountPercent}% {t('card.sale')}
+                </span>
+              )}
+              {product.isNewArrival && (
+                <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-neutral-900 text-white rounded-md shadow-sm">
+                  {t('card.new')}
+                </span>
+              )}
+              {product.isBestSeller && !product.discountPrice && (
+                <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider bg-amber-700 text-white rounded-md shadow-sm">
+                  {t('card.bestseller')}
+                </span>
+              )}
+            </>
           )}
         </div>
 
@@ -111,21 +129,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span>{t('card.viewDetails')}</span>
           </button>
 
-          <button
-            id={`quick-cart-btn-${product.id}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsSizeSelectorOpen(!isSizeSelectorOpen);
-            }}
-            className="p-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl shadow-lg flex items-center justify-center transition-colors"
-            aria-label="Add to cart"
-          >
-            <ShoppingBag className="w-4 h-4" />
-          </button>
+          {!isOutOfStock && (
+            <button
+              id={`quick-cart-btn-${product.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsSizeSelectorOpen(!isSizeSelectorOpen);
+              }}
+              className="p-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl shadow-lg flex items-center justify-center transition-colors"
+              aria-label="Add to cart"
+            >
+              <ShoppingBag className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Quick Size Picker popover */}
-        {isSizeSelectorOpen && (
+        {isSizeSelectorOpen && !isOutOfStock && (
           <div
             onClick={(e) => e.stopPropagation()}
             className="absolute inset-x-3 bottom-3 bg-white/95 backdrop-blur-md p-3 rounded-xl shadow-xl border border-neutral-200 z-30 animate-in fade-in zoom-in-95 duration-150"
@@ -246,14 +266,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             >
               <Eye className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => addToCart(product, selectedSize, selectedColor, 1)}
-              className="px-3 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg flex items-center gap-1 shadow-sm"
-              aria-label="Add to cart"
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span>{t('card.add')}</span>
-            </button>
+            {!isOutOfStock ? (
+              <button
+                onClick={() => addToCart(product, selectedSize, selectedColor, 1)}
+                className="px-3 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg flex items-center gap-1 shadow-sm"
+                aria-label="Add to cart"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>{t('card.add')}</span>
+              </button>
+            ) : (
+              <span className="px-2 py-1 text-[10px] font-bold bg-neutral-100 text-neutral-500 rounded">
+                Out
+              </span>
+            )}
           </div>
 
           {/* Desktop Direct "View Details" text link */}

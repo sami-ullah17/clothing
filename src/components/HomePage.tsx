@@ -1,6 +1,5 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
-import { SAMPLE_PRODUCTS } from '../data/products';
 import { HeroBanner } from './HeroBanner';
 import { FeaturedCategories } from './FeaturedCategories';
 import { ProductCard } from './ProductCard';
@@ -10,11 +9,11 @@ import { Newsletter } from './Newsletter';
 import { ArrowRight, Sparkles, Flame } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
-  const { setCurrentView, t, isRTL } = useShop();
+  const { products, setCurrentView, t, isRTL } = useShop();
 
-  // Curate New Arrivals and Best Sellers
-  const newArrivals = SAMPLE_PRODUCTS.filter((p) => p.isNewArrival).slice(0, 4);
-  const bestSellers = SAMPLE_PRODUCTS.filter((p) => p.isBestSeller).slice(0, 4);
+  // Curate New Arrivals and Best Sellers from dynamic products
+  const newArrivals = products.filter((p) => p.isNewArrival).slice(0, 4);
+  const bestSellers = products.filter((p) => p.isBestSeller).slice(0, 4);
 
   return (
     <div id="home-page" className="space-y-0">

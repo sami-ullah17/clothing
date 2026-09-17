@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { useShop } from '../context/ShopContext';
-import { SAMPLE_PRODUCTS } from '../data/products';
 import { Size, SortOption, PageView } from '../types';
 import { ProductCard } from './ProductCard';
 import { FilterSidebar } from './FilterSidebar';
@@ -22,7 +21,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   forceOnlySale = false,
   forceOnlyNew = false,
 }) => {
-  const { currentView, setCurrentView, t, isRTL, getSubcategoryName } = useShop();
+  const { products, currentView, setCurrentView, t, isRTL, getSubcategoryName } = useShop();
 
   // Filters
   const [category, setCategory] = useState<string>(initialCategory);
@@ -82,7 +81,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
 
   // Filter and sort computation
   const filteredProducts = useMemo(() => {
-    return SAMPLE_PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       // Category filter
       if (category !== 'all' && product.category !== category) {
         return false;

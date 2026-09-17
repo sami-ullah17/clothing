@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { useShop } from '../context/ShopContext';
-import { SAMPLE_PRODUCTS } from '../data/products';
 import { Search, X, ArrowRight, Tag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -10,6 +9,7 @@ export const SearchBar: React.FC = () => {
     setIsSearchOpen,
     searchQuery,
     setSearchQuery,
+    products,
     openProductDetails,
     formatPrice,
     t,
@@ -45,7 +45,7 @@ export const SearchBar: React.FC = () => {
   const cleanQuery = searchQuery.trim().toLowerCase();
 
   const filteredProducts = cleanQuery
-    ? SAMPLE_PRODUCTS.filter(
+    ? products.filter(
         (p) =>
           p.name.toLowerCase().includes(cleanQuery) ||
           p.subcategory.toLowerCase().includes(cleanQuery) ||

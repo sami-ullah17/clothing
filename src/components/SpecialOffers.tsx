@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useShop } from '../context/ShopContext';
-import { SAMPLE_PRODUCTS } from '../data/products';
 import { ProductCard } from './ProductCard';
 import { Flame, Clock, ArrowRight, Tag, Copy, Check } from 'lucide-react';
 
 export const SpecialOffers: React.FC = () => {
-  const { setCurrentView, showToast, applyPromo, t, isRTL } = useShop();
+  const { products, setCurrentView, showToast, applyPromo, t, isRTL } = useShop();
 
   // Interactive sale countdown timer
   const [timeLeft, setTimeLeft] = useState({
@@ -39,7 +38,7 @@ export const SpecialOffers: React.FC = () => {
     setTimeout(() => setIsCopied(false), 2500);
   };
 
-  const saleProducts = SAMPLE_PRODUCTS.filter(p => p.discountPrice).slice(0, 4);
+  const saleProducts = products.filter(p => p.discountPrice).slice(0, 4);
 
   return (
     <section id="special-offers-section" className="py-16 sm:py-20 bg-neutral-900 text-white relative overflow-hidden">

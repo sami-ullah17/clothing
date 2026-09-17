@@ -16,6 +16,7 @@ import {
   Percent,
   Globe,
   Check,
+  Lock,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -33,6 +34,7 @@ export const Navbar: React.FC = () => {
     setIsSearchOpen,
     language,
     setLanguage,
+    settings,
     t,
   } = useShop();
 
@@ -174,7 +176,7 @@ export const Navbar: React.FC = () => {
             className="flex items-baseline gap-1 group text-left"
           >
             <span className="font-serif-luxury text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 group-hover:text-neutral-800 transition-colors">
-              StyleNest
+              {settings.storeName}
             </span>
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-700 mb-1" />
           </button>
@@ -357,6 +359,16 @@ export const Navbar: React.FC = () => {
                 <span className="hidden sm:inline">{t('nav.signIn')}</span>
               </button>
             )}
+
+            {/* Owner Portal quick toggle */}
+            <button
+              onClick={() => handleNavClick('admin')}
+              title="Owner Portal"
+              className="p-2 text-neutral-400 hover:text-amber-700 hover:bg-amber-50 rounded-full transition-colors hidden sm:inline-flex"
+              aria-label="Owner Admin Portal"
+            >
+              <Lock className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </nav>
@@ -442,6 +454,21 @@ export const Navbar: React.FC = () => {
                 >
                   <Heart className="w-4 h-4" />
                   <span>{t('wishlist.title')} ({wishlist.length})</span>
+                </button>
+              </div>
+
+              <div className="pt-2 border-t border-neutral-100">
+                <button
+                  onClick={() => handleNavClick('admin')}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold text-neutral-800 bg-neutral-100/70 hover:bg-neutral-200/80 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-amber-700" />
+                    <span>Owner Admin Portal</span>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded">
+                    Admin
+                  </span>
                 </button>
               </div>
             </div>

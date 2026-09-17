@@ -1,6 +1,6 @@
 {
   "name": "StyleNest",
-  "description": "A modern, professional clothing e-commerce store featuring contemporary fashion for Men, Women, and Kids.",
+  "description": "A luxury clothing boutique e-commerce store with Owner Admin Dashboard, dynamic WhatsApp ordering, multilingual support (English, Urdu, Punjabi, Arabic), based in Pakpattan, Punjab, Pakistan.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

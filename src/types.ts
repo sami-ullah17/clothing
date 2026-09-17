@@ -1,10 +1,11 @@
 export type Category = 'men' | 'women' | 'kids';
 
-export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
+export type Size = string;
 
 export interface ProductColor {
   name: string;
   hex: string;
+  image?: string;
 }
 
 export interface Review {
@@ -36,6 +37,7 @@ export interface Product {
   details: string[];
   composition: string;
   stock: number;
+  status?: 'in_stock' | 'out_of_stock';
   reviews?: Review[];
 }
 
@@ -45,6 +47,51 @@ export interface CartItem {
   selectedSize: Size;
   selectedColor: ProductColor;
   quantity: number;
+}
+
+export interface StoreSettings {
+  storeName: string;
+  storeTagline: string;
+  storeDescription: string;
+  storeLogo: string;
+  whatsappNumber: string;
+  instagramUrl: string;
+  tiktokUrl: string;
+  address: string;
+  currency: string;
+  currencySymbol: string;
+}
+
+export type OrderStatus = 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+
+export interface CustomerOrderItem {
+  productId: string;
+  productName: string;
+  color: string;
+  size: string;
+  quantity: number;
+  price: number;
+  image?: string;
+}
+
+export interface CustomerOrder {
+  id: string;
+  customerName: string;
+  phone: string;
+  whatsappNumber: string;
+  deliveryAddress: string;
+  city: string;
+  items: CustomerOrderItem[];
+  totalAmount: number;
+  date: string;
+  status: OrderStatus;
+  notes?: string;
+}
+
+export interface AdminUser {
+  email: string;
+  role: 'owner';
+  token: string;
 }
 
 export interface Address {
@@ -58,17 +105,6 @@ export interface Address {
   country: string;
 }
 
-export type PaymentMethod = 'jazzcash' | 'easypaisa' | 'bank_transfer' | 'cod' | 'card';
-
-export interface PaymentDetails {
-  method: PaymentMethod;
-  mobileNumber?: string;
-  accountTitle?: string;
-  bankName?: string;
-  transactionRef?: string;
-  lastFourDigits?: string;
-}
-
 export interface Order {
   id: string;
   date: string;
@@ -77,10 +113,8 @@ export interface Order {
   discount: number;
   shipping: number;
   total: number;
-  status: 'Processing' | 'Shipped' | 'Delivered';
+  status: OrderStatus;
   shippingAddress: Address;
-  paymentMethod: PaymentMethod;
-  paymentDetails?: PaymentDetails;
 }
 
 export interface User {
@@ -91,7 +125,7 @@ export interface User {
   orders: Order[];
 }
 
-export type PageView = 'home' | 'men' | 'women' | 'kids' | 'new-arrivals' | 'sale' | 'contact' | 'product-detail';
+export type PageView = 'home' | 'men' | 'women' | 'kids' | 'new-arrivals' | 'sale' | 'contact' | 'product-detail' | 'admin';
 
 export type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'rating';
 
@@ -104,3 +138,4 @@ export interface FilterState {
   onlySale: boolean;
   onlyNew: boolean;
 }
+

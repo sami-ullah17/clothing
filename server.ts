@@ -105,6 +105,8 @@ app.put('/api/settings', requireAdmin, (req: Request, res: Response) => {
     'storeDescription',
     'storeLogo',
     'whatsappNumber',
+    'whatsappNumbers',
+    'whatsappLabels',
     'instagramUrl',
     'tiktokUrl',
     'address',

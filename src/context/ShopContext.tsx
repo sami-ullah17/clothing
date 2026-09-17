@@ -35,8 +35,12 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   storeName: 'Pri-Buteeq',
   storeTagline: 'Contemporary Haute Couture & Luxury Pret',
   storeDescription: 'Exclusive designer collection crafted with exceptional artisanal fabrics and timeless silhouettes.',
-  storeLogo: '',
-  whatsappNumber: '923001234567',
+  storeLogo: '/pributeeq_logo.jpg',
+  whatsappNumber: '923291171812',
+  whatsappNumbers: ['923291171812'],
+  whatsappLabels: {
+    '923291171812': 'Pri-Buteeq Official Line',
+  },
   instagramUrl: 'https://instagram.com/pributeeq',
   tiktokUrl: 'https://tiktok.com/@pributeeq',
   address: 'Pakpattan, Punjab, Pakistan',
@@ -148,10 +152,11 @@ interface ShopContextType {
   setIsWhatsAppModalOpen: (open: boolean) => void;
   whatsAppPayload: WhatsAppModalPayload | null;
   openWhatsAppOrder: (payload: WhatsAppModalPayload) => void;
-  getCleanWhatsAppNumber: () => string;
+  getCleanWhatsAppNumber: (targetNumber?: string) => string;
+  getActiveWhatsAppLines: () => Array<{ number: string; cleanNumber: string; label: string; isPrimary: boolean }>;
   buildProductWhatsAppMessage: (product: Product, colorName: string, size: string, quantity: number, orderId?: string) => string;
   buildCartWhatsAppMessage: (items: CartItem[], grandTotal: number, orderId?: string) => string;
-  launchDirectWhatsApp: (message: string) => void;
+  launchDirectWhatsApp: (message: string, targetNumber?: string) => void;
 
   // Search
   searchQuery: string;
@@ -783,19 +788,54 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // WhatsApp Operations
-  const getCleanWhatsAppNumber = (): string => {
-    const raw = settings.whatsappNumber || '923001234567';
+  const getCleanWhatsAppNumber = (targetNumber?: string): string => {
+    const raw = targetNumber || settings.whatsappNumber || '923291171812';
     // Clean all non-digit characters
     let digits = raw.replace(/\D/g, '');
-    // If starts with 0 (e.g. 03001234567), replace leading 0 with 92
+    // If starts with 0 (e.g. 03291171812), replace leading 0 with 92
     if (digits.startsWith('0')) {
       digits = '92' + digits.slice(1);
     }
-    // If lacks country code and is 10 digits (e.g. 3001234567), prepend 92
+    // If lacks country code and is 10 digits (e.g. 3291171812), prepend 92
     if (digits.length === 10 && !digits.startsWith('92')) {
       digits = '92' + digits;
     }
-    return digits;
+    return digits || '923291171812';
+  };
+
+  const getActiveWhatsAppLines = (): Array<{ number: string; cleanNumber: string; label: string; isPrimary: boolean }> => {
+    const primaryClean = getCleanWhatsAppNumber(settings.whatsappNumber);
+    const list: Array<{ number: string; cleanNumber: string; label: string; isPrimary: boolean }> = [];
+
+    // Collect all unique configured numbers
+    const rawList = Array.isArray(settings.whatsappNumbers) && settings.whatsappNumbers.length > 0
+      ? settings.whatsappNumbers
+      : [settings.whatsappNumber || '923291171812'];
+
+    rawList.forEach((num, idx) => {
+      const clean = getCleanWhatsAppNumber(num);
+      if (!list.some(item => item.cleanNumber === clean)) {
+        const customLabel = settings.whatsappLabels?.[num] || settings.whatsappLabels?.[clean];
+        const defaultLabel = idx === 0 ? 'Pri-Buteeq Official Line' : `Pri-Buteeq Order Line ${idx + 1}`;
+        list.push({
+          number: num,
+          cleanNumber: clean,
+          label: customLabel || defaultLabel,
+          isPrimary: clean === primaryClean || idx === 0,
+        });
+      }
+    });
+
+    if (list.length === 0) {
+      list.push({
+        number: '923291171812',
+        cleanNumber: '923291171812',
+        label: 'Pri-Buteeq Official Line',
+        isPrimary: true,
+      });
+    }
+
+    return list;
   };
 
   const buildProductWhatsAppMessage = (
@@ -808,7 +848,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unitPrice = product.discountPrice ?? product.price;
     const total = unitPrice * quantity;
 
-    let msg = `Hello, I want to place an order.\n\n`;
+    let msg = `Hello, I want to place an order at Pri-Buteeq.\n\n`;
     if (orderId) {
       msg += `Order ID: ${orderId}\n`;
     }
@@ -818,7 +858,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     msg += `Quantity: ${quantity}\n`;
     msg += `Price: ${formatPrice(unitPrice)} each\n`;
     msg += `Total: ${formatPrice(total)}\n\n`;
-    msg += `Please confirm my order.`;
+    msg += `Please confirm my order with Pri-Buteeq.`;
 
     return msg;
   };
@@ -828,7 +868,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     grandTotal: number,
     orderId?: string
   ): string => {
-    let msg = `Hello, I want to place this order:\n\n`;
+    let msg = `Hello, I want to place this order at Pri-Buteeq:\n\n`;
     if (orderId) {
       msg += `Order ID: ${orderId}\n\n`;
     }
@@ -843,12 +883,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     msg += `Total: ${formatPrice(grandTotal)}\n\n`;
-    msg += `Please confirm my order.`;
+    msg += `Please confirm my order with Pri-Buteeq.`;
     return msg;
   };
 
-  const launchDirectWhatsApp = (message: string) => {
-    const cleanNumber = getCleanWhatsAppNumber();
+  const launchDirectWhatsApp = (message: string, targetNumber?: string) => {
+    const cleanNumber = getCleanWhatsAppNumber(targetNumber);
     const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -919,6 +959,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         whatsAppPayload,
         openWhatsAppOrder,
         getCleanWhatsAppNumber,
+        getActiveWhatsAppLines,
         buildProductWhatsAppMessage,
         buildCartWhatsAppMessage,
         launchDirectWhatsApp,

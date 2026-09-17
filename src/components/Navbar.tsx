@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import { PageView } from '../types';
 import { SUPPORTED_LANGUAGES, Language } from '../i18n/translations';
+import { PriButeeqLogo } from './PriButeeqLogo';
 import {
   ShoppingBag,
   Heart,
@@ -173,12 +174,10 @@ export const Navbar: React.FC = () => {
           <button
             id="navbar-brand-logo"
             onClick={() => handleNavClick('home')}
-            className="flex items-baseline gap-1 group text-left"
+            className="group focus:outline-none"
+            aria-label="Pri-Buteeq Home"
           >
-            <span className="font-serif-luxury text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 group-hover:text-neutral-800 transition-colors">
-              {settings.storeName}
-            </span>
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-700 mb-1" />
+            <PriButeeqLogo variant="navbar" showSubtext={true} />
           </button>
         </div>
 

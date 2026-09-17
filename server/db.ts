@@ -46,6 +46,8 @@ export interface StoreSettings {
   storeDescription: string;
   storeLogo: string;
   whatsappNumber: string;
+  whatsappNumbers?: string[];
+  whatsappLabels?: Record<string, string>;
   instagramUrl: string;
   tiktokUrl: string;
   address: string;
@@ -99,8 +101,12 @@ const DEFAULT_SETTINGS: StoreSettings = {
   storeName: 'Pri-Buteeq',
   storeTagline: 'Contemporary Haute Couture & Luxury Pret',
   storeDescription: 'Exclusive designer collection crafted with exceptional artisanal fabrics and timeless silhouettes.',
-  storeLogo: '',
-  whatsappNumber: '923001234567',
+  storeLogo: '/pributeeq_logo.jpg',
+  whatsappNumber: '923291171812',
+  whatsappNumbers: ['923291171812'],
+  whatsappLabels: {
+    '923291171812': 'Pri-Buteeq Official Line',
+  },
   instagramUrl: 'https://instagram.com/pributeeq',
   tiktokUrl: 'https://tiktok.com/@pributeeq',
   address: 'Pakpattan, Punjab, Pakistan',

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
+import { PriButeeqLogo } from './PriButeeqLogo';
 import {
   MapPin,
   MessageCircle,
@@ -24,12 +25,7 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-neutral-800/80">
           {/* Column 1: Brand & Description */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-baseline gap-1">
-              <span className="font-serif-luxury text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                {settings.storeName}
-              </span>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 mb-1" />
-            </div>
+            <PriButeeqLogo variant="footer" showSubtext={true} />
 
             <p className="text-neutral-400 text-sm leading-relaxed max-w-md">
               {settings.storeDescription ||
@@ -60,10 +56,11 @@ export const Footer: React.FC = () => {
                 <p className="text-xs text-neutral-500 mb-2">Order & Inquiry Line:</p>
                 <button
                   onClick={handleOpenWhatsApp}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 group"
+                  aria-label="Contact Pri-Buteeq on WhatsApp"
                 >
-                  <MessageCircle className="w-4 h-4 fill-white" />
-                  <span>+{settings.whatsappNumber}</span>
+                  <MessageCircle className="w-4 h-4 fill-white flex-shrink-0" />
+                  <span>Pri-Buteeq Official WhatsApp</span>
                 </button>
               </div>
             </div>

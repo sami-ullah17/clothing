@@ -56,6 +56,8 @@ export interface StoreSettings {
   storeDescription: string;
   storeLogo: string;
   whatsappNumber: string;
+  whatsappNumbers?: string[];
+  whatsappLabels?: Record<string, string>;
   instagramUrl: string;
   tiktokUrl: string;
   address: string;

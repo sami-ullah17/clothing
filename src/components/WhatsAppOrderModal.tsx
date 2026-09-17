@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { MessageCircle, X, MapPin, User, Phone, CheckCircle2, ShoppingBag, ArrowRight, Shirt } from 'lucide-react';
+import { PriButeeqLogo } from './PriButeeqLogo';
+import { MessageCircle, X, MapPin, User, Phone, CheckCircle2, ShoppingBag, ArrowRight, Shirt, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export const WhatsAppOrderModal: React.FC = () => {
@@ -16,9 +17,14 @@ export const WhatsAppOrderModal: React.FC = () => {
     settings,
     formatPrice,
     getCleanWhatsAppNumber,
+    getActiveWhatsAppLines,
     showToast,
     user,
   } = useShop();
+
+  const activeLines = getActiveWhatsAppLines();
+  const primaryLine = activeLines.find(l => l.isPrimary)?.cleanNumber || activeLines[0]?.cleanNumber || '923291171812';
+  const [selectedLineClean, setSelectedLineClean] = useState<string>(primaryLine);
 
   // Customer form inputs
   const [customerName, setCustomerName] = useState(user?.name || '');
@@ -146,8 +152,8 @@ export const WhatsAppOrderModal: React.FC = () => {
       message += `\nPlease confirm my order.`;
     }
 
-    // 3. Launch WhatsApp link
-    const cleanNumber = getCleanWhatsAppNumber();
+    // 3. Launch WhatsApp link using selected Pri-Buteeq line (masked from customer)
+    const cleanNumber = getCleanWhatsAppNumber(selectedLineClean);
     const waUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
 
@@ -158,7 +164,7 @@ export const WhatsAppOrderModal: React.FC = () => {
 
     setCompletedOrderId(generatedOrderId);
     setIsSubmitting(false);
-    showToast('Order successfully prepared for WhatsApp!', 'success');
+    showToast('Order successfully prepared for Pri-Buteeq WhatsApp!', 'success');
   };
 
   const handleClose = () => {
@@ -176,18 +182,8 @@ export const WhatsAppOrderModal: React.FC = () => {
           className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden my-8"
         >
           {/* Header */}
-          <div className="bg-emerald-600 px-6 py-5 text-white flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
-                <MessageCircle className="w-5 h-5 text-white fill-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg leading-tight">Order via WhatsApp</h3>
-                <p className="text-xs text-emerald-100">
-                  Direct inquiry with {settings.storeName} ({settings.whatsappNumber})
-                </p>
-              </div>
-            </div>
+          <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-700 px-6 py-5 text-white flex items-center justify-between border-b border-emerald-800">
+            <PriButeeqLogo variant="modal" />
             <button
               onClick={handleClose}
               className="p-1.5 rounded-full hover:bg-white/20 text-white transition-colors"
@@ -355,6 +351,38 @@ export const WhatsAppOrderModal: React.FC = () => {
                 </div>
               </div>
 
+              {/* Multi-desk routing if owner configured multiple lines (numbers masked from customer) */}
+              {activeLines.length > 1 && (
+                <div className="space-y-2 p-3 bg-neutral-50 rounded-2xl border border-neutral-200/80">
+                  <label className="block text-[11px] font-semibold text-neutral-700">
+                    Route Order to Pri-Buteeq Desk:
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {activeLines.map((line) => {
+                      const isSelected = selectedLineClean === line.cleanNumber;
+                      return (
+                        <button
+                          key={line.cleanNumber}
+                          type="button"
+                          onClick={() => setSelectedLineClean(line.cleanNumber)}
+                          className={`p-2.5 rounded-xl border text-left flex items-center justify-between text-xs transition-all ${
+                            isSelected
+                              ? 'border-emerald-600 bg-emerald-50 text-emerald-950 font-bold'
+                              : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-600' : 'bg-neutral-300'}`} />
+                            <span className="truncate">{line.label}</span>
+                          </div>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Submit CTA */}
               <div className="pt-2">
                 <button
@@ -363,10 +391,10 @@ export const WhatsAppOrderModal: React.FC = () => {
                   className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
                 >
                   <MessageCircle className="w-4 h-4 fill-white" />
-                  <span>Send Order via WhatsApp • {formatPrice(grandTotal)}</span>
+                  <span>Send Order to Pri-Buteeq on WhatsApp • {formatPrice(grandTotal)}</span>
                 </button>
                 <p className="text-[10px] text-center text-neutral-400 mt-2">
-                  Clicking will open your WhatsApp with all item specifications pre-filled.
+                  Opens WhatsApp with pre-filled specifications for instant boutique confirmation.
                 </p>
               </div>
             </form>

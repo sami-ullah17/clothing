@@ -313,11 +313,12 @@ export const CartDrawer: React.FC = () => {
               className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:shadow-xl active:scale-[0.99]"
             >
               <MessageCircle className="w-4 h-4 fill-white" />
-              <span>Order on WhatsApp • {formatPrice(grandTotal)}</span>
+              <span>Order via Pri-Buteeq WhatsApp • {formatPrice(grandTotal)}</span>
             </button>
 
             <div className="flex items-center justify-center gap-2 text-[11px] text-neutral-500">
-              <span>Direct WhatsApp inquiry with boutique: +{settings.whatsappNumber}</span>
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>Direct order & concierge desk: Pri-Buteeq Official</span>
             </div>
           </div>
         )}

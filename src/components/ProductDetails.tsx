@@ -483,7 +483,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product: initial
               <span>
                 {isOutOfStock
                   ? 'Currently Out of Stock'
-                  : `Order on WhatsApp • ${formatPrice(currentPrice * quantity)}`}
+                  : `Order via Pri-Buteeq WhatsApp • ${formatPrice(currentPrice * quantity)}`}
               </span>
             </button>
           </div>

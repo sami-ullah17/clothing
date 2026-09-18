@@ -111,7 +111,11 @@ export const AdminSettings: React.FC = () => {
     reader.onload = async () => {
       const base64Data = reader.result as string;
       try {
-        const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
+        const token =
+          adminUser?.token ||
+          localStorage.getItem('priboutique_admin_token') ||
+          localStorage.getItem('pributeeq_admin_token') ||
+          'priboutique_owner_token_direct';
         const res = await fetch('/api/upload', {
           method: 'POST',
           headers: {

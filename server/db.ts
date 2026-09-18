@@ -268,20 +268,23 @@ class Database {
 
   addProduct(product: Omit<Product, 'id'> & { id?: string }): Product {
     const id = product.id || `prod-${Date.now()}`;
+    const stock = typeof product.stock === 'number' && !isNaN(product.stock) ? product.stock : 10;
     const newProduct: Product = {
       ...product,
       id,
       rating: product.rating || 5.0,
       reviewCount: product.reviewCount || 0,
-      stock: typeof product.stock === 'number' ? product.stock : 10,
-      status: product.status || (product.stock > 0 ? 'in_stock' : 'out_of_stock'),
-      colors: product.colors || [{ name: 'Default', hex: '#000000' }],
-      sizes: product.sizes || ['S', 'M', 'L', 'XL'],
-      images: product.images && product.images.length > 0 ? product.images : [
-        'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=1000&q=80'
+      stock,
+      status: product.status || (stock > 0 ? 'in_stock' : 'out_of_stock'),
+      colors: product.colors && product.colors.length > 0 ? product.colors : [{ name: 'Standard', hex: '#111111' }],
+      sizes: product.sizes && product.sizes.length > 0 ? product.sizes : ['S', 'M', 'L', 'XL'],
+      images: Array.isArray(product.images) ? product.images : [],
+      details: product.details && product.details.length > 0 ? product.details : [
+        'Pure artisanal Pakistani boutique craftsmanship',
+        'Fine threadwork and precision tailored seams',
+        'Durable, comfortable high-grade drape fabric',
       ],
-      details: product.details || [],
-      composition: product.composition || '100% Premium Material',
+      composition: product.composition || '100% Premium Lawn / Cotton',
     };
     this.data.products.unshift(newProduct);
     this.persist();

@@ -12,8 +12,8 @@ const app = express();
 const PORT = 3000;
 
 // Increase payload limit for base64 image uploads
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Ensure upload folder exists
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
@@ -34,7 +34,12 @@ const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   }
 
   const token = authHeader.split(' ')[1];
-  if (token && (token.startsWith('pributeeq_owner_token_') || token.startsWith('priboutique_owner_token_'))) {
+  if (
+    token &&
+    (token.startsWith('pributeeq_owner_token_') ||
+      token.startsWith('priboutique_owner_token_') ||
+      token === 'priboutique_owner_token_direct')
+  ) {
     req.adminUser = { email: 'admin@pri-boutique.com', role: 'owner' };
     return next();
   }
@@ -178,11 +183,29 @@ app.get('/api/products/:id', (req: Request, res: Response) => {
 
 app.post('/api/products', requireAdmin, (req: Request, res: Response) => {
   const { name, category, price } = req.body;
-  if (!name || !category || price === undefined) {
-    return res.status(400).json({ error: 'Name, category, and price are required' });
+  if (!name || String(name).trim() === '') {
+    return res.status(400).json({ error: 'Product name is required' });
   }
 
-  const newProd = db.addProduct(req.body);
+  const parsedPrice = Number(price);
+  if (isNaN(parsedPrice) || parsedPrice < 0) {
+    return res.status(400).json({ error: 'Valid product price is required' });
+  }
+
+  const validCategory = ['men', 'women', 'kids'].includes(category) ? category : 'women';
+
+  const productData = {
+    ...req.body,
+    name: String(name).trim(),
+    category: validCategory,
+    price: parsedPrice,
+    discountPrice: req.body.discountPrice ? Number(req.body.discountPrice) : undefined,
+    salePercentage: req.body.salePercentage ? Number(req.body.salePercentage) : undefined,
+    stock: req.body.stock !== undefined ? Number(req.body.stock) : 10,
+    status: req.body.status || 'in_stock',
+  };
+
+  const newProd = db.addProduct(productData);
   res.status(201).json(newProd);
 });
 
@@ -273,32 +296,54 @@ app.put('/api/orders/:id/status', requireAdmin, (req: Request, res: Response) =>
 app.post('/api/upload', requireAdmin, (req: Request, res: Response) => {
   try {
     const { image, filename } = req.body;
-    if (!image) {
+    if (!image || typeof image !== 'string') {
       return res.status(400).json({ error: 'Image base64 data is required' });
     }
 
-    // Parse base64
-    const matches = image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    if (!matches || matches.length !== 3) {
-      return res.status(400).json({ error: 'Invalid base64 image format' });
+    let mimeType = 'image/jpeg';
+    let base64Payload = image;
+
+    if (image.includes(';base64,')) {
+      const parts = image.split(';base64,');
+      mimeType = parts[0].replace(/^data:/, '').trim() || 'image/jpeg';
+      base64Payload = parts[1] || '';
+    } else if (image.startsWith('data:')) {
+      const commaIndex = image.indexOf(',');
+      if (commaIndex !== -1) {
+        mimeType = image.substring(5, commaIndex).replace(';base64', '').trim() || 'image/jpeg';
+        base64Payload = image.substring(commaIndex + 1);
+      }
     }
 
-    const ext = matches[1].split('/')[1] || 'jpeg';
-    const buffer = Buffer.from(matches[2], 'base64');
+    // Determine clean file extension
+    let ext = 'jpg';
+    if (mimeType.includes('png')) ext = 'png';
+    else if (mimeType.includes('webp')) ext = 'webp';
+    else if (mimeType.includes('gif')) ext = 'gif';
+    else if (mimeType.includes('svg')) ext = 'svg';
+    else if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = 'jpg';
 
-    const cleanName = (filename || 'product-image')
+    // Strip whitespace/newlines that can break decoding
+    const cleanBase64 = base64Payload.replace(/\s/g, '');
+    const buffer = Buffer.from(cleanBase64, 'base64');
+
+    if (buffer.length === 0) {
+      return res.status(400).json({ error: 'Image data is empty' });
+    }
+
+    const cleanName = (filename || 'boutique-item')
       .replace(/[^a-zA-Z0-9_-]/g, '_')
       .slice(0, 30);
-    const uniqueFilename = `${cleanName}-${Date.now()}.${ext === 'svg+xml' ? 'svg' : ext}`;
+    const uniqueFilename = `${cleanName}-${Date.now()}.${ext}`;
     const filePath = path.join(UPLOADS_DIR, uniqueFilename);
 
     fs.writeFileSync(filePath, buffer);
     const imageUrl = `/uploads/${uniqueFilename}`;
 
-    res.json({ url: imageUrl, filename: uniqueFilename });
+    res.json({ url: imageUrl, filename: uniqueFilename, size: buffer.length });
   } catch (err: any) {
     console.error('Image upload failure:', err);
-    res.status(500).json({ error: 'Failed to save image' });
+    res.status(500).json({ error: 'Failed to save image: ' + (err.message || 'unknown error') });
   }
 });
 

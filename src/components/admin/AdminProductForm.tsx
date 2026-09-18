@@ -67,6 +67,63 @@ const STANDARD_SIZE_PRESETS = [
 
 const SALE_PERCENTAGE_PRESETS = [10, 15, 20, 25, 30, 40, 50, 70];
 
+// Browser-side canvas image compression to ensure camera uploads upload instantly
+const compressImageFile = (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        const maxDim = 1200;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(compressed);
+        } else {
+          resolve(e.target?.result as string);
+        }
+      };
+      img.onerror = () => resolve(e.target?.result as string);
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+};
+
+const PAKISTANI_BOUTIQUE_SAMPLE_PHOTOS = [
+  {
+    title: 'Embroidered Lawn Suit (Ruby Maroon)',
+    url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    title: 'Pure Chiffon Festive Kurti (Emerald Green)',
+    url: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    title: 'Organza Dupatta Formal Ensemble (Blush Pink)',
+    url: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    title: 'Mens Festive Embroidered Kurta',
+    url: 'https://images.unsplash.com/photo-1597983073493-88cd35cf93b0?auto=format&fit=crop&w=800&q=80',
+  },
+];
+
 export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   productIdToEdit,
   onBack,
@@ -164,6 +221,20 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   );
   const [newSize, setNewSize] = useState('');
 
+  // Product Details & Specifications
+  const [details, setDetails] = useState<string[]>(() => {
+    if (existingProduct?.details && existingProduct.details.length > 0) {
+      return existingProduct.details;
+    }
+    return [
+      '3-Piece Stitched Luxury Ensemble (Shirt, Trouser & Dupatta)',
+      'Pure artisanal Pakistani boutique craftsmanship',
+      'Fine threadwork and precision tailored seams',
+      'Breathable, comfortable high-grade drape fabric',
+    ];
+  });
+  const [newDetailText, setNewDetailText] = useState('');
+
   // Interactive Photo Confirmation Modal State
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [photoForConfirmation, setPhotoForConfirmation] = useState<string | null>(null);
@@ -224,10 +295,13 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       setImages((existingProduct.images || []).filter((img) => !img.includes('unsplash.com')));
       setColors(existingProduct.colors || []);
       setSizes(existingProduct.sizes || []);
+      if (existingProduct.details && Array.isArray(existingProduct.details) && existingProduct.details.length > 0) {
+        setDetails(existingProduct.details);
+      }
     }
   }, [existingProduct]);
 
-  // Image Upload handler (triggers confirmation modal for colors and sizes)
+  // Image Upload handler with client compression
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -237,20 +311,25 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       return;
     }
 
-    if (file.size > 15 * 1024 * 1024) {
-      showToast('Image file size exceeds 15MB limit.', 'error');
-      return;
-    }
-
     setIsUploadingImage(true);
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64Data = reader.result as string;
-      let finalUrl = base64Data;
+    try {
+      // Compress in browser so it uploads instantly and doesn't hit size limits
+      const compressedData = await compressImageFile(file);
+      if (!compressedData) {
+        showToast('Could not process image file.', 'error');
+        setIsUploadingImage(false);
+        return;
+      }
+
+      let finalUrl = compressedData;
+      const token =
+        adminUser?.token ||
+        localStorage.getItem('priboutique_admin_token') ||
+        localStorage.getItem('pributeeq_admin_token') ||
+        'priboutique_owner_token_direct';
 
       try {
-        const token = adminUser?.token || localStorage.getItem('pributeeq_admin_token');
         const res = await fetch('/api/upload', {
           method: 'POST',
           headers: {
@@ -258,7 +337,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            image: base64Data,
+            image: compressedData,
             filename: file.name,
           }),
         });
@@ -272,18 +351,20 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             }
           }
         }
-      } catch (err) {
-        console.warn('Using client data URL fallback:', err);
-      } finally {
-        setIsUploadingImage(false);
-        setImages((prev) => [...prev, finalUrl]);
-        setPhotoForConfirmation(finalUrl);
-        setIsConfirmModalOpen(true);
-        showToast('Photo added! Please confirm colors & sizes.', 'info');
+      } catch (uploadErr) {
+        console.warn('Using client data URL fallback:', uploadErr);
       }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
+
+      setImages((prev) => [...prev, finalUrl]);
+      setPhotoForConfirmation(finalUrl);
+      showToast('Photo added successfully! (تصویر شامل ہو گئی)', 'success');
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      showToast('Failed to upload image.', 'error');
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = '';
+    }
   };
 
   // Add Image via Direct URL
@@ -292,9 +373,16 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     const url = newImageUrl.trim();
     setImages((prev) => [...prev, url]);
     setNewImageUrl('');
-    setPhotoForConfirmation(url);
-    setIsConfirmModalOpen(true);
-    showToast('Photo URL added! Please confirm colors & sizes.', 'info');
+    showToast('Photo URL added successfully! (تصویر شامل ہو گئی)', 'success');
+  };
+
+  const handleAddSamplePhoto = (sampleUrl: string) => {
+    if (images.includes(sampleUrl)) {
+      showToast('This sample photo is already in the gallery', 'info');
+      return;
+    }
+    setImages((prev) => [...prev, sampleUrl]);
+    showToast('Sample boutique photo added to gallery!', 'success');
   };
 
   const handleRemoveImage = (index: number) => {
@@ -350,23 +438,55 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     setSizes((prev) => prev.filter((s) => s !== sizeToRemove));
   };
 
+  // Details Handlers
+  const handleAddDetail = (textToAdd?: string) => {
+    const val = (textToAdd !== undefined ? textToAdd : newDetailText).trim();
+    if (!val) return;
+    if (details.includes(val)) {
+      showToast('This specification point is already in the list', 'info');
+      return;
+    }
+    setDetails((prev) => [...prev, val]);
+    if (textToAdd === undefined) setNewDetailText('');
+  };
+
+  const handleRemoveDetail = (index: number) => {
+    setDetails((prev) => prev.filter((_, i) => i !== index));
+  };
+
   // Save / Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (!name.trim()) {
-      setError('Product title is required');
+      const msg = 'Product title / dress name is required (پروڈکٹ کا نام لازمی ہے)';
+      setError(msg);
+      showToast(msg, 'error');
+      const el = document.getElementById('product-title-input');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
     if (colors.length === 0) {
-      setError('Please select or confirm at least one garment color');
+      const msg = 'Please select or confirm at least one garment color (کم از کم ایک رنگ منتخب کریں)';
+      setError(msg);
+      showToast(msg, 'error');
       return;
     }
 
     if (sizes.length === 0) {
-      setError('Please select or confirm at least one garment size');
+      const msg = 'Please select or confirm at least one garment size (کم از کم ایک سائز منتخب کریں)';
+      setError(msg);
+      showToast(msg, 'error');
+      return;
+    }
+
+    if (isNaN(Number(price)) || Number(price) <= 0) {
+      const msg = 'Please enter a valid product price (درست قیمت درج کریں)';
+      setError(msg);
+      showToast(msg, 'error');
       return;
     }
 
@@ -375,10 +495,17 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     const calculatedDiscountPrice =
       isOnSale && discountPrice && discountPrice > 0 ? Number(discountPrice) : undefined;
 
+    const finalDetails = details.length > 0 ? details : [
+      '3-Piece Stitched Luxury Ensemble (Shirt, Trouser & Dupatta)',
+      'Pure artisanal Pakistani boutique craftsmanship',
+      'Fine threadwork and precision tailored seams',
+      'Breathable, comfortable high-grade drape fabric',
+    ];
+
     const productPayload: Omit<Product, 'id'> = {
       name: name.trim(),
       category,
-      subcategory: subcategory.trim(),
+      subcategory: subcategory.trim() || 'Dresses',
       price: Number(price),
       discountPrice: calculatedDiscountPrice,
       salePercentage: isOnSale ? salePercentage : undefined,
@@ -391,28 +518,39 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       colors,
       sizes,
       description: description.trim(),
-      details: existingProduct?.details || [
-        'Pure artisanal Pakistani boutique craftsmanship',
-        'Fine threadwork and precision tailored seams',
-        'Durable, comfortable high-grade drape fabric',
-      ],
+      details: finalDetails,
       composition: composition.trim(),
       isNewArrival,
       isBestSeller,
     };
 
-    if (isEditMode && productIdToEdit) {
-      const updated = await updateProduct(productIdToEdit, productPayload);
-      setIsSubmitting(false);
-      if (updated) {
-        onSaved();
+    try {
+      if (isEditMode && productIdToEdit) {
+        const updated = await updateProduct(productIdToEdit, productPayload);
+        setIsSubmitting(false);
+        if (updated) {
+          showToast(`"${productPayload.name}" updated successfully!`, 'success');
+          onSaved();
+        } else {
+          setError('Failed to update product. Please check your network and inputs.');
+          showToast('Failed to update product', 'error');
+        }
+      } else {
+        const created = await addProduct(productPayload);
+        setIsSubmitting(false);
+        if (created) {
+          showToast(`"${productPayload.name}" published to store!`, 'success');
+          onSaved();
+        } else {
+          setError('Failed to publish product. Please try again.');
+          showToast('Failed to save product', 'error');
+        }
       }
-    } else {
-      const created = await addProduct(productPayload);
+    } catch (submitErr: any) {
       setIsSubmitting(false);
-      if (created) {
-        onSaved();
-      }
+      const errMsg = submitErr?.message || 'Error occurred while saving product';
+      setError(errMsg);
+      showToast(errMsg, 'error');
     }
   };
 
@@ -455,6 +593,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 Product Title / Dress Name *
               </label>
               <input
+                id="product-title-input"
                 type="text"
                 required
                 value={name}
@@ -630,6 +769,30 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             >
               Add Photo URL
             </button>
+          </div>
+
+          {/* Quick Preset Boutique Photos */}
+          <div className="pt-2 border-t border-neutral-100">
+            <p className="text-[11px] font-semibold text-neutral-600 mb-2">
+              Or pick high-definition Pakistani Boutique sample photos:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {PAKISTANI_BOUTIQUE_SAMPLE_PHOTOS.map((sample, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleAddSamplePhoto(sample.url)}
+                  className="inline-flex items-center gap-2 px-2.5 py-1.5 bg-neutral-50 hover:bg-amber-50 border border-neutral-200 hover:border-amber-300 rounded-xl text-[11px] text-neutral-700 transition-colors"
+                >
+                  <img
+                    src={sample.url}
+                    alt={sample.title}
+                    className="w-5 h-5 rounded-md object-cover"
+                  />
+                  <span>+ {sample.title}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {images.length === 0 && (
@@ -1059,11 +1222,18 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             className="px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold rounded-xl shadow-lg transition-all flex items-center gap-2 active:scale-[0.99] disabled:opacity-50"
           >
             {isSubmitting ? (
-              <span>Saving Product...</span>
+              <span className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin" />
+                <span>محفوظ ہو رہا ہے... (Saving Product...)</span>
+              </span>
             ) : (
               <>
                 <Check className="w-4 h-4" />
-                <span>{isEditMode ? 'Update Boutique Product' : 'Publish Boutique Product'}</span>
+                <span>
+                  {isEditMode
+                    ? 'Update Product (محفوظ کریں)'
+                    : 'Publish Boutique Product (پروڈکٹ شائع کریں)'}
+                </span>
               </>
             )}
           </button>

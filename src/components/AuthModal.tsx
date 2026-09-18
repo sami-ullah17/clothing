@@ -70,7 +70,7 @@ export const AuthModal: React.FC = () => {
           <div className="flex items-center gap-2">
             <UserIcon className="w-5 h-5 text-neutral-950" />
             <h3 className="font-serif-luxury text-xl font-bold text-neutral-950">
-              {user ? 'My StyleNest Account' : tab === 'login' ? t('auth.signIn') : t('auth.register')}
+              {user ? 'My Pri-Boutique Account' : tab === 'login' ? t('auth.signIn') : t('auth.register')}
             </h3>
           </div>
           <button
@@ -314,7 +314,7 @@ export const AuthModal: React.FC = () => {
                 onClick={() =>
                   handleDemoLogin(
                     'Ayesha Malik',
-                    'ayesha.malik@stylenest.pk',
+                    'ayesha.malik@pri-boutique.com',
                     '0300-1122334',
                     'Lahore'
                   )
@@ -329,7 +329,7 @@ export const AuthModal: React.FC = () => {
                 onClick={() =>
                   handleDemoLogin(
                     'Hamza Tariq',
-                    'hamza.tariq@stylenest.pk',
+                    'hamza.tariq@pri-boutique.com',
                     '0333-5566778',
                     'Islamabad'
                   )

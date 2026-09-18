@@ -57,10 +57,10 @@ export const Footer: React.FC = () => {
                 <button
                   onClick={handleOpenWhatsApp}
                   className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 group"
-                  aria-label="Contact Pri-Buteeq on WhatsApp"
+                  aria-label="Contact Pri-Boutique on WhatsApp"
                 >
                   <MessageCircle className="w-4 h-4 fill-white flex-shrink-0" />
-                  <span>Pri-Buteeq Official WhatsApp</span>
+                  <span>Pri-Boutique Official WhatsApp</span>
                 </button>
               </div>
             </div>

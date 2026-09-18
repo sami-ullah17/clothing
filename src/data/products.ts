@@ -32,7 +32,7 @@ export const TESTIMONIALS_DATA = [
     name: 'Zainab Qureshi',
     role: 'Fashion Stylist, Lahore',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-    quote: 'StyleNest provides international luxury tailoring right here in Pakistan. Paid via Easypaisa and delivery to Gulberg Lahore arrived within 48 hours!',
+    quote: 'Pri-Boutique provides international luxury tailoring right here in Pakistan. Paid via Easypaisa and delivery to Gulberg Lahore arrived within 48 hours!',
     rating: 5,
     item: 'Tailored Wool-Blend Overcoat',
   },
@@ -50,7 +50,7 @@ export const TESTIMONIALS_DATA = [
     name: 'Fatima Noor',
     role: 'Architect, Islamabad',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
-    quote: 'Finding kids clothes that are durable, 100% organic, and genuinely chic in Pakistan is difficult. StyleNest is now our go-to family wardrobe.',
+    quote: 'Finding kids clothes that are durable, 100% organic, and genuinely chic in Pakistan is difficult. Pri-Boutique is now our go-to family wardrobe.',
     rating: 5,
     item: 'Kids Quilted Puffer Jacket',
   },
@@ -93,7 +93,7 @@ export const PAKISTAN_BANKS = [
   {
     id: 'meezan',
     name: 'Meezan Bank Ltd (Islamic)',
-    accountTitle: 'StyleNest Apparel PVT LTD',
+    accountTitle: 'Pri-Boutique Apparel PVT LTD',
     accountNumber: '0102030405060701',
     iban: 'PK36MEZN0001020304050607',
     branch: 'Main Boulevard Gulberg Branch, Lahore',
@@ -102,7 +102,7 @@ export const PAKISTAN_BANKS = [
   {
     id: 'hbl',
     name: 'Habib Bank Limited (HBL)',
-    accountTitle: 'StyleNest Apparel PVT LTD',
+    accountTitle: 'Pri-Boutique Apparel PVT LTD',
     accountNumber: '2233445566778899',
     iban: 'PK45HABB0022334455667788',
     branch: 'Clifton Corporate Branch, Karachi',
@@ -111,7 +111,7 @@ export const PAKISTAN_BANKS = [
   {
     id: 'alfalah',
     name: 'Bank Alfalah',
-    accountTitle: 'StyleNest Apparel PVT LTD',
+    accountTitle: 'Pri-Boutique Apparel PVT LTD',
     accountNumber: '5566778899001122',
     iban: 'PK12ALFH0055667788990011',
     branch: 'Blue Area Branch, Islamabad',
@@ -120,15 +120,15 @@ export const PAKISTAN_BANKS = [
 ];
 
 export const JAZZCASH_CONFIG = {
-  merchantTitle: 'StyleNest Pakistan',
+  merchantTitle: 'Pri-Boutique Pakistan',
   tillNumber: '882910',
   mobileNumber: '0300-1234567',
-  instructions: 'Transfer to StyleNest JazzCash Wallet or use Till ID 882910. Enter your JazzCash mobile number below to initiate automatic MPIN prompt.',
+  instructions: 'Transfer to Pri-Boutique JazzCash Wallet or use Till ID 882910. Enter your JazzCash mobile number below to initiate automatic MPIN prompt.',
 };
 
 export const EASYPAISA_CONFIG = {
-  merchantTitle: 'StyleNest Pakistan',
+  merchantTitle: 'Pri-Boutique Pakistan',
   tillNumber: '774921',
   mobileNumber: '0345-1234567',
-  instructions: 'Transfer to StyleNest Easypaisa Account or approve push notification on your Easypaisa Mobile App.',
+  instructions: 'Transfer to Pri-Boutique Easypaisa Account or approve push notification on your Easypaisa Mobile App.',
 };

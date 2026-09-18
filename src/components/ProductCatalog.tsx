@@ -152,11 +152,11 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   const computedTitle =
     title ||
     (currentView === 'men'
-      ? `${t('nav.men')} - StyleNest`
+      ? `${t('nav.men')} - Pri-Boutique`
       : currentView === 'women'
-      ? `${t('nav.women')} - StyleNest`
+      ? `${t('nav.women')} - Pri-Boutique`
       : currentView === 'kids'
-      ? `${t('nav.kids')} - StyleNest`
+      ? `${t('nav.kids')} - Pri-Boutique`
       : currentView === 'sale'
       ? `${t('nav.sale')} • Up to 40% Off`
       : currentView === 'new-arrivals'
@@ -175,7 +175,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
       <div className="pb-8 border-b border-neutral-200 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">
-            StyleNest Wardrobe
+            Pri-Boutique Wardrobe
           </span>
           <h1 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-950 mt-1">
             {computedTitle}

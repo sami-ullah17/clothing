@@ -175,7 +175,7 @@ export const Navbar: React.FC = () => {
             id="navbar-brand-logo"
             onClick={() => handleNavClick('home')}
             className="group focus:outline-none"
-            aria-label="Pri-Buteeq Home"
+            aria-label="Pri-Boutique Home"
           >
             <PriButeeqLogo variant="navbar" showSubtext={true} />
           </button>

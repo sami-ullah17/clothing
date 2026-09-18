@@ -25,7 +25,7 @@ export const PriButeeqLogo: React.FC<PriButeeqLogoProps> = ({
         {!imageError ? (
           <img
             src={logoSrc}
-            alt="Pri-Buteeq Monogram"
+            alt="Pri-Boutique Monogram"
             referrerPolicy="no-referrer"
             onError={() => setImageError(true)}
             className="w-10 h-10 rounded-full object-cover border border-amber-400/40 shadow-sm"
@@ -47,7 +47,7 @@ export const PriButeeqLogo: React.FC<PriButeeqLogoProps> = ({
           {!imageError ? (
             <img
               src={logoSrc}
-              alt="Pri-Buteeq Emblem"
+              alt="Pri-Boutique Emblem"
               referrerPolicy="no-referrer"
               onError={() => setImageError(true)}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -66,7 +66,7 @@ export const PriButeeqLogo: React.FC<PriButeeqLogoProps> = ({
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5">
             <span className="font-serif-luxury text-2xl font-bold tracking-[0.08em] text-white">
-              PRI-BUTEEQ
+              PRI-BOUTIQUE
             </span>
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
           </div>
@@ -87,7 +87,7 @@ export const PriButeeqLogo: React.FC<PriButeeqLogoProps> = ({
           {!imageError ? (
             <img
               src={logoSrc}
-              alt="Pri-Buteeq"
+              alt="Pri-Boutique"
               referrerPolicy="no-referrer"
               onError={() => setImageError(true)}
               className="w-full h-full object-cover"
@@ -101,7 +101,7 @@ export const PriButeeqLogo: React.FC<PriButeeqLogoProps> = ({
         <div className="flex flex-col">
           <div className="flex items-center gap-1">
             <span className="font-serif-luxury text-lg font-bold tracking-wide text-white">
-              Pri-Buteeq
+              Pri-Boutique
             </span>
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
           </div>
@@ -121,7 +121,7 @@ export const PriButeeqLogo: React.FC<PriButeeqLogoProps> = ({
         {!imageError ? (
           <img
             src={logoSrc}
-            alt="Pri-Buteeq Brand Logo"
+            alt="Pri-Boutique Brand Logo"
             referrerPolicy="no-referrer"
             onError={() => setImageError(true)}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -144,7 +144,7 @@ export const PriButeeqLogo: React.FC<PriButeeqLogoProps> = ({
               light ? 'text-white' : 'text-neutral-950 group-hover:text-amber-900'
             }`}
           >
-            PRI-BUTEEQ
+            PRI-BOUTIQUE
           </span>
           <span className="w-1.5 h-1.5 rounded-full bg-amber-600 mb-0.5" />
         </div>

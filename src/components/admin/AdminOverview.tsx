@@ -58,7 +58,7 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({ onNavigateTab, onE
             {settings.storeName} Management Console
           </h2>
           <p className="text-neutral-400 text-xs sm:text-sm mt-1">
-            Orders route to WhatsApp ({settings.whatsappNumber}) • Customer sees brand: <strong className="text-amber-300">Pri-Buteeq</strong> • Location: {settings.address}
+            Orders route to WhatsApp ({settings.whatsappNumber}) • Customer sees brand: <strong className="text-amber-300">{settings.storeName || 'Pri-Boutique'}</strong> • Location: {settings.address}
           </p>
         </div>
 
@@ -288,7 +288,7 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({ onNavigateTab, onE
             <div className="text-xs space-y-2 text-neutral-300">
               <div className="flex justify-between py-1 border-b border-neutral-800">
                 <span className="text-neutral-400">WhatsApp Route:</span>
-                <span className="font-mono text-white">+{settings.whatsappNumber} (Masked as Pri-Buteeq)</span>
+                <span className="font-mono text-white">+{settings.whatsappNumber} (Masked as {settings.storeName || 'Pri-Boutique'})</span>
               </div>
               <div className="flex justify-between py-1 border-b border-neutral-800">
                 <span className="text-neutral-400">Location:</span>

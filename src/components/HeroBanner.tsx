@@ -12,7 +12,7 @@ export const HeroBanner: React.FC = () => {
       <div className="absolute inset-0 z-0">
         <img
           src="/images/pakistani_boutique_hero.jpg"
-          alt="Pri-Buteeq Luxury Pakistani Haute Couture Collection"
+          alt="Pri-Boutique Luxury Pakistani Haute Couture Collection"
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover object-[50%_35%] scale-105 transform transition-transform duration-1000"
         />

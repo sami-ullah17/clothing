@@ -34,8 +34,8 @@ const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   }
 
   const token = authHeader.split(' ')[1];
-  if (token && token.startsWith('pributeeq_owner_token_')) {
-    req.adminUser = { email: 'admin@pri-buteeq.com', role: 'owner' };
+  if (token && (token.startsWith('pributeeq_owner_token_') || token.startsWith('priboutique_owner_token_'))) {
+    req.adminUser = { email: 'admin@pri-boutique.com', role: 'owner' };
     return next();
   }
 
@@ -67,6 +67,7 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
   const cleanPhone = cleanEmail.replace(/[^0-9]/g, '');
   const validUsernames = [
     admin.email.toLowerCase(),
+    'admin@pri-boutique.com',
     'admin@pri-buteeq.com',
     'admin@pributeeq.com',
     'admin',
@@ -84,7 +85,7 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
 
   if (!emailMatch) {
     return res.status(401).json({
-      error: 'Invalid admin username or email. Allowed: admin@pri-buteeq.com, admin, or sami1717sp@gmail.com',
+      error: 'Invalid admin username or email. Allowed: admin@pri-boutique.com, admin, or sami1717sp@gmail.com',
     });
   }
 
@@ -341,7 +342,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Pri-Buteeq / StyleNest server listening on http://0.0.0.0:${PORT}`);
+    console.log(`Pri-Boutique server listening on http://0.0.0.0:${PORT}`);
   });
 }
 

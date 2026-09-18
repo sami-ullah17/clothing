@@ -254,7 +254,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product: initial
                 {localizedName}
               </h3>
               <p className="text-xs text-amber-900 font-semibold tracking-widest uppercase mb-1">
-                {settings.storeName || 'Pri-Buteeq'} • Pakpattan
+                {settings.storeName || 'Pri-Boutique'} • Pakpattan
               </p>
               <p className="text-xs text-neutral-500 max-w-sm">
                 Authentic Pakistani Boutique Apparel. Original piece available at our boutique shop.
@@ -483,7 +483,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product: initial
               <span>
                 {isOutOfStock
                   ? 'Currently Out of Stock'
-                  : `Order via Pri-Buteeq WhatsApp • ${formatPrice(currentPrice * quantity)}`}
+                  : `Order via Pri-Boutique WhatsApp • ${formatPrice(currentPrice * quantity)}`}
               </span>
             </button>
           </div>

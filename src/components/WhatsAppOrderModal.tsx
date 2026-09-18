@@ -152,7 +152,7 @@ export const WhatsAppOrderModal: React.FC = () => {
       message += `\nPlease confirm my order.`;
     }
 
-    // 3. Launch WhatsApp link using selected Pri-Buteeq line (masked from customer)
+    // 3. Launch WhatsApp link using selected Pri-Boutique line (masked from customer)
     const cleanNumber = getCleanWhatsAppNumber(selectedLineClean);
     const waUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
@@ -164,7 +164,7 @@ export const WhatsAppOrderModal: React.FC = () => {
 
     setCompletedOrderId(generatedOrderId);
     setIsSubmitting(false);
-    showToast('Order successfully prepared for Pri-Buteeq WhatsApp!', 'success');
+    showToast('Order successfully prepared for Pri-Boutique WhatsApp!', 'success');
   };
 
   const handleClose = () => {
@@ -355,7 +355,7 @@ export const WhatsAppOrderModal: React.FC = () => {
               {activeLines.length > 1 && (
                 <div className="space-y-2 p-3 bg-neutral-50 rounded-2xl border border-neutral-200/80">
                   <label className="block text-[11px] font-semibold text-neutral-700">
-                    Route Order to Pri-Buteeq Desk:
+                    Route Order to Pri-Boutique Desk:
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {activeLines.map((line) => {
@@ -391,7 +391,7 @@ export const WhatsAppOrderModal: React.FC = () => {
                   className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
                 >
                   <MessageCircle className="w-4 h-4 fill-white" />
-                  <span>Send Order to Pri-Buteeq on WhatsApp • {formatPrice(grandTotal)}</span>
+                  <span>Send Order to Pri-Boutique on WhatsApp • {formatPrice(grandTotal)}</span>
                 </button>
                 <p className="text-[10px] text-center text-neutral-400 mt-2">
                   Opens WhatsApp with pre-filled specifications for instant boutique confirmation.

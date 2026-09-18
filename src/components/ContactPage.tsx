@@ -28,7 +28,7 @@ const FAQS = [
   },
   {
     q: 'Are your fabrics authentic and high-quality?',
-    a: 'Yes. StyleNest sources premium natural fibers including combed Egyptian cotton, hand-spun wool, raw silk, and artisanal linens crafted to international luxury specifications.',
+    a: 'Yes. Pri-Boutique sources premium natural fibers including combed Egyptian cotton, hand-spun wool, raw silk, and artisanal linens crafted to international luxury specifications.',
   },
 ];
 
@@ -95,14 +95,14 @@ export const ContactPage: React.FC = () => {
               <div className="flex items-start gap-3.5">
                 <Phone className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-white">Pri-Buteeq Official WhatsApp</p>
-                  <p className="text-neutral-400">Pri-Buteeq Client Concierge • 7 Days a Week</p>
+                  <p className="font-semibold text-white">Pri-Boutique Official WhatsApp</p>
+                  <p className="text-neutral-400">Pri-Boutique Client Concierge • 7 Days a Week</p>
                   <button
                     type="button"
-                    onClick={() => launchDirectWhatsApp('Hello Pri-Buteeq, I want to inquire about custom orders.')}
+                    onClick={() => launchDirectWhatsApp('Hello Pri-Boutique, I want to inquire about custom orders.')}
                     className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95"
                   >
-                    <span>Connect with Pri-Buteeq</span>
+                    <span>Connect with Pri-Boutique</span>
                   </button>
                 </div>
               </div>
@@ -111,7 +111,7 @@ export const ContactPage: React.FC = () => {
                 <Mail className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-white">Direct Email</p>
-                  <p className="text-neutral-400">concierge@pributeeq.com</p>
+                  <p className="text-neutral-400">concierge@pri-boutique.com</p>
                 </div>
               </div>
 

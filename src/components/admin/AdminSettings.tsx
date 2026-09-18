@@ -31,7 +31,7 @@ export const AdminSettings: React.FC = () => {
       ? [...settings.whatsappNumbers]
       : [settings.whatsappNumber || '923291171812'],
     whatsappLabels: settings.whatsappLabels || {
-      '923291171812': 'Pri-Buteeq Official Line',
+      '923291171812': 'Pri-Boutique Official Line',
     },
     storeLogo: settings.storeLogo || '/pributeeq_logo.jpg',
   });
@@ -56,7 +56,7 @@ export const AdminSettings: React.FC = () => {
       whatsappNumbers: updatedList,
       whatsappLabels: {
         ...(prev.whatsappLabels || {}),
-        [newLineNum]: `Pri-Buteeq Line ${updatedList.length}`,
+        [newLineNum]: `Pri-Boutique Line ${updatedList.length}`,
       },
     }));
   };
@@ -181,7 +181,7 @@ export const AdminSettings: React.FC = () => {
                 required
                 value={formData.storeName}
                 onChange={(e) => handleChange('storeName', e.target.value)}
-                placeholder="Pri-Buteeq"
+                placeholder="Pri-Boutique"
                 className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
               />
             </div>
@@ -214,14 +214,14 @@ export const AdminSettings: React.FC = () => {
 
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
-                Brand Logo (Pri-Buteeq Luxury Insignia)
+                Brand Logo (Pri-Boutique Luxury Insignia)
               </label>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-200/80">
                 <div className="w-16 h-16 rounded-2xl overflow-hidden border border-amber-400/40 bg-neutral-950 flex-shrink-0 flex items-center justify-center shadow-md">
                   {formData.storeLogo ? (
                     <img
                       src={formData.storeLogo}
-                      alt="Pri-Buteeq Logo Preview"
+                      alt="Pri-Boutique Logo Preview"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                     />
@@ -257,15 +257,15 @@ export const AdminSettings: React.FC = () => {
                       type="button"
                       onClick={() => {
                         handleChange('storeLogo', '/pributeeq_logo.jpg');
-                        showToast('Applied Pri-Buteeq luxury designed logo!', 'success');
+                        showToast('Applied Pri-Boutique luxury designed logo!', 'success');
                       }}
                       className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-xs font-semibold transition-colors"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                      <span>Apply Pri-Buteeq Luxury Logo</span>
+                      <span>Apply Pri-Boutique Luxury Logo</span>
                     </button>
                     <span className="text-[11px] text-neutral-400">
-                      High-resolution embroidery & gold crest designed for Pri-Buteeq
+                      High-resolution embroidery & gold crest designed for Pri-Boutique
                     </span>
                   </div>
                 </div>
@@ -291,13 +291,13 @@ export const AdminSettings: React.FC = () => {
               type="button"
               onClick={() => {
                 handleChange('whatsappNumber', '03291171812');
-                handleUpdateWhatsAppLine(0, '03291171812', 'Pri-Buteeq Official Line');
+                handleUpdateWhatsAppLine(0, '03291171812', 'Pri-Boutique Official Line');
                 showToast('Set primary number to 03291171812!', 'success');
               }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-xl text-xs font-bold transition-colors"
             >
               <Check className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Set to 03291171812 (Pri-Buteeq)</span>
+              <span>Set to 03291171812 (Pri-Boutique)</span>
             </button>
           </div>
 
@@ -310,7 +310,7 @@ export const AdminSettings: React.FC = () => {
               </strong>
               <p className="leading-relaxed text-emerald-900">
                 Customers <strong>never see your raw phone number digits</strong> in the store. Instead,
-                they see <strong>"Pri-Buteeq"</strong> or your custom boutique desk name. When they click
+                they see <strong>"Pri-Boutique"</strong> or your custom boutique desk name. When they click
                 to place an order, it routes directly to the WhatsApp account specified below.
               </p>
             </div>
@@ -336,7 +336,7 @@ export const AdminSettings: React.FC = () => {
               {(formData.whatsappNumbers || [formData.whatsappNumber]).map((num, idx) => {
                 const clean = num.replace(/\D/g, '');
                 const isPrimary = formData.whatsappNumber === num || (idx === 0 && !formData.whatsappNumber);
-                const currentLabel = formData.whatsappLabels?.[num] || (idx === 0 ? 'Pri-Buteeq Official Line' : `Pri-Buteeq Line ${idx + 1}`);
+                const currentLabel = formData.whatsappLabels?.[num] || (idx === 0 ? 'Pri-Boutique Official Line' : `Pri-Boutique Line ${idx + 1}`);
 
                 return (
                   <div
@@ -373,7 +373,7 @@ export const AdminSettings: React.FC = () => {
                           type="text"
                           value={currentLabel}
                           onChange={(e) => handleUpdateWhatsAppLine(idx, num, e.target.value)}
-                          placeholder="Pri-Buteeq Official Line"
+                          placeholder="Pri-Boutique Official Line"
                           className="w-full px-3 py-2 bg-white border border-neutral-200 rounded-xl text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </div>

@@ -32,14 +32,14 @@ export const FREE_SHIPPING_THRESHOLD_PKR = 4999;
 export const STANDARD_SHIPPING_PKR = 250;
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
-  storeName: 'Pri-Buteeq',
+  storeName: 'Pri-Boutique',
   storeTagline: 'Contemporary Haute Couture & Luxury Pret',
   storeDescription: 'Exclusive designer collection crafted with exceptional artisanal fabrics and timeless silhouettes.',
   storeLogo: '/pributeeq_logo.jpg',
   whatsappNumber: '923291171812',
   whatsappNumbers: ['923291171812'],
   whatsappLabels: {
-    '923291171812': 'Pri-Buteeq Official Line',
+    '923291171812': 'Pri-Boutique Official Line',
   },
   instagramUrl: 'https://instagram.com/pributeeq',
   tiktokUrl: 'https://tiktok.com/@pributeeq',
@@ -304,6 +304,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isOwnerCreds =
       cleanPass.toLowerCase() === 'admin123' &&
       ([
+        'admin@pri-boutique.com',
         'admin@pri-buteeq.com',
         'admin@pributeeq.com',
         'admin',
@@ -968,7 +969,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const clean = getCleanWhatsAppNumber(num);
       if (!list.some(item => item.cleanNumber === clean)) {
         const customLabel = settings.whatsappLabels?.[num] || settings.whatsappLabels?.[clean];
-        const defaultLabel = idx === 0 ? 'Pri-Buteeq Official Line' : `Pri-Buteeq Order Line ${idx + 1}`;
+        const defaultLabel = idx === 0 ? 'Pri-Boutique Official Line' : `Pri-Boutique Order Line ${idx + 1}`;
         list.push({
           number: num,
           cleanNumber: clean,
@@ -982,7 +983,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       list.push({
         number: '923291171812',
         cleanNumber: '923291171812',
-        label: 'Pri-Buteeq Official Line',
+        label: 'Pri-Boutique Official Line',
         isPrimary: true,
       });
     }
@@ -1000,7 +1001,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unitPrice = product.discountPrice ?? product.price;
     const total = unitPrice * quantity;
 
-    let msg = `Hello, I want to place an order at Pri-Buteeq.\n\n`;
+    let msg = `Hello, I want to place an order at Pri-Boutique.\n\n`;
     if (orderId) {
       msg += `Order ID: ${orderId}\n`;
     }
@@ -1010,7 +1011,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     msg += `Quantity: ${quantity}\n`;
     msg += `Price: ${formatPrice(unitPrice)} each\n`;
     msg += `Total: ${formatPrice(total)}\n\n`;
-    msg += `Please confirm my order with Pri-Buteeq.`;
+    msg += `Please confirm my order with Pri-Boutique.`;
 
     return msg;
   };
@@ -1020,7 +1021,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     grandTotal: number,
     orderId?: string
   ): string => {
-    let msg = `Hello, I want to place this order at Pri-Buteeq:\n\n`;
+    let msg = `Hello, I want to place this order at Pri-Boutique:\n\n`;
     if (orderId) {
       msg += `Order ID: ${orderId}\n\n`;
     }
@@ -1035,7 +1036,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     msg += `Total: ${formatPrice(grandTotal)}\n\n`;
-    msg += `Please confirm my order with Pri-Buteeq.`;
+    msg += `Please confirm my order with Pri-Boutique.`;
     return msg;
   };
 

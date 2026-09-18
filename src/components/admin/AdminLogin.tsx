@@ -8,7 +8,7 @@ interface AdminLoginProps {
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
   const { adminLogin, settings } = useShop();
-  const [email, setEmail] = useState('admin@pri-buteeq.com');
+  const [email, setEmail] = useState('admin@pri-boutique.com');
   const [password, setPassword] = useState('admin123');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -30,16 +30,16 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
   const handleInstantLogin = async () => {
     setError('');
     setIsLoading(true);
-    setEmail('admin@pri-buteeq.com');
+    setEmail('admin@pri-boutique.com');
     setPassword('admin123');
-    const res = await adminLogin('admin@pri-buteeq.com', 'admin123');
+    const res = await adminLogin('admin@pri-boutique.com', 'admin123');
     setIsLoading(false);
     if (!res.success) {
       setError(res.error || 'Login failed. Please retry.');
     }
   };
 
-  const handleQuickFill = (presetEmail: string = 'admin@pri-buteeq.com') => {
+  const handleQuickFill = (presetEmail: string = 'admin@pri-boutique.com') => {
     setEmail(presetEmail);
     setPassword('admin123');
     setError('');
@@ -104,7 +104,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@pri-buteeq.com"
+                  placeholder="admin@pri-boutique.com"
                   className="w-full pl-10 pr-4 py-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all"
                 />
               </div>
@@ -112,10 +112,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
                 <span>Accepted:</span>
                 <button
                   type="button"
-                  onClick={() => handleQuickFill('admin@pri-buteeq.com')}
+                  onClick={() => handleQuickFill('admin@pri-boutique.com')}
                   className="text-amber-400 hover:underline"
                 >
-                  admin@pri-buteeq.com
+                  admin@pri-boutique.com
                 </button>
                 <span>•</span>
                 <button
@@ -188,7 +188,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToStore }) => {
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Working Credentials:</span>
               </div>
-              <div><span className="text-neutral-500">Username/Email:</span> <span className="font-mono text-white">admin@pri-buteeq.com</span> or <span className="font-mono text-white">sami1717sp@gmail.com</span> or <span className="font-mono text-white">admin</span></div>
+              <div><span className="text-neutral-500">Username/Email:</span> <span className="font-mono text-white">admin@pri-boutique.com</span> or <span className="font-mono text-white">sami1717sp@gmail.com</span> or <span className="font-mono text-white">admin</span></div>
               <div><span className="text-neutral-500">Password:</span> <span className="font-mono text-white">admin123</span></div>
             </div>
           </div>

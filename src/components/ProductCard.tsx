@@ -80,7 +80,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {localizedName}
             </span>
             <span className="text-[10px] text-amber-900 font-semibold uppercase tracking-wider mt-0.5">
-              Pri-Buteeq
+              Pri-Boutique
             </span>
             <span className="text-[9px] text-neutral-400 mt-1">
               Pakpattan Collection

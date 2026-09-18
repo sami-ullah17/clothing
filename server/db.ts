@@ -98,14 +98,14 @@ const DB_FILE = path.join(DATA_DIR, 'database.json');
 
 // Default initial settings
 const DEFAULT_SETTINGS: StoreSettings = {
-  storeName: 'Pri-Buteeq',
+  storeName: 'Pri-Boutique',
   storeTagline: 'Contemporary Haute Couture & Luxury Pret',
   storeDescription: 'Exclusive designer collection crafted with exceptional artisanal fabrics and timeless silhouettes.',
   storeLogo: '/pributeeq_logo.jpg',
   whatsappNumber: '923291171812',
   whatsappNumbers: ['923291171812'],
   whatsappLabels: {
-    '923291171812': 'Pri-Buteeq Official Line',
+    '923291171812': 'Pri-Boutique Official Line',
   },
   instagramUrl: 'https://instagram.com/pributeeq',
   tiktokUrl: 'https://tiktok.com/@pributeeq',

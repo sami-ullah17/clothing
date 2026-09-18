@@ -40,6 +40,10 @@ export const SpecialOffers: React.FC = () => {
 
   const saleProducts = products.filter(p => p.discountPrice).slice(0, 4);
 
+  if (saleProducts.length === 0) {
+    return null;
+  }
+
   return (
     <section id="special-offers-section" className="py-16 sm:py-20 bg-neutral-900 text-white relative overflow-hidden">
       {/* Background Glow */}

@@ -3,7 +3,7 @@ import { useShop } from '../context/ShopContext';
 import { Size, SortOption, PageView } from '../types';
 import { ProductCard } from './ProductCard';
 import { FilterSidebar } from './FilterSidebar';
-import { SlidersHorizontal, Grid3X3, Grid2X2, ArrowUpDown, X } from 'lucide-react';
+import { SlidersHorizontal, Grid3X3, Grid2X2, ArrowUpDown, X, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProductCatalogProps {
@@ -378,7 +378,25 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
             Displaying {filteredProducts.length} curated style{filteredProducts.length === 1 ? '' : 's'}
           </div>
 
-          {filteredProducts.length === 0 ? (
+          {products.length === 0 ? (
+            <div className="py-20 text-center bg-white rounded-3xl border border-neutral-200/80 p-8 shadow-sm">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif-luxury text-2xl font-bold text-neutral-900 mb-2">
+                Boutique Collection Updating
+              </h3>
+              <p className="text-sm text-neutral-500 max-w-md mx-auto mb-6 leading-relaxed">
+                Demo stock and placeholder items have been removed. Fresh Pakistani designer collections are being prepared. Store administrators can add new products directly from the Admin Panel.
+              </p>
+              <button
+                onClick={() => setCurrentView('home')}
+                className="px-6 py-2.5 bg-neutral-950 text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-neutral-800 transition-colors shadow"
+              >
+                Return to Store Home
+              </button>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="py-20 text-center bg-white rounded-3xl border border-neutral-200/80 p-8">
               <h3 className="font-serif-luxury text-xl font-bold text-neutral-900 mb-2">
                 No Garments Match Your Filters

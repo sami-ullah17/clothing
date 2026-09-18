@@ -62,6 +62,7 @@ export const FeaturedCategories: React.FC = () => {
               <img
                 src={cat.image}
                 alt={localizedName}
+                referrerPolicy="no-referrer"
                 className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
                 loading="lazy"
               />

@@ -430,7 +430,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await fetch('/api/products');
       const parsed = await safeParseResponse<Product[]>(res);
-      if (parsed.ok && Array.isArray(parsed.data) && parsed.data.length > 0) {
+      if (parsed.ok && Array.isArray(parsed.data)) {
         setProducts(parsed.data);
       }
     } catch (err) {

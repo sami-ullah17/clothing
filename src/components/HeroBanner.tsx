@@ -11,8 +11,9 @@ export const HeroBanner: React.FC = () => {
       {/* Background Image with Dark Vignette Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2000&q=85"
-          alt="StyleNest Autumn High Fashion Collection"
+          src="/images/pakistani_boutique_hero.jpg"
+          alt="Pri-Buteeq Luxury Pakistani Haute Couture Collection"
+          referrerPolicy="no-referrer"
           className="w-full h-full object-cover object-[50%_35%] scale-105 transform transition-transform duration-1000"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/90 via-neutral-950/60 to-neutral-950/30 backdrop-blur-[0.5px]" />

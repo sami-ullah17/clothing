@@ -21,8 +21,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     showToast,
   } = useShop();
 
-  const [selectedColor, setSelectedColor] = useState<ProductColor>(product.colors[0]);
-  const [selectedSize, setSelectedSize] = useState<Size>(product.sizes[0] || 'M');
+  const defaultColor: ProductColor = product.colors?.[0] || { name: 'Standard', hex: '#111111' };
+  const [selectedColor, setSelectedColor] = useState<ProductColor>(defaultColor);
+  const [selectedSize, setSelectedSize] = useState<Size>(product.sizes?.[0] || 'M');
   const [isSizeSelectorOpen, setIsSizeSelectorOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -70,6 +71,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             alt={localizedName}
             className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
             loading="lazy"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 24 24" fill="none" stroke="%23aaa" stroke-width="1"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+            }}
           />
         ) : (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-neutral-100 via-stone-50 to-amber-50/40 p-6 text-center select-none">
@@ -229,31 +233,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </h3>
 
           {/* Color Swatches */}
-          <div className="flex items-center gap-1.5 mb-3">
-            {product.colors.map((c, idx) => (
-              <button
-                key={c.name}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedColor(c);
-                  if (product.images[idx]) {
-                    setCurrentImageIndex(idx);
-                  }
-                }}
-                className={`relative w-4 h-4 rounded-full border transition-all ${
-                  selectedColor.name === c.name
-                    ? 'ring-2 ring-neutral-900 ring-offset-1 scale-110 border-transparent'
-                    : 'border-neutral-300 hover:scale-105'
-                }`}
-                style={{ backgroundColor: c.hex }}
-                title={c.name}
-                aria-label={`Color ${c.name}`}
-              />
-            ))}
-            <span className="text-[11px] text-neutral-400 ml-1">
-              {product.colors.length} {t('card.colors')}
-            </span>
-          </div>
+          {product.colors && product.colors.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-3">
+              {product.colors.map((c, idx) => (
+                <button
+                  key={c.name + idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedColor(c);
+                    if (product.images && product.images[idx]) {
+                      setCurrentImageIndex(idx);
+                    }
+                  }}
+                  className={`relative w-4 h-4 rounded-full border transition-all ${
+                    selectedColor?.name === c.name
+                      ? 'ring-2 ring-neutral-900 ring-offset-1 scale-110 border-transparent'
+                      : 'border-neutral-300 hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                  title={c.name}
+                  aria-label={`Color ${c.name}`}
+                />
+              ))}
+              <span className="text-[11px] text-neutral-400 ml-1">
+                {product.colors.length} {t('card.colors')}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Pricing & Mobile Action Buttons */}

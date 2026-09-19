@@ -197,10 +197,9 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     existingProduct?.isBestSeller || false
   );
 
-  // Images (Strictly clean without demo unsplash URLs)
+  // Images (Preserve all boutique photos uploaded or selected)
   const [images, setImages] = useState<string[]>(() => {
-    if (!existingProduct?.images) return [];
-    return existingProduct.images.filter((img) => !img.includes('unsplash.com'));
+    return existingProduct?.images || [];
   });
   const [newImageUrl, setNewImageUrl] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -292,9 +291,12 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       setStatus(existingProduct.status || (existingProduct.stock > 0 ? 'in_stock' : 'out_of_stock'));
       setIsNewArrival(!!existingProduct.isNewArrival);
       setIsBestSeller(!!existingProduct.isBestSeller);
-      setImages((existingProduct.images || []).filter((img) => !img.includes('unsplash.com')));
-      setColors(existingProduct.colors || []);
-      setSizes(existingProduct.sizes || []);
+      setImages(existingProduct.images || []);
+      setColors(existingProduct.colors && existingProduct.colors.length > 0 ? existingProduct.colors : [
+        { name: 'Black', hex: '#111111' },
+        { name: 'Off-White / Cream', hex: '#FAF7F2' },
+      ]);
+      setSizes(existingProduct.sizes && existingProduct.sizes.length > 0 ? existingProduct.sizes : ['S', 'M', 'L', 'XL']);
       if (existingProduct.details && Array.isArray(existingProduct.details) && existingProduct.details.length > 0) {
         setDetails(existingProduct.details);
       }
@@ -469,20 +471,6 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       return;
     }
 
-    if (colors.length === 0) {
-      const msg = 'Please select or confirm at least one garment color (کم از کم ایک رنگ منتخب کریں)';
-      setError(msg);
-      showToast(msg, 'error');
-      return;
-    }
-
-    if (sizes.length === 0) {
-      const msg = 'Please select or confirm at least one garment size (کم از کم ایک سائز منتخب کریں)';
-      setError(msg);
-      showToast(msg, 'error');
-      return;
-    }
-
     if (isNaN(Number(price)) || Number(price) <= 0) {
       const msg = 'Please enter a valid product price (درست قیمت درج کریں)';
       setError(msg);
@@ -494,6 +482,17 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
 
     const calculatedDiscountPrice =
       isOnSale && discountPrice && discountPrice > 0 ? Number(discountPrice) : undefined;
+
+    const finalColors: ProductColor[] =
+      colors.length > 0
+        ? colors
+        : [
+            { name: 'Standard / As Shown', hex: '#111111' },
+            { name: 'Off-White / Cream', hex: '#FAF7F2' },
+          ];
+
+    const finalSizes: string[] =
+      sizes.length > 0 ? sizes : ['S', 'M', 'L', 'XL'];
 
     const finalDetails = details.length > 0 ? details : [
       '3-Piece Stitched Luxury Ensemble (Shirt, Trouser & Dupatta)',
@@ -515,8 +514,8 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       rating: existingProduct?.rating || 5.0,
       reviewCount: existingProduct?.reviewCount || 0,
       images,
-      colors,
-      sizes,
+      colors: finalColors,
+      sizes: finalSizes,
       description: description.trim(),
       details: finalDetails,
       composition: composition.trim(),

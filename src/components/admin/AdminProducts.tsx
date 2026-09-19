@@ -266,6 +266,9 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({
                               src={primaryImage}
                               alt={product.name}
                               className="w-12 h-14 object-cover rounded-xl border border-neutral-200/80 flex-shrink-0 bg-neutral-100 shadow-xs"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="56" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+                              }}
                             />
                           ) : (
                             <div

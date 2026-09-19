@@ -23,7 +23,103 @@
     "currency": "PKR",
     "currencySymbol": "Rs."
   },
-  "products": [],
+  "products": [
+    {
+      "name": "Velvet Royal Kurti",
+      "category": "women",
+      "price": 5500,
+      "images": [
+        "/uploads/boutique-velvet_royal_kur-1789820436981-2lzxd.png"
+      ],
+      "stock": 10,
+      "status": "in_stock",
+      "id": "prod-1789820436982",
+      "rating": 5,
+      "reviewCount": 0,
+      "colors": [
+        {
+          "name": "Standard",
+          "hex": "#111111"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "details": [
+        "Pure artisanal Pakistani boutique craftsmanship",
+        "Fine threadwork and precision tailored seams",
+        "Durable, comfortable high-grade drape fabric"
+      ],
+      "composition": "100% Premium Lawn / Cotton"
+    },
+    {
+      "name": "Chiffon Embroidered Luxury Suit",
+      "category": "women",
+      "subcategory": "Party Wear",
+      "price": 6800,
+      "discountPrice": 5440,
+      "isSale": true,
+      "salePercentage": 20,
+      "colors": [
+        {
+          "name": "Tea Pink",
+          "hex": "#D87D88"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "images": [
+        "/uploads/test_png-1789724449604.png"
+      ],
+      "stock": 10,
+      "status": "in_stock",
+      "id": "prod-1789820433511",
+      "rating": 5,
+      "reviewCount": 0,
+      "details": [
+        "Pure artisanal Pakistani boutique craftsmanship",
+        "Fine threadwork and precision tailored seams",
+        "Durable, comfortable high-grade drape fabric"
+      ],
+      "composition": "100% Premium Lawn / Cotton"
+    },
+    {
+      "name": "Test Boutique Suit",
+      "category": "women",
+      "subcategory": "Formal",
+      "price": 4500,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#111111"
+        }
+      ],
+      "sizes": [
+        "M",
+        "L"
+      ],
+      "images": [
+        "/uploads/test_png-1789724449604.png"
+      ],
+      "stock": 10,
+      "status": "in_stock",
+      "id": "prod-1789820306680",
+      "rating": 5,
+      "reviewCount": 0,
+      "details": [
+        "Pure artisanal Pakistani boutique craftsmanship",
+        "Fine threadwork and precision tailored seams",
+        "Durable, comfortable high-grade drape fabric"
+      ],
+      "composition": "100% Premium Lawn / Cotton"
+    }
+  ],
   "orders": [
     {
       "id": "ORD-7291",

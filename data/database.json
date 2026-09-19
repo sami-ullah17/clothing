@@ -25,6 +25,42 @@
   },
   "products": [
     {
+      "name": "Luxury Embroidered Lawn Suit 2026",
+      "category": "women",
+      "subcategory": "Pret",
+      "price": 8500,
+      "discountPrice": 7200,
+      "stock": 15,
+      "description": "Authentic boutique hand-embroidered 3-piece luxury lawn suit.",
+      "images": [
+        "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=80"
+      ],
+      "status": "in_stock",
+      "isNewArrival": true,
+      "isBestSeller": false,
+      "id": "prod-1789822362192",
+      "rating": 5,
+      "reviewCount": 0,
+      "colors": [
+        {
+          "name": "Standard",
+          "hex": "#111111"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "details": [
+        "Pure artisanal Pakistani boutique craftsmanship",
+        "Fine threadwork and precision tailored seams",
+        "Durable, comfortable high-grade drape fabric"
+      ],
+      "composition": "100% Premium Lawn / Cotton"
+    },
+    {
       "name": "Velvet Royal Kurti",
       "category": "women",
       "price": 5500,
@@ -53,7 +89,9 @@
         "Fine threadwork and precision tailored seams",
         "Durable, comfortable high-grade drape fabric"
       ],
-      "composition": "100% Premium Lawn / Cotton"
+      "composition": "100% Premium Lawn / Cotton",
+      "isNewArrival": true,
+      "isBestSeller": false
     },
     {
       "name": "Chiffon Embroidered Luxury Suit",
@@ -87,7 +125,9 @@
         "Fine threadwork and precision tailored seams",
         "Durable, comfortable high-grade drape fabric"
       ],
-      "composition": "100% Premium Lawn / Cotton"
+      "composition": "100% Premium Lawn / Cotton",
+      "isNewArrival": true,
+      "isBestSeller": false
     },
     {
       "name": "Test Boutique Suit",
@@ -117,7 +157,9 @@
         "Fine threadwork and precision tailored seams",
         "Durable, comfortable high-grade drape fabric"
       ],
-      "composition": "100% Premium Lawn / Cotton"
+      "composition": "100% Premium Lawn / Cotton",
+      "isNewArrival": true,
+      "isBestSeller": false
     }
   ],
   "orders": [

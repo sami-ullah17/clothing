@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { Product, ProductColor, Category } from '../../types';
+import { getApiUrl, getAdminAuthToken } from '../../utils/api';
 import {
   ArrowLeft,
   Upload,
@@ -325,14 +326,10 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       }
 
       let finalUrl = compressedData;
-      const token =
-        adminUser?.token ||
-        localStorage.getItem('priboutique_admin_token') ||
-        localStorage.getItem('pributeeq_admin_token') ||
-        'priboutique_owner_token_direct';
+      const token = adminUser?.token || getAdminAuthToken();
 
       try {
-        const res = await fetch('/api/upload', {
+        const res = await fetch(getApiUrl('/api/upload'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -519,8 +516,8 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       description: description.trim(),
       details: finalDetails,
       composition: composition.trim(),
-      isNewArrival,
-      isBestSeller,
+      isNewArrival: isNewArrival !== false,
+      isBestSeller: Boolean(isBestSeller),
     };
 
     try {

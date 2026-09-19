@@ -11,6 +11,17 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
+// Enable CORS for external frontend deployments (e.g. Netlify, Vercel, localhost)
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Increase payload limit for base64 image uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -255,6 +266,8 @@ app.post('/api/products', requireAdmin, (req: Request, res: Response) => {
     salePercentage: req.body.salePercentage ? Number(req.body.salePercentage) : undefined,
     stock: req.body.stock !== undefined ? Number(req.body.stock) : 10,
     status: req.body.status || 'in_stock',
+    isNewArrival: req.body.isNewArrival !== undefined ? Boolean(req.body.isNewArrival) : true,
+    isBestSeller: Boolean(req.body.isBestSeller),
     images,
   };
 

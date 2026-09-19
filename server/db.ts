@@ -276,6 +276,8 @@ class Database {
       reviewCount: product.reviewCount || 0,
       stock,
       status: product.status || (stock > 0 ? 'in_stock' : 'out_of_stock'),
+      isNewArrival: product.isNewArrival !== undefined ? Boolean(product.isNewArrival) : true,
+      isBestSeller: Boolean(product.isBestSeller),
       colors: product.colors && product.colors.length > 0 ? product.colors : [{ name: 'Standard', hex: '#111111' }],
       sizes: product.sizes && product.sizes.length > 0 ? product.sizes : ['S', 'M', 'L', 'XL'],
       images: Array.isArray(product.images) ? product.images : [],

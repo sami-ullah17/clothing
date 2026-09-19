@@ -21,6 +21,7 @@ import {
   PRODUCT_NAME_TRANSLATIONS,
   SUBCATEGORY_TRANSLATIONS,
 } from '../i18n/translations';
+import { getApiUrl, getAdminAuthToken, parseApiResponse } from '../utils/api';
 
 interface Toast {
   id: string;
@@ -272,7 +273,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings');
+      const res = await fetch(getApiUrl('/api/settings'));
       const parsed = await safeParseResponse<StoreSettings>(res);
       if (parsed.ok && parsed.data) {
         setSettings(parsed.data);
@@ -327,7 +328,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cleanEmail.replace(/[^0-9]/g, '') === '03291171812');
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password: cleanPass }),
@@ -406,7 +407,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateStoreSettings = async (partial: Partial<StoreSettings>): Promise<boolean> => {
     try {
       const token = getAdminToken();
-      const res = await fetch('/api/settings', {
+      const res = await fetch(getApiUrl('/api/settings'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -415,15 +416,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify(partial),
       });
 
-      const parsed = await safeParseResponse<StoreSettings>(res, 'Failed to update settings');
+      const parsed = await parseApiResponse<StoreSettings>(res, 'Failed to update settings');
       if (parsed.ok && parsed.data) {
         setSettings(parsed.data);
         showToast('Store settings updated successfully!', 'success');
         return true;
       } else {
-        // Graceful update in memory
         setSettings((prev) => ({ ...prev, ...partial }));
-        showToast('Store settings updated!', 'success');
+        showToast('Store settings updated locally', 'info');
         return true;
       }
     } catch {
@@ -440,13 +440,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshProducts = async () => {
     setIsLoadingProducts(true);
     try {
-      const res = await fetch('/api/products');
-      const parsed = await safeParseResponse<Product[]>(res);
+      const res = await fetch(getApiUrl('/api/products'));
+      const parsed = await parseApiResponse<Product[]>(res, 'Failed to fetch products');
       if (parsed.ok && Array.isArray(parsed.data)) {
         setProducts(parsed.data);
       }
     } catch (err) {
-      console.warn('Failed to fetch products from backend, using current state:', err);
+      console.warn('Failed to fetch products from backend:', err);
     } finally {
       setIsLoadingProducts(false);
     }
@@ -459,7 +459,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addProduct = async (productData: Omit<Product, 'id'> & { id?: string }): Promise<Product | null> => {
     try {
       const token = getAdminToken();
-      const res = await fetch('/api/products', {
+      const res = await fetch(getApiUrl('/api/products'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -468,40 +468,28 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify(productData),
       });
 
-      const parsed = await safeParseResponse<Product>(res, 'Failed to add product');
+      const parsed = await parseApiResponse<Product>(res, 'Failed to save product to database');
       if (parsed.ok && parsed.data) {
-        setProducts((prev) => [parsed.data!, ...prev]);
-        showToast(`Product "${parsed.data.name}" added successfully!`, 'success');
-        return parsed.data;
+        const saved = parsed.data;
+        setProducts((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)]);
+        showToast(`Product "${saved.name}" saved to database successfully!`, 'success');
+        return saved;
       } else {
-        // Fallback addition
-        const localProd: Product = {
-          ...productData,
-          id: productData.id || `prod_${Date.now()}`,
-          rating: productData.rating || 5.0,
-          reviewCount: productData.reviewCount || 0,
-        };
-        setProducts((prev) => [localProd, ...prev]);
-        showToast(`Product "${localProd.name}" added!`, 'success');
-        return localProd;
+        console.error('Failed to add product in database:', parsed);
+        showToast(parsed.error || 'Failed to save product in database', 'error');
+        return null;
       }
-    } catch {
-      const localProd: Product = {
-        ...productData,
-        id: productData.id || `prod_${Date.now()}`,
-        rating: productData.rating || 5.0,
-        reviewCount: productData.reviewCount || 0,
-      };
-      setProducts((prev) => [localProd, ...prev]);
-      showToast(`Product "${localProd.name}" added to catalog`, 'success');
-      return localProd;
+    } catch (err: any) {
+      console.error('Network failure adding product:', err);
+      showToast(err?.message || 'Network error saving product to database', 'error');
+      return null;
     }
   };
 
   const updateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
     try {
       const token = getAdminToken();
-      const res = await fetch(`/api/products/${id}`, {
+      const res = await fetch(getApiUrl(`/api/products/${id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -510,90 +498,67 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify(updates),
       });
 
-      const parsed = await safeParseResponse<Product>(res, 'Failed to update product');
+      const parsed = await parseApiResponse<Product>(res, 'Failed to update product in database');
       if (parsed.ok && parsed.data) {
-        setProducts((prev) => prev.map((p) => (p.id === id ? parsed.data! : p)));
+        const updated = parsed.data;
+        setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
         if (selectedProduct && selectedProduct.id === id) {
-          setSelectedProduct(parsed.data);
+          setSelectedProduct(updated);
         }
-        showToast('Product successfully updated', 'success');
-        return parsed.data;
+        showToast('Product successfully updated in database!', 'success');
+        return updated;
       } else {
-        let updatedLocal: Product | null = null;
-        setProducts((prev) =>
-          prev.map((p) => {
-            if (p.id === id) {
-              updatedLocal = { ...p, ...updates };
-              return updatedLocal;
-            }
-            return p;
-          })
-        );
-        if (selectedProduct && selectedProduct.id === id && updatedLocal) {
-          setSelectedProduct(updatedLocal);
-        }
-        showToast('Product successfully updated', 'success');
-        return updatedLocal;
+        console.error('Failed to update product in database:', parsed);
+        showToast(parsed.error || 'Failed to update product in database', 'error');
+        return null;
       }
-    } catch {
-      let updatedLocal: Product | null = null;
-      setProducts((prev) =>
-        prev.map((p) => {
-          if (p.id === id) {
-            updatedLocal = { ...p, ...updates };
-            return updatedLocal;
-          }
-          return p;
-        })
-      );
-      if (selectedProduct && selectedProduct.id === id && updatedLocal) {
-        setSelectedProduct(updatedLocal);
-      }
-      showToast('Product updated locally', 'info');
-      return updatedLocal;
+    } catch (err: any) {
+      console.error('Network failure updating product:', err);
+      showToast(err?.message || 'Network error updating product', 'error');
+      return null;
     }
   };
 
   const deleteProduct = async (id: string): Promise<boolean> => {
     try {
       const token = getAdminToken();
-      const res = await fetch(`/api/products/${id}`, {
+      const res = await fetch(getApiUrl(`/api/products/${id}`), {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      await safeParseResponse(res, 'Failed to delete product');
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-      if (selectedProduct && selectedProduct.id === id) {
-        setSelectedProduct(null);
-        setCurrentView('home');
+      const parsed = await parseApiResponse(res, 'Failed to delete product from database');
+      if (parsed.ok) {
+        setProducts((prev) => prev.filter((p) => p.id !== id));
+        if (selectedProduct && selectedProduct.id === id) {
+          setSelectedProduct(null);
+          setCurrentView('home');
+        }
+        showToast('Product deleted from database', 'info');
+        return true;
+      } else {
+        showToast(parsed.error || 'Failed to delete product', 'error');
+        return false;
       }
-      showToast('Product deleted', 'info');
-      return true;
-    } catch {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-      if (selectedProduct && selectedProduct.id === id) {
-        setSelectedProduct(null);
-        setCurrentView('home');
-      }
-      showToast('Product deleted', 'info');
-      return true;
+    } catch (err: any) {
+      showToast(err?.message || 'Network error deleting product', 'error');
+      return false;
     }
   };
 
   const clearDemoPhotos = async (): Promise<boolean> => {
     try {
       const token = getAdminToken();
-      const res = await fetch('/api/products/clear-demo-photos', {
+      const res = await fetch(getApiUrl('/api/products/clear-demo-photos'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const parsed = await safeParseResponse<{ count: number; products: Product[] }>(res);
+      const parsed = await parseApiResponse<{ count: number; products: Product[] }>(res);
       if (parsed.ok && parsed.data) {
         setProducts(parsed.data.products || []);
         showToast(`Removed demo photos from ${parsed.data.count} products.`, 'success');
@@ -613,14 +578,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearAllProducts = async (): Promise<boolean> => {
     try {
       const token = getAdminToken();
-      const res = await fetch('/api/products/clear-all', {
+      const res = await fetch(getApiUrl('/api/products/clear-all'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      await safeParseResponse(res);
+      await parseApiResponse(res);
       setProducts([]);
       if (selectedProduct) setSelectedProduct(null);
       showToast('All demo products cleared! Catalog is ready for boutique products.', 'success');
@@ -640,12 +605,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const token = getAdminToken();
       if (!token) return;
-      const res = await fetch('/api/orders', {
+      const res = await fetch(getApiUrl('/api/orders'), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      const parsed = await safeParseResponse<CustomerOrder[]>(res);
+      const parsed = await parseApiResponse<CustomerOrder[]>(res);
       if (parsed.ok && Array.isArray(parsed.data)) {
         setOrders(parsed.data);
       }
@@ -679,13 +644,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     notes?: string;
   }): Promise<CustomerOrder | null> => {
     try {
-      const res = await fetch('/api/orders', {
+      const res = await fetch(getApiUrl('/api/orders'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
       });
 
-      const parsed = await safeParseResponse<CustomerOrder>(res);
+      const parsed = await parseApiResponse<CustomerOrder>(res);
       if (parsed.ok && parsed.data) {
         setOrders((prev) => [parsed.data!, ...prev]);
         return parsed.data;
@@ -731,7 +696,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateOrderStatus = async (orderId: string, status: OrderStatus): Promise<boolean> => {
     try {
       const token = getAdminToken();
-      const res = await fetch(`/api/orders/${orderId}/status`, {
+      const res = await fetch(getApiUrl(`/api/orders/${orderId}/status`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -740,7 +705,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ status }),
       });
 
-      const parsed = await safeParseResponse<CustomerOrder>(res);
+      const parsed = await parseApiResponse<CustomerOrder>(res);
       if (parsed.ok && parsed.data) {
         setOrders((prev) => prev.map((o) => (o.id === orderId ? parsed.data! : o)));
       } else {
@@ -803,9 +768,19 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     try {
-      localStorage.setItem('stylenest_cart', JSON.stringify(cart));
+      // Avoid storing huge base64 images into localStorage to eliminate QuotaExceededError
+      const safeCart = cart.map((item) => ({
+        ...item,
+        product: {
+          ...item.product,
+          images: (item.product.images || []).map((img) =>
+            img.length > 500 && img.startsWith('data:') ? '' : img
+          ),
+        },
+      }));
+      localStorage.setItem('stylenest_cart', JSON.stringify(safeCart));
     } catch (e) {
-      console.warn('Unable to persist cart', e);
+      console.warn('Unable to persist cart to localStorage (quota exceeded or storage restricted):', e);
     }
   }, [cart]);
 
@@ -813,7 +788,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem('stylenest_wishlist', JSON.stringify(wishlist));
     } catch (e) {
-      console.warn('Unable to persist wishlist', e);
+      console.warn('Unable to persist wishlist to localStorage:', e);
     }
   }, [wishlist]);
 

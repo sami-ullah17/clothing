@@ -36,6 +36,7 @@ export const Navbar: React.FC = () => {
     language,
     setLanguage,
     settings,
+    adminUser,
     t,
   } = useShop();
 
@@ -63,6 +64,28 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-200/80 transition-all">
+      {/* Store Owner Quick Bar if logged in */}
+      {adminUser && (
+        <div className="bg-neutral-900 border-b border-amber-500/30 text-amber-200 text-xs py-1.5 px-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-semibold text-white">Store Owner Active:</span>
+              <span className="hidden sm:inline text-neutral-300">
+                آپ لائیو ویب سائٹ دیکھ رہے ہیں — تمام پروڈکٹس کسٹمرز کو نظر آ رہی ہیں
+              </span>
+            </div>
+            <button
+              onClick={() => handleNavClick('admin')}
+              className="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-2xs"
+            >
+              <span>ایڈمن پینل (Admin Dashboard)</span>
+              <span>&rarr;</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Banner */}
       <div className="bg-neutral-950 text-neutral-200 text-xs py-2 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">

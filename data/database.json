@@ -25,21 +25,61 @@
   },
   "products": [
     {
-      "name": "Chikankari Luxury Pret",
+      "name": "Silk Organza Stitched Dupatta Ensemble",
       "category": "women",
-      "price": 6200,
-      "isNewArrival": true,
-      "stock": 10,
+      "subcategory": "Party Wear",
+      "price": 7400,
+      "stock": 8,
       "status": "in_stock",
-      "isBestSeller": false,
-      "images": [],
+      "isNewArrival": true,
+      "isBestSeller": true,
+      "description": "Pure organza with fine Pakistani threadwork.",
+      "images": [
+        "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=80"
+      ],
+      "colors": [
+        {
+          "name": "Blush Rose",
+          "hex": "#F43F5E"
+        }
+      ],
+      "sizes": [
+        "M",
+        "L"
+      ],
+      "details": [
+        "3-Piece Stitched Ensemble"
+      ],
+      "composition": "Pure Organza & Silk",
+      "id": "prod-1789823984731",
+      "rating": 5,
+      "reviewCount": 0
+    },
+    {
       "id": "prod-1789823099046",
+      "name": "Chikankari Luxury Pret Suit",
+      "category": "women",
+      "subcategory": "Pret",
+      "price": 6200,
+      "stock": 12,
+      "status": "in_stock",
+      "isNewArrival": true,
+      "isBestSeller": true,
+      "description": "Exquisite handcrafted Chikankari embroidery on pure fine lawn, styled with matching embroidered chiffon dupatta.",
+      "images": [
+        "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=80",
+        "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&q=80"
+      ],
       "rating": 5,
-      "reviewCount": 0,
+      "reviewCount": 8,
       "colors": [
         {
-          "name": "Standard",
-          "hex": "#111111"
+          "name": "Ivory Pearl",
+          "hex": "#F7F5F0"
+        },
+        {
+          "name": "Peach Blush",
+          "hex": "#FADCD4"
         }
       ],
       "sizes": [
@@ -50,94 +90,125 @@
       ],
       "details": [
         "Pure artisanal Pakistani boutique craftsmanship",
-        "Fine threadwork and precision tailored seams",
-        "Durable, comfortable high-grade drape fabric"
+        "Hand-embroidered Chikankari floral motifs",
+        "Tailored with comfortable modern silhouette",
+        "Includes stitched Shirt, Trouser & Embroidered Dupatta"
       ],
       "composition": "100% Premium Lawn / Cotton"
     },
     {
-      "name": "Test Slash",
-      "category": "women",
-      "price": 5000,
-      "stock": 10,
+      "id": "prod-men-embroidered-kurta",
+      "name": "Bespoke Embroidered Kurta Trouser",
+      "category": "men",
+      "subcategory": "Kurtas",
+      "price": 5800,
+      "discountPrice": 4900,
+      "isSale": true,
+      "salePercentage": 15,
+      "stock": 14,
+      "status": "in_stock",
+      "isNewArrival": true,
+      "isBestSeller": true,
+      "description": "Pure cotton bespoke men's tailored kurta featuring refined threadwork on collar and cuffs, paired with straight trousers.",
+      "images": [
+        "https://images.unsplash.com/photo-1622122201714-7710ca547012?w=800&q=80"
+      ],
+      "rating": 5,
+      "reviewCount": 11,
+      "colors": [
+        {
+          "name": "Slate Grey",
+          "hex": "#4A5568"
+        },
+        {
+          "name": "Midnight Black",
+          "hex": "#1A202C"
+        },
+        {
+          "name": "Pure White",
+          "hex": "#FFFFFF"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "details": [
+        "Bespoke Pakistani formal kurta cut",
+        "Subtle tone-on-tone embroidery on ban and placket",
+        "Wrinkle-resistant Egyptian finish cotton",
+        "Comfortable straight cut fit"
+      ],
+      "composition": "100% Fine Long-Staple Cotton"
+    },
+    {
+      "id": "prod-kids-festive-shalwar",
+      "name": "Kids Festive Eid Kurta Shalwar",
+      "category": "kids",
+      "subcategory": "Festive",
+      "price": 3800,
+      "stock": 18,
       "status": "in_stock",
       "isNewArrival": true,
       "isBestSeller": false,
-      "images": [],
-      "id": "prod-1789822875029",
+      "description": "Charming festive Eastern wear for kids with soft hypoallergenic lining, tailored for comfort and celebrations.",
+      "images": [
+        "https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?w=800&q=80"
+      ],
       "rating": 5,
-      "reviewCount": 0,
+      "reviewCount": 6,
       "colors": [
         {
-          "name": "Standard",
-          "hex": "#111111"
+          "name": "Royal Blue",
+          "hex": "#1E3A8A"
+        },
+        {
+          "name": "Mustard Gold",
+          "hex": "#D97706"
         }
       ],
       "sizes": [
         "S",
         "M",
-        "L",
-        "XL"
+        "L"
       ],
       "details": [
-        "Pure artisanal Pakistani boutique craftsmanship",
-        "Fine threadwork and precision tailored seams",
-        "Durable, comfortable high-grade drape fabric"
+        "Soft and breathable festive cotton",
+        "Easy button opening designed for active kids",
+        "Comes with matching stitched shalwar",
+        "Machine washable gentle cycle"
       ],
-      "composition": "100% Premium Lawn / Cotton"
+      "composition": "100% Breathable Soft Cotton"
     },
     {
-      "name": "Test 123",
-      "category": "women",
-      "price": 5000,
-      "stock": 10,
-      "status": "in_stock",
-      "isNewArrival": true,
-      "isBestSeller": false,
-      "images": [],
-      "id": "prod-1789822822076",
-      "rating": 5,
-      "reviewCount": 0,
-      "colors": [
-        {
-          "name": "Standard",
-          "hex": "#111111"
-        }
-      ],
-      "sizes": [
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "details": [
-        "Pure artisanal Pakistani boutique craftsmanship",
-        "Fine threadwork and precision tailored seams",
-        "Durable, comfortable high-grade drape fabric"
-      ],
-      "composition": "100% Premium Lawn / Cotton"
-    },
-    {
+      "id": "prod-1789822362192",
       "name": "Luxury Embroidered Lawn Suit 2026",
       "category": "women",
       "subcategory": "Pret",
       "price": 8500,
       "discountPrice": 7200,
+      "isSale": true,
+      "salePercentage": 15,
       "stock": 15,
-      "description": "Authentic boutique hand-embroidered 3-piece luxury lawn suit.",
+      "description": "Authentic boutique hand-embroidered 3-piece luxury lawn suit with organza embroidered border and digital silk dupatta.",
       "images": [
         "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=80"
       ],
       "status": "in_stock",
       "isNewArrival": true,
-      "isBestSeller": false,
-      "id": "prod-1789822362192",
+      "isBestSeller": true,
       "rating": 5,
-      "reviewCount": 0,
+      "reviewCount": 14,
       "colors": [
         {
-          "name": "Standard",
-          "hex": "#111111"
+          "name": "Teal Bloom",
+          "hex": "#0D9488"
+        },
+        {
+          "name": "Plum Royal",
+          "hex": "#581C87"
         }
       ],
       "sizes": [
@@ -149,26 +220,34 @@
       "details": [
         "Pure artisanal Pakistani boutique craftsmanship",
         "Fine threadwork and precision tailored seams",
-        "Durable, comfortable high-grade drape fabric"
+        "Durable, comfortable high-grade drape fabric",
+        "Embroidered organza neck patch included"
       ],
       "composition": "100% Premium Lawn / Cotton"
     },
     {
-      "name": "Velvet Royal Kurti",
+      "id": "prod-1789820436982",
+      "name": "Velvet Royal Kurti & Trouser",
       "category": "women",
+      "subcategory": "Formal",
       "price": 5500,
       "images": [
-        "/uploads/boutique-velvet_royal_kur-1789820436981-2lzxd.png"
+        "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&q=80"
       ],
       "stock": 10,
       "status": "in_stock",
-      "id": "prod-1789820436982",
+      "isNewArrival": true,
+      "isBestSeller": false,
       "rating": 5,
-      "reviewCount": 0,
+      "reviewCount": 4,
       "colors": [
         {
-          "name": "Standard",
-          "hex": "#111111"
+          "name": "Emerald Green",
+          "hex": "#064E3B"
+        },
+        {
+          "name": "Maroon Crimson",
+          "hex": "#881337"
         }
       ],
       "sizes": [
@@ -178,15 +257,15 @@
         "XL"
       ],
       "details": [
-        "Pure artisanal Pakistani boutique craftsmanship",
-        "Fine threadwork and precision tailored seams",
-        "Durable, comfortable high-grade drape fabric"
+        "Micro-velvet soft texture with tilla work",
+        "Artisanal zardozi embroidery detailing",
+        "Paired with matching raw silk trouser",
+        "Ideal for winter weddings and formal evenings"
       ],
-      "composition": "100% Premium Lawn / Cotton",
-      "isNewArrival": true,
-      "isBestSeller": false
+      "composition": "Micro Velvet & Pure Raw Silk"
     },
     {
+      "id": "prod-1789820433511",
       "name": "Chiffon Embroidered Luxury Suit",
       "category": "women",
       "subcategory": "Party Wear",
@@ -198,6 +277,10 @@
         {
           "name": "Tea Pink",
           "hex": "#D87D88"
+        },
+        {
+          "name": "Mint Glaze",
+          "hex": "#6EE7B7"
         }
       ],
       "sizes": [
@@ -206,51 +289,19 @@
         "L"
       ],
       "images": [
-        "/uploads/test_png-1789724449604.png"
+        "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=80"
       ],
       "stock": 10,
       "status": "in_stock",
-      "id": "prod-1789820433511",
       "rating": 5,
-      "reviewCount": 0,
+      "reviewCount": 9,
       "details": [
         "Pure artisanal Pakistani boutique craftsmanship",
         "Fine threadwork and precision tailored seams",
-        "Durable, comfortable high-grade drape fabric"
+        "Durable, comfortable high-grade drape fabric",
+        "Full embroidered back and front panels"
       ],
-      "composition": "100% Premium Lawn / Cotton",
-      "isNewArrival": true,
-      "isBestSeller": false
-    },
-    {
-      "name": "Test Boutique Suit",
-      "category": "women",
-      "subcategory": "Formal",
-      "price": 4500,
-      "colors": [
-        {
-          "name": "Black",
-          "hex": "#111111"
-        }
-      ],
-      "sizes": [
-        "M",
-        "L"
-      ],
-      "images": [
-        "/uploads/test_png-1789724449604.png"
-      ],
-      "stock": 10,
-      "status": "in_stock",
-      "id": "prod-1789820306680",
-      "rating": 5,
-      "reviewCount": 0,
-      "details": [
-        "Pure artisanal Pakistani boutique craftsmanship",
-        "Fine threadwork and precision tailored seams",
-        "Durable, comfortable high-grade drape fabric"
-      ],
-      "composition": "100% Premium Lawn / Cotton",
+      "composition": "Pure Chiffon with Silk Slip",
       "isNewArrival": true,
       "isBestSeller": false
     }

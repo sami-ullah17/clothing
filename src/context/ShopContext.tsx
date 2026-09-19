@@ -468,12 +468,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await fetch(getApiUrl('/api/products'));
       const parsed = await parseApiResponse<Product[]>(res, 'Failed to fetch products');
-      if (parsed.ok && Array.isArray(parsed.data)) {
+      if (parsed.ok && Array.isArray(parsed.data) && parsed.data.length > 0) {
         const backendProducts = parsed.data;
-        // Merge seamlessly with any locally added products
+        // Merge seamlessly with any locally added products that are not yet on the server
         setProducts((current) => {
           const backendIds = new Set(backendProducts.map((p) => p.id));
-          const localOnly = current.filter((p) => !backendIds.has(p.id));
+          const localOnly = current.filter((p) => !backendIds.has(p.id) && p.id.startsWith('prod-'));
           return [...localOnly, ...backendProducts];
         });
       }
@@ -484,8 +484,32 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Keep catalog constantly synchronized so any product added by admin is immediately visible to visitors
   useEffect(() => {
     refreshProducts();
+
+    // Re-fetch when user returns to the tab or reconnects
+    const handleRecheck = () => {
+      refreshProducts();
+    };
+    window.addEventListener('focus', handleRecheck);
+    window.addEventListener('online', handleRecheck);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        refreshProducts();
+      }
+    });
+
+    // Auto-poll every 15 seconds to stream live product updates to customers
+    const syncInterval = setInterval(() => {
+      refreshProducts();
+    }, 15000);
+
+    return () => {
+      window.removeEventListener('focus', handleRecheck);
+      window.removeEventListener('online', handleRecheck);
+      clearInterval(syncInterval);
+    };
   }, []);
 
   const addProduct = async (productData: Omit<Product, 'id'> & { id?: string }): Promise<Product | null> => {

@@ -71,13 +71,24 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          className="p-2 text-neutral-300 hover:text-white"
-          aria-label="Toggle menu"
-        >
-          {isMobileSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCurrentView('home')}
+            className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            title="View Live Storefront"
+          >
+            <Store className="w-3.5 h-3.5" />
+            <span>لائیو ویب سائٹ</span>
+          </button>
+
+          <button
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            className="p-2 text-neutral-300 hover:text-white"
+            aria-label="Toggle menu"
+          >
+            {isMobileSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Sidebar Desktop & Mobile */}
@@ -161,6 +172,23 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full overflow-y-auto min-h-screen">
+        {/* Quick status bar */}
+        <div className="hidden md:flex items-center justify-between pb-4 mb-6 border-b border-neutral-200">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-semibold text-neutral-700">
+              آن لائن اسٹور لائیو ہے &bull; Store Catalog is Online & Synced with all website visitors
+            </span>
+          </div>
+          <button
+            onClick={() => setCurrentView('home')}
+            className="px-4 py-2 bg-neutral-950 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow-sm hover:shadow-md transition-all"
+          >
+            <Store className="w-4 h-4 text-amber-400" />
+            <span>لائیو ویب سائٹ دیکھیں (View Live Store)</span>
+            <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+          </button>
+        </div>
         {activeTab === 'overview' && (
           <AdminOverview
             onNavigateTab={(tab) => {

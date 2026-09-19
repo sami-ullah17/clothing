@@ -20,6 +20,9 @@ import {
   Palette,
   Ruler,
   Camera,
+  Eye,
+  ExternalLink,
+  Globe,
 } from 'lucide-react';
 
 interface AdminProductFormProps {
@@ -130,7 +133,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   onBack,
   onSaved,
 }) => {
-  const { products, addProduct, updateProduct, adminUser, showToast, formatPrice } = useShop();
+  const { products, addProduct, updateProduct, adminUser, showToast, formatPrice, openProductDetails, setCurrentView } = useShop();
 
   const isEditMode = !!productIdToEdit;
   const existingProduct = isEditMode
@@ -190,13 +193,16 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     existingProduct?.status || 'in_stock'
   );
 
-  // Badges
+  // Badges (Default to true for new products so they immediately show under New Arrivals & Homepage)
   const [isNewArrival, setIsNewArrival] = useState<boolean>(
-    existingProduct?.isNewArrival || false
+    existingProduct ? Boolean(existingProduct.isNewArrival) : true
   );
   const [isBestSeller, setIsBestSeller] = useState<boolean>(
     existingProduct?.isBestSeller || false
   );
+
+  // Just published online confirmation state
+  const [justPublishedProduct, setJustPublishedProduct] = useState<Product | null>(null);
 
   // Images (Preserve all boutique photos uploaded or selected)
   const [images, setImages] = useState<string[]>(() => {
@@ -525,8 +531,8 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         const updated = await updateProduct(productIdToEdit, productPayload);
         setIsSubmitting(false);
         if (updated) {
+          setJustPublishedProduct(updated);
           showToast(`"${productPayload.name}" updated successfully!`, 'success');
-          onSaved();
         } else {
           setError('Failed to update product. Please check your network and inputs.');
           showToast('Failed to update product', 'error');
@@ -535,8 +541,8 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         const created = await addProduct(productPayload);
         setIsSubmitting(false);
         if (created) {
+          setJustPublishedProduct(created);
           showToast(`"${productPayload.name}" published to store!`, 'success');
-          onSaved();
         } else {
           setError('Failed to publish product. Please try again.');
           showToast('Failed to save product', 'error');
@@ -550,8 +556,68 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     }
   };
 
+  const handleResetForNew = () => {
+    setJustPublishedProduct(null);
+    setName('');
+    setDescription('Handcrafted premium boutique fabric, detailed with fine stitching and comfortable silhouette for elegant wear.');
+    setComposition('100% Premium Lawn / Cotton. Gentle wash.');
+    setPrice(4500);
+    setIsOnSale(false);
+    setImages([]);
+    setIsNewArrival(true);
+  };
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-16">
+      {/* Live Online Success Announcement */}
+      {justPublishedProduct && (
+        <div className="bg-gradient-to-br from-emerald-50 via-white to-amber-50 border-2 border-emerald-500/80 rounded-3xl p-6 sm:p-8 shadow-xl animate-in fade-in zoom-in-95 duration-300 space-y-5">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-600/30">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold mb-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <span>Now Live Online (اب آن لائن لائیو ہے)</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-neutral-950 font-serif-luxury">
+                "{justPublishedProduct.name}" آن لائن ہو گئی ہے!
+              </h3>
+              <p className="text-neutral-600 text-sm mt-1.5 leading-relaxed">
+                یہ پروڈکٹ فوری طور پر محفوظ ہو کر ویب سائٹ کے <strong>ہوم پیج</strong> اور <strong>نئی ورائٹی (New Arrivals)</strong> پر تمام صارفین اور وزٹرز کے لیے لائیو دستیاب ہے۔
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2 border-t border-emerald-100">
+            <button
+              onClick={() => openProductDetails(justPublishedProduct)}
+              className="px-6 py-3 bg-neutral-950 hover:bg-neutral-800 text-white text-xs font-bold rounded-xl inline-flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+            >
+              <Eye className="w-4 h-4 text-emerald-400" />
+              <span>ویب سائٹ پر لائیو دیکھیں (View Live on Website)</span>
+              <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+            </button>
+
+            <button
+              onClick={handleResetForNew}
+              className="px-5 py-3 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-800 text-xs font-bold rounded-xl inline-flex items-center gap-2 transition-all shadow-xs"
+            >
+              <Plus className="w-4 h-4 text-amber-700" />
+              <span>مزید پروڈکٹ شامل کریں (Add Another Product)</span>
+            </button>
+
+            <button
+              onClick={onSaved}
+              className="px-5 py-3 bg-emerald-100/80 hover:bg-emerald-200/80 text-emerald-900 text-xs font-bold rounded-xl transition-all"
+            >
+              <span>پروڈکٹس لسٹ (Go to Products List)</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-neutral-200">
         <button

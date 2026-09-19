@@ -25,6 +25,99 @@
   },
   "products": [
     {
+      "name": "Chikankari Luxury Pret",
+      "category": "women",
+      "price": 6200,
+      "isNewArrival": true,
+      "stock": 10,
+      "status": "in_stock",
+      "isBestSeller": false,
+      "images": [],
+      "id": "prod-1789823099046",
+      "rating": 5,
+      "reviewCount": 0,
+      "colors": [
+        {
+          "name": "Standard",
+          "hex": "#111111"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "details": [
+        "Pure artisanal Pakistani boutique craftsmanship",
+        "Fine threadwork and precision tailored seams",
+        "Durable, comfortable high-grade drape fabric"
+      ],
+      "composition": "100% Premium Lawn / Cotton"
+    },
+    {
+      "name": "Test Slash",
+      "category": "women",
+      "price": 5000,
+      "stock": 10,
+      "status": "in_stock",
+      "isNewArrival": true,
+      "isBestSeller": false,
+      "images": [],
+      "id": "prod-1789822875029",
+      "rating": 5,
+      "reviewCount": 0,
+      "colors": [
+        {
+          "name": "Standard",
+          "hex": "#111111"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "details": [
+        "Pure artisanal Pakistani boutique craftsmanship",
+        "Fine threadwork and precision tailored seams",
+        "Durable, comfortable high-grade drape fabric"
+      ],
+      "composition": "100% Premium Lawn / Cotton"
+    },
+    {
+      "name": "Test 123",
+      "category": "women",
+      "price": 5000,
+      "stock": 10,
+      "status": "in_stock",
+      "isNewArrival": true,
+      "isBestSeller": false,
+      "images": [],
+      "id": "prod-1789822822076",
+      "rating": 5,
+      "reviewCount": 0,
+      "colors": [
+        {
+          "name": "Standard",
+          "hex": "#111111"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "details": [
+        "Pure artisanal Pakistani boutique craftsmanship",
+        "Fine threadwork and precision tailored seams",
+        "Durable, comfortable high-grade drape fabric"
+      ],
+      "composition": "100% Premium Lawn / Cotton"
+    },
+    {
       "name": "Luxury Embroidered Lawn Suit 2026",
       "category": "women",
       "subcategory": "Pret",

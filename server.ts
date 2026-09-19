@@ -26,6 +26,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// API Request Logger
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.path.startsWith('/api')) {
+    console.log(`[API ${new Date().toISOString()}] ${req.method} ${req.originalUrl || req.url}`);
+  }
+  next();
+});
+
 // Ensure upload folder exists
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
@@ -223,11 +231,11 @@ app.put('/api/settings', requireAdmin, (req: Request, res: Response) => {
 // PRODUCTS API
 // ----------------------------------------------------
 
-app.get('/api/products', (req: Request, res: Response) => {
+app.get(['/api/products', '/api/products/'], (req: Request, res: Response) => {
   res.json(db.getProducts());
 });
 
-app.get('/api/products/:id', (req: Request, res: Response) => {
+app.get(['/api/products/:id', '/api/products/:id/'], (req: Request, res: Response) => {
   const prod = db.getProductById(req.params.id);
   if (!prod) {
     return res.status(404).json({ error: 'Product not found' });
@@ -235,7 +243,7 @@ app.get('/api/products/:id', (req: Request, res: Response) => {
   res.json(prod);
 });
 
-app.post('/api/products', requireAdmin, (req: Request, res: Response) => {
+app.post(['/api/products', '/api/products/'], requireAdmin, (req: Request, res: Response) => {
   const { name, category, price } = req.body;
   if (!name || String(name).trim() === '') {
     return res.status(400).json({ error: 'Product name is required' });
@@ -275,7 +283,7 @@ app.post('/api/products', requireAdmin, (req: Request, res: Response) => {
   res.status(201).json(newProd);
 });
 
-app.put('/api/products/:id', requireAdmin, (req: Request, res: Response) => {
+app.put(['/api/products/:id', '/api/products/:id/'], requireAdmin, (req: Request, res: Response) => {
   let images = Array.isArray(req.body.images) ? req.body.images : [];
   images = images.map((img: any, idx: number) => {
     if (typeof img === 'string' && img.startsWith('data:image/')) {
@@ -304,7 +312,7 @@ app.put('/api/products/:id', requireAdmin, (req: Request, res: Response) => {
   res.json(updated);
 });
 
-app.delete('/api/products/:id', requireAdmin, (req: Request, res: Response) => {
+app.delete(['/api/products/:id', '/api/products/:id/'], requireAdmin, (req: Request, res: Response) => {
   const success = db.deleteProduct(req.params.id);
   if (!success) {
     return res.status(404).json({ error: 'Product not found' });
@@ -380,7 +388,7 @@ app.put('/api/orders/:id/status', requireAdmin, (req: Request, res: Response) =>
 // IMAGE UPLOAD API
 // ----------------------------------------------------
 
-app.post('/api/upload', requireAdmin, (req: Request, res: Response) => {
+app.post(['/api/upload', '/api/upload/'], requireAdmin, (req: Request, res: Response) => {
   try {
     const { image, filename } = req.body;
     if (!image || typeof image !== 'string') {
@@ -439,13 +447,14 @@ app.post('/api/upload', requireAdmin, (req: Request, res: Response) => {
 // ----------------------------------------------------
 
 // Explicit catch-all for any unhandled /api route so Vite NEVER returns HTML for API calls
-app.all('/api/*', (req: Request, res: Response) => {
-  res.status(404).json({ error: `API route ${req.method} ${req.path} not found` });
+app.all(['/api', '/api/*'], (req: Request, res: Response) => {
+  console.warn(`[API 404] Unhandled route: ${req.method} ${req.originalUrl || req.path}`);
+  res.status(404).json({ error: `API route ${req.method} ${req.originalUrl || req.path} not found` });
 });
 
 // Global API error handler (e.g. JSON syntax error or payload too large)
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  if (req.path.startsWith('/api/')) {
+  if (req.path.startsWith('/api/') || req.path === '/api') {
     console.error(`API Error on ${req.method} ${req.path}:`, err);
     return res.status(err.status || 500).json({
       error: err.message || 'An unexpected server error occurred',
@@ -461,7 +470,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: false },
       appType: 'spa',
     });
     app.use(vite.middlewares);

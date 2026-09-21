@@ -9,6 +9,27 @@ export function getApiUrl(endpoint: string): string {
   return `${API_BASE_URL}${cleanEndpoint}`;
 }
 
+export function getSafeImageUrl(url: string | undefined | null): string {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('data:image/')) return trimmed;
+  if (trimmed.startsWith('blob:')) return trimmed;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
+    const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    return getApiUrl(cleanPath);
+  }
+  if (trimmed.startsWith('/images/') || trimmed.startsWith('images/')) {
+    const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    return getApiUrl(cleanPath);
+  }
+  if (trimmed.startsWith('/')) {
+    return getApiUrl(trimmed);
+  }
+  return trimmed;
+}
+
 export function getAdminAuthToken(): string {
   if (typeof window === 'undefined') return 'priboutique_owner_token_direct';
   return (

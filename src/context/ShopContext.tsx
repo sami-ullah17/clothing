@@ -441,7 +441,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
+            return parsed.map((p: any) => ({
+              ...p,
+              images: (p.images || []).filter((img: string) => typeof img === 'string' && !img.includes('images.unsplash.com')),
+            }));
           }
         }
       } catch (e) {
@@ -454,7 +457,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Keep localStorage in sync with current products catalog
   useEffect(() => {
-    if (typeof window !== 'undefined' && products && products.length > 0) {
+    if (typeof window !== 'undefined' && products) {
       try {
         localStorage.setItem('priboutique_catalog_products', JSON.stringify(products));
       } catch (e) {
@@ -464,18 +467,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [products]);
 
   const refreshProducts = async () => {
-    setIsLoadingProducts(true);
     try {
-      const res = await fetch(getApiUrl('/api/products'));
+      const res = await fetch(getApiUrl('/api/products'), {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      });
       const parsed = await parseApiResponse<Product[]>(res, 'Failed to fetch products');
-      if (parsed.ok && Array.isArray(parsed.data) && parsed.data.length > 0) {
-        const backendProducts = parsed.data;
-        // Merge seamlessly with any locally added products that are not yet on the server
-        setProducts((current) => {
-          const backendIds = new Set(backendProducts.map((p) => p.id));
-          const localOnly = current.filter((p) => !backendIds.has(p.id) && p.id.startsWith('prod-'));
-          return [...localOnly, ...backendProducts];
-        });
+      if (parsed.ok && Array.isArray(parsed.data)) {
+        setProducts(parsed.data);
       }
     } catch (err) {
       console.warn('Failed to fetch products from backend:', err);
@@ -484,7 +485,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Keep catalog constantly synchronized so any product added by admin is immediately visible to visitors
+  // Keep catalog constantly synchronized so any product added by admin is immediately visible to all visitors
   useEffect(() => {
     refreshProducts();
 
@@ -500,10 +501,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    // Auto-poll every 15 seconds to stream live product updates to customers
+    // Auto-poll every 5 seconds so products added by admin appear live on all visitors devices
     const syncInterval = setInterval(() => {
       refreshProducts();
-    }, 15000);
+    }, 5000);
 
     return () => {
       window.removeEventListener('focus', handleRecheck);
@@ -540,10 +541,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       composition: productData.composition || '100% Premium Lawn / Cotton',
     };
 
-    // 1. Instantly save in memory & local state so product is immediately live on Home Page & Dashboard
-    setProducts((prev) => [fullProduct, ...prev.filter((p) => p.id !== guaranteedId)]);
-
-    // 2. Persist to backend database
+    // Persist to backend database first so server processes base64 images into static file paths
     try {
       const token = getAdminToken();
       const res = await fetch(getApiUrl('/api/products'), {
@@ -558,37 +556,22 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const parsed = await parseApiResponse<Product>(res, 'Failed to save product to database');
       if (parsed.ok && parsed.data) {
         const saved = parsed.data;
-        setProducts((prev) => [saved, ...prev.filter((p) => p.id !== guaranteedId && p.id !== saved.id)]);
-        showToast(`Product "${saved.name}" published to store!`, 'success');
+        setProducts((prev) => [saved, ...prev.filter((p) => p.id !== saved.id && p.id !== guaranteedId)]);
+        showToast(`Product "${saved.name}" published live to all users!`, 'success');
         return saved;
       } else {
-        console.warn('Backend returned non-OK or non-JSON during addProduct:', parsed);
-        showToast(`Product "${fullProduct.name}" published to store!`, 'success');
-        return fullProduct;
+        console.error('Backend returned error during addProduct:', parsed);
+        showToast(parsed.error || 'Server error saving product', 'error');
+        return null;
       }
     } catch (err: any) {
-      console.warn('Network error connecting to backend in addProduct:', err);
-      showToast(`Product "${fullProduct.name}" published to store!`, 'success');
-      return fullProduct;
+      console.error('Network error connecting to backend in addProduct:', err);
+      showToast(err?.message || 'Network error saving product to database', 'error');
+      return null;
     }
   };
 
   const updateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
-    let updatedProduct: Product | null = null;
-    setProducts((prev) =>
-      prev.map((p) => {
-        if (p.id === id) {
-          updatedProduct = { ...p, ...updates };
-          return updatedProduct;
-        }
-        return p;
-      })
-    );
-
-    if (selectedProduct && selectedProduct.id === id) {
-      setSelectedProduct((prev) => (prev ? { ...prev, ...updates } : null));
-    }
-
     try {
       const token = getAdminToken();
       const res = await fetch(getApiUrl(`/api/products/${id}`), {
@@ -607,17 +590,17 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (selectedProduct && selectedProduct.id === id) {
           setSelectedProduct(updated);
         }
-        showToast('Product successfully updated!', 'success');
+        showToast('Product successfully updated & synced live!', 'success');
         return updated;
       } else {
-        console.warn('Backend update returned non-OK:', parsed);
-        showToast('Product updated in catalog!', 'success');
-        return updatedProduct;
+        console.error('Backend update returned error:', parsed);
+        showToast(parsed.error || 'Failed to update product on server', 'error');
+        return null;
       }
     } catch (err: any) {
-      console.warn('Network failure updating product in database:', err);
-      showToast('Product updated in catalog!', 'success');
-      return updatedProduct;
+      console.error('Network failure updating product in database:', err);
+      showToast(err?.message || 'Network failure updating product', 'error');
+      return null;
     }
   };
 

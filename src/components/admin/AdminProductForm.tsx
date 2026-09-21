@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { Product, ProductColor, Category } from '../../types';
-import { getApiUrl, getAdminAuthToken } from '../../utils/api';
+import { getApiUrl, getAdminAuthToken, getSafeImageUrl } from '../../utils/api';
 import {
   ArrowLeft,
   Upload,
@@ -108,25 +108,6 @@ const compressImageFile = (file: File): Promise<string> => {
     reader.readAsDataURL(file);
   });
 };
-
-const PAKISTANI_BOUTIQUE_SAMPLE_PHOTOS = [
-  {
-    title: 'Embroidered Lawn Suit (Ruby Maroon)',
-    url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title: 'Pure Chiffon Festive Kurti (Emerald Green)',
-    url: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title: 'Organza Dupatta Formal Ensemble (Blush Pink)',
-    url: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    title: 'Mens Festive Embroidered Kurta',
-    url: 'https://images.unsplash.com/photo-1597983073493-88cd35cf93b0?auto=format&fit=crop&w=800&q=80',
-  },
-];
 
 export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   productIdToEdit,
@@ -379,15 +360,6 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     setImages((prev) => [...prev, url]);
     setNewImageUrl('');
     showToast('Photo URL added successfully! (تصویر شامل ہو گئی)', 'success');
-  };
-
-  const handleAddSamplePhoto = (sampleUrl: string) => {
-    if (images.includes(sampleUrl)) {
-      showToast('This sample photo is already in the gallery', 'info');
-      return;
-    }
-    setImages((prev) => [...prev, sampleUrl]);
-    showToast('Sample boutique photo added to gallery!', 'success');
   };
 
   const handleRemoveImage = (index: number) => {
@@ -760,9 +732,11 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 className="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100 shadow-sm"
               >
                 <img
-                  src={imgUrl}
+                  src={getSafeImageUrl(imgUrl)}
                   alt={`Boutique Item ${index + 1}`}
                   className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                 />
                 {index === 0 && (
                   <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-neutral-950 text-white rounded text-[9px] font-bold">
@@ -833,27 +807,13 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             </button>
           </div>
 
-          {/* Quick Preset Boutique Photos */}
+          {/* Boutique Real Photo Notice */}
           <div className="pt-2 border-t border-neutral-100">
-            <p className="text-[11px] font-semibold text-neutral-600 mb-2">
-              Or pick high-definition Pakistani Boutique sample photos:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {PAKISTANI_BOUTIQUE_SAMPLE_PHOTOS.map((sample, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleAddSamplePhoto(sample.url)}
-                  className="inline-flex items-center gap-2 px-2.5 py-1.5 bg-neutral-50 hover:bg-amber-50 border border-neutral-200 hover:border-amber-300 rounded-xl text-[11px] text-neutral-700 transition-colors"
-                >
-                  <img
-                    src={sample.url}
-                    alt={sample.title}
-                    className="w-5 h-5 rounded-md object-cover"
-                  />
-                  <span>+ {sample.title}</span>
-                </button>
-              ))}
+            <div className="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/80 flex items-start gap-2.5">
+              <Camera className="w-4 h-4 text-amber-800 flex-shrink-0 mt-0.5" />
+              <div className="text-[11px] text-neutral-700 leading-relaxed">
+                <span className="font-bold text-amber-950">Original Boutique Photography:</span> Upload your shop's actual dress/fabric photos using the button above. The photo will automatically be saved and displayed live to all online visitors across Pakistan.
+              </div>
             </div>
           </div>
 
@@ -1337,9 +1297,11 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <div className="flex items-center gap-4 p-3 bg-amber-50/70 border border-amber-200 rounded-2xl">
                 {photoForConfirmation ? (
                   <img
-                    src={photoForConfirmation}
+                    src={getSafeImageUrl(photoForConfirmation)}
                     alt="Current uploaded item"
                     className="w-16 h-20 object-cover rounded-xl border border-amber-300 shadow-sm flex-shrink-0"
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
                   />
                 ) : (
                   <div className="w-16 h-20 bg-neutral-100 rounded-xl flex items-center justify-center text-neutral-400">

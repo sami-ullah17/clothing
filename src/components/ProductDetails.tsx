@@ -20,6 +20,7 @@ import {
   Shirt,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { getSafeImageUrl } from '../utils/api';
 
 interface ProductDetailsProps {
   product: Product;
@@ -184,37 +185,59 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product: initial
             <>
               {/* Thumbnails */}
               {product.images.length > 1 && (
-                <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:max-h-[580px] pb-2 sm:pb-0 scrollbar-none">
-                  {product.images.map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveImageIndex(index)}
-                      className={`relative flex-shrink-0 w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 transition-all ${
-                        activeImageIndex === index
-                          ? 'border-neutral-950 ring-2 ring-neutral-950/20 shadow-sm'
-                          : 'border-transparent hover:border-neutral-300 opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt={`${localizedName} view ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
+                 <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:max-h-[580px] pb-2 sm:pb-0 scrollbar-none">
+                   {product.images.map((img, index) => {
+                     const safeThumb = getSafeImageUrl(img);
+                     return (
+                       <button
+                         key={index}
+                         onClick={() => setActiveImageIndex(index)}
+                         className={`relative flex-shrink-0 w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 transition-all ${
+                           activeImageIndex === index
+                             ? 'border-neutral-950 ring-2 ring-neutral-950/20 shadow-sm'
+                             : 'border-transparent hover:border-neutral-300 opacity-70 hover:opacity-100'
+                         }`}
+                       >
+                         {safeThumb ? (
+                           <img
+                             src={safeThumb}
+                             alt={`${localizedName} view ${index + 1}`}
+                             className="w-full h-full object-cover"
+                             referrerPolicy="no-referrer"
+                             crossOrigin="anonymous"
+                           />
+                         ) : (
+                           <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
+                             <Shirt className="w-5 h-5 text-neutral-500" />
+                           </div>
+                         )}
+                       </button>
+                     );
+                   })}
+                 </div>
+               )}
 
               {/* Primary View */}
               <div className="flex-1 relative aspect-[3/4] sm:aspect-auto sm:h-[580px] rounded-3xl overflow-hidden bg-neutral-100 border border-neutral-200 shadow-sm">
-                <img
-                  src={product.images[activeImageIndex] || product.images[0]}
-                  alt={localizedName}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
-                  }}
-                />
+                {getSafeImageUrl(product.images[activeImageIndex] || product.images[0]) ? (
+                  <img
+                    src={getSafeImageUrl(product.images[activeImageIndex] || product.images[0])}
+                    alt={localizedName}
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-neutral-100 to-amber-50/40 p-6 text-center">
+                    <Shirt className="w-16 h-16 text-neutral-600 mb-3" />
+                    <span className="font-serif-luxury text-xl font-bold text-neutral-900">{localizedName}</span>
+                    <span className="text-xs text-amber-900 font-semibold uppercase tracking-wider mt-1">Pri-Boutique Original</span>
+                  </div>
+                )}
 
                 {/* Badges */}
                 <div className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'} flex flex-col gap-2`}>

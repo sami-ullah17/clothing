@@ -12,10 +12,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     isNewArrival: true,
     isBestSeller: true,
     description: 'Exquisite handcrafted Chikankari embroidery on pure fine lawn, styled with matching embroidered chiffon dupatta.',
-    images: [
-      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=80',
-      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&q=80',
-    ],
+    images: [],
     rating: 5,
     reviewCount: 8,
     colors: [
@@ -45,9 +42,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     isNewArrival: true,
     isBestSeller: true,
     description: "Pure cotton bespoke men's tailored kurta featuring refined threadwork on collar and cuffs, paired with straight trousers.",
-    images: [
-      'https://images.unsplash.com/photo-1622122201714-7710ca547012?w=800&q=80',
-    ],
+    images: [],
     rating: 5,
     reviewCount: 11,
     colors: [
@@ -75,9 +70,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     isNewArrival: true,
     isBestSeller: false,
     description: 'Charming festive Eastern wear for kids with soft hypoallergenic lining, tailored for comfort and celebrations.',
-    images: [
-      'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?w=800&q=80',
-    ],
+    images: [],
     rating: 5,
     reviewCount: 6,
     colors: [
@@ -104,9 +97,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     salePercentage: 15,
     stock: 15,
     description: 'Authentic boutique hand-embroidered 3-piece luxury lawn suit with organza embroidered border and digital silk dupatta.',
-    images: [
-      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=80',
-    ],
+    images: [],
     status: 'in_stock',
     isNewArrival: true,
     isBestSeller: true,
@@ -132,9 +123,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     subcategory: 'Formal',
     price: 5500,
     description: 'Sumptuous micro-velvet tailored kurti with artisanal zardozi work and pure raw silk trousers.',
-    images: [
-      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&q=80',
-    ],
+    images: [],
     stock: 10,
     status: 'in_stock',
     isNewArrival: true,
@@ -169,9 +158,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
       { name: 'Mint Glaze', hex: '#6EE7B7' },
     ],
     sizes: ['S', 'M', 'L'],
-    images: [
-      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=80',
-    ],
+    images: [],
     stock: 10,
     status: 'in_stock',
     rating: 5,

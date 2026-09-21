@@ -3,6 +3,7 @@ import { Product, ProductColor, Size } from '../types';
 import { useShop } from '../context/ShopContext';
 import { Heart, Star, ShoppingBag, Eye, Check, AlertTriangle, Shirt } from 'lucide-react';
 import { motion } from 'motion/react';
+import { getSafeImageUrl } from '../utils/api';
 
 interface ProductCardProps {
   product: Product;
@@ -26,6 +27,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [selectedSize, setSelectedSize] = useState<Size>(product.sizes?.[0] || 'M');
   const [isSizeSelectorOpen, setIsSizeSelectorOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
+
+  const rawImage = product.images && product.images.length > 0
+    ? (product.images[currentImageIndex] || product.images[0])
+    : '';
+  const safeImage = getSafeImageUrl(rawImage);
 
   const inWishlist = isInWishlist(product.id);
   const isOutOfStock = product.stock <= 0 || product.status === 'out_of_stock';
@@ -65,15 +72,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         className="relative aspect-[3/4] w-full overflow-hidden bg-neutral-100 cursor-pointer"
         onClick={() => openProductDetails(product)}
       >
-        {product.images && product.images.length > 0 ? (
+        {safeImage && !imageError ? (
           <img
-            src={product.images[currentImageIndex] || product.images[0]}
+            src={safeImage}
             alt={localizedName}
             className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
             loading="lazy"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 24 24" fill="none" stroke="%23aaa" stroke-width="1"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
-            }}
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+            onError={() => setImageError(true)}
           />
         ) : (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-neutral-100 via-stone-50 to-amber-50/40 p-6 text-center select-none">

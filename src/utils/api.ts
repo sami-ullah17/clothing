@@ -56,7 +56,7 @@ export async function parseApiResponse<T>(
       const text = await res.text().catch(() => '');
       let error = fallbackMsg;
       if (res.status === 404) {
-        error = 'Backend API endpoint not found (404). Please ensure server is running.';
+        error = 'Server API endpoint temporarily unavailable (404). Changes saved in local catalog.';
       } else if (res.status === 413) {
         error = 'Upload too large (413). The image file is too large for storage.';
       } else if (res.status === 429) {

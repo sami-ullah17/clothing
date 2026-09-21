@@ -34,6 +34,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// Health check endpoint
+app.get(['/api/health', '/api/health/'], (req: Request, res: Response) => {
+  res.json({ status: 'ok', uptime: process.uptime(), time: new Date().toISOString() });
+});
+
 // Ensure upload folder exists
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
@@ -260,72 +265,82 @@ app.get(['/api/products/:id', '/api/products/:id/'], (req: Request, res: Respons
 });
 
 app.post(['/api/products', '/api/products/'], requireAdmin, (req: Request, res: Response) => {
-  const { name, category, price } = req.body;
-  if (!name || String(name).trim() === '') {
-    return res.status(400).json({ error: 'Product name is required' });
-  }
-
-  const parsedPrice = Number(price);
-  if (isNaN(parsedPrice) || parsedPrice < 0) {
-    return res.status(400).json({ error: 'Valid product price is required' });
-  }
-
-  const validCategory = ['men', 'women', 'kids'].includes(category) ? category : 'women';
-
-  // Process any raw base64 images into saved static files in /uploads/
-  let images = Array.isArray(req.body.images) ? req.body.images : [];
-  images = images.map((img: any, idx: number) => {
-    if (typeof img === 'string' && img.startsWith('data:image/')) {
-      return processImageInput(img, `boutique-${String(name).toLowerCase()}-${idx}`);
+  try {
+    const { name, category, price } = req.body;
+    if (!name || String(name).trim() === '') {
+      return res.status(400).json({ error: 'Product name is required' });
     }
-    return img;
-  });
 
-  const productData = {
-    ...req.body,
-    name: String(name).trim(),
-    category: validCategory,
-    price: parsedPrice,
-    discountPrice: req.body.discountPrice ? Number(req.body.discountPrice) : undefined,
-    salePercentage: req.body.salePercentage ? Number(req.body.salePercentage) : undefined,
-    stock: req.body.stock !== undefined ? Number(req.body.stock) : 10,
-    status: req.body.status || 'in_stock',
-    isNewArrival: req.body.isNewArrival !== undefined ? Boolean(req.body.isNewArrival) : true,
-    isBestSeller: Boolean(req.body.isBestSeller),
-    images,
-  };
+    const parsedPrice = Number(price);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      return res.status(400).json({ error: 'Valid product price is required' });
+    }
 
-  const newProd = db.addProduct(productData);
-  res.status(201).json(newProd);
+    const validCategory = ['men', 'women', 'kids'].includes(category) ? category : 'women';
+
+    // Process any raw base64 images into saved static files in /uploads/
+    let images = Array.isArray(req.body.images) ? req.body.images : [];
+    images = images.map((img: any, idx: number) => {
+      if (typeof img === 'string' && img.startsWith('data:image/')) {
+        return processImageInput(img, `boutique-${String(name).toLowerCase()}-${idx}`);
+      }
+      return img;
+    });
+
+    const productData = {
+      ...req.body,
+      name: String(name).trim(),
+      category: validCategory,
+      price: parsedPrice,
+      discountPrice: req.body.discountPrice ? Number(req.body.discountPrice) : undefined,
+      salePercentage: req.body.salePercentage ? Number(req.body.salePercentage) : undefined,
+      stock: req.body.stock !== undefined ? Number(req.body.stock) : 10,
+      status: req.body.status || 'in_stock',
+      isNewArrival: req.body.isNewArrival !== undefined ? Boolean(req.body.isNewArrival) : true,
+      isBestSeller: Boolean(req.body.isBestSeller),
+      images,
+    };
+
+    const newProd = db.addProduct(productData);
+    res.status(201).json(newProd);
+  } catch (err: any) {
+    console.error('Error creating product in backend:', err);
+    res.status(500).json({ error: err?.message || 'Failed to save product on server' });
+  }
 });
 
 app.put(['/api/products/:id', '/api/products/:id/'], requireAdmin, (req: Request, res: Response) => {
-  let images = Array.isArray(req.body.images) ? req.body.images : [];
-  images = images.map((img: any, idx: number) => {
-    if (typeof img === 'string' && img.startsWith('data:image/')) {
-      return processImageInput(img, `boutique-${req.params.id}-${idx}`);
-    }
-    return img;
-  });
-
-  const productData = {
-    ...req.body,
-    images: images.length > 0 ? images : req.body.images,
-  };
-
-  const updated = db.updateProduct(req.params.id, productData);
-  if (!updated) {
-    // If product wasn't found by ID, upsert it so save never fails
-    const newProd = db.addProduct({
-      ...productData,
-      id: req.params.id,
-      name: req.body.name || 'Boutique Product',
-      price: req.body.price ? Number(req.body.price) : 4500,
-      category: req.body.category || 'women',
+  try {
+    let images = Array.isArray(req.body.images) ? req.body.images : [];
+    images = images.map((img: any, idx: number) => {
+      if (typeof img === 'string' && img.startsWith('data:image/')) {
+        return processImageInput(img, `boutique-${req.params.id}-${idx}`);
+      }
+      return img;
     });
-    return res.json(newProd);
+
+    const productData = {
+      ...req.body,
+      images: images.length > 0 ? images : req.body.images,
+    };
+
+    const updated = db.updateProduct(req.params.id, productData);
+    if (!updated) {
+      // If product wasn't found by ID, upsert it so save never fails
+      const newProd = db.addProduct({
+        ...productData,
+        id: req.params.id,
+        name: req.body.name || 'Boutique Product',
+        price: req.body.price ? Number(req.body.price) : 4500,
+        category: req.body.category || 'women',
+      });
+      return res.json(newProd);
+    }
+    res.json(updated);
+  } catch (err: any) {
+    console.error('Error updating product in backend:', err);
+    res.status(500).json({ error: err?.message || 'Failed to update product on server' });
   }
-  res.json(updated);
 });
 
 app.delete(['/api/products/:id', '/api/products/:id/'], requireAdmin, (req: Request, res: Response) => {

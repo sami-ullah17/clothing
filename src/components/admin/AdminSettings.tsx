@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { StoreSettings } from '../../types';
+import { getApiUrl } from '../../utils/api';
 import {
   Settings,
   MessageCircle,
@@ -116,7 +117,7 @@ export const AdminSettings: React.FC = () => {
           localStorage.getItem('priboutique_admin_token') ||
           localStorage.getItem('pributeeq_admin_token') ||
           'priboutique_owner_token_direct';
-        const res = await fetch('/api/upload', {
+        const res = await fetch(getApiUrl('/api/upload'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

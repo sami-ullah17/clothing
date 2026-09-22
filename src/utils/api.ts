@@ -46,12 +46,78 @@ export interface ApiResponse<T> {
   status: number;
 }
 
+/**
+ * Robust fetch wrapper with automatic retry for transient connection glitches,
+ * cold-starts, or reverse-proxy startup phases.
+ */
+export async function fetchWithRetry(
+  url: string,
+  options: RequestInit = {},
+  retries = 2,
+  backoffMs = 400
+): Promise<Response> {
+  let lastError: any = null;
+  let lastResponse: Response | null = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+
+      // Fast-path: successful response
+      if (res.ok) {
+        return res;
+      }
+
+      // Check if this might be a transient reverse-proxy startup phase (e.g. 502/503/504 or HTML 404)
+      const contentType = res.headers.get('content-type') || '';
+      const isHtmlResponse = contentType.includes('text/html');
+      const isTransient =
+        res.status === 502 ||
+        res.status === 503 ||
+        res.status === 504 ||
+        (res.status === 404 && isHtmlResponse && attempt < retries);
+
+      if (isTransient && attempt < retries) {
+        lastResponse = res;
+        await new Promise((resolve) => setTimeout(resolve, backoffMs * (attempt + 1)));
+        continue;
+      }
+
+      return res;
+    } catch (err: any) {
+      lastError = err;
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, backoffMs * (attempt + 1)));
+      }
+    }
+  }
+
+  if (lastResponse) return lastResponse;
+  throw lastError || new Error(`Network request failed for ${url}`);
+}
+
+/**
+ * Checks if the backend server on port 3000 is healthy and responding.
+ */
+export async function isBackendReachable(): Promise<boolean> {
+  try {
+    const res = await fetch(getApiUrl('/api/health'), {
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function parseApiResponse<T>(
   res: Response,
   fallbackMsg = 'Request failed'
 ): Promise<ApiResponse<T>> {
   try {
     const contentType = res.headers.get('content-type') || '';
+
+    // Non-JSON response (e.g. HTML error page from proxy or crash)
     if (!contentType.includes('application/json')) {
       const text = await res.text().catch(() => '');
       let error = fallbackMsg;
@@ -64,7 +130,7 @@ export async function parseApiResponse<T>(
       } else if (res.status === 401 || res.status === 403) {
         error = 'Authentication error (401/403): Invalid or expired admin credentials.';
       } else if (res.status >= 500) {
-        error = `Server error (${res.status}): ${text.slice(0, 120)}`;
+        error = `Server error (${res.status}): ${text.slice(0, 120) || 'Please retry in a moment'}`;
       } else {
         error = `Unexpected response (${res.status}): expected JSON but received ${contentType || 'text'}`;
       }
@@ -72,9 +138,12 @@ export async function parseApiResponse<T>(
     }
 
     const json = await res.json();
+
     if (!res.ok || json?.success === false) {
       let error = json?.error || fallbackMsg;
-      if (res.status === 429 || String(error).toLowerCase().includes('quota')) {
+      if (res.status === 404) {
+        error = json?.error || 'Resource or endpoint not found (404).';
+      } else if (res.status === 429 || String(error).toLowerCase().includes('quota')) {
         error = 'Quota exceeded: Request limit or storage quota reached. Please try again later.';
       } else if (res.status === 401 || res.status === 403) {
         error = 'Admin authorization failed. Please log in again.';

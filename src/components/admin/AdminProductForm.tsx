@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { Product, ProductColor, Category } from '../../types';
-import { getApiUrl, getAdminAuthToken, getSafeImageUrl } from '../../utils/api';
+import { getApiUrl, getAdminAuthToken, getSafeImageUrl, parseApiResponse } from '../../utils/api';
 import {
   ArrowLeft,
   Upload,
@@ -312,41 +312,35 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         return;
       }
 
-      let finalUrl = compressedData;
       const token = adminUser?.token || getAdminAuthToken();
+      const res = await fetch(getApiUrl('/api/upload'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          image: compressedData,
+          filename: file.name,
+        }),
+      });
 
-      try {
-        const res = await fetch(getApiUrl('/api/upload'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            image: compressedData,
-            filename: file.name,
-          }),
-        });
-
-        if (res.ok) {
-          const contentType = res.headers.get('content-type') || '';
-          if (contentType.includes('application/json')) {
-            const data = await res.json();
-            if (data?.url) {
-              finalUrl = data.url;
-            }
-          }
-        }
-      } catch (uploadErr) {
-        console.warn('Using client data URL fallback:', uploadErr);
+      const parsed = await parseApiResponse<{ url: string }>(res, 'Failed to upload image to permanent storage');
+      if (parsed.ok && parsed.data?.url) {
+        const permanentUrl = parsed.data.url;
+        setImages((prev) => [...prev, permanentUrl]);
+        setPhotoForConfirmation(permanentUrl);
+        showToast('Photo uploaded permanently! (تصویر محفوظ ہو گئی)', 'success');
+      } else {
+        const errorMsg = parsed.error || 'Failed to upload photo to server storage';
+        showToast(errorMsg, 'error');
+        setError(errorMsg);
       }
-
-      setImages((prev) => [...prev, finalUrl]);
-      setPhotoForConfirmation(finalUrl);
-      showToast('Photo added successfully! (تصویر شامل ہو گئی)', 'success');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Image upload failed:', err);
-      showToast('Failed to upload image.', 'error');
+      const errorMsg = err?.message || 'Failed to upload image to server';
+      showToast(errorMsg, 'error');
+      setError(errorMsg);
     } finally {
       setIsUploadingImage(false);
       e.target.value = '';

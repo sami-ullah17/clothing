@@ -56,31 +56,39 @@ export async function parseApiResponse<T>(
       const text = await res.text().catch(() => '');
       let error = fallbackMsg;
       if (res.status === 404) {
-        error = 'Server API endpoint temporarily unavailable (404). Changes saved in local catalog.';
+        error = 'Backend API endpoint not found (404). Please ensure the backend server is running.';
       } else if (res.status === 413) {
-        error = 'Upload too large (413). The image file is too large for storage.';
+        error = 'Upload too large (413). The image file exceeds allowed size.';
       } else if (res.status === 429) {
-        error = 'Quota exceeded: Server rate limit or hosting quota reached. Please try again later.';
+        error = 'Quota exceeded (429). Rate limit reached. Please try again in a few moments.';
       } else if (res.status === 401 || res.status === 403) {
         error = 'Authentication error (401/403): Invalid or expired admin credentials.';
       } else if (res.status >= 500) {
-        error = `Server error (${res.status}): ${text.slice(0, 100)}`;
+        error = `Server error (${res.status}): ${text.slice(0, 120)}`;
+      } else {
+        error = `Unexpected response (${res.status}): expected JSON but received ${contentType || 'text'}`;
       }
       return { ok: false, data: null, error, status: res.status };
     }
 
-    const data = await res.json();
-    if (!res.ok) {
-      let error = data?.error || fallbackMsg;
+    const json = await res.json();
+    if (!res.ok || json?.success === false) {
+      let error = json?.error || fallbackMsg;
       if (res.status === 429 || String(error).toLowerCase().includes('quota')) {
         error = 'Quota exceeded: Request limit or storage quota reached. Please try again later.';
       } else if (res.status === 401 || res.status === 403) {
         error = 'Admin authorization failed. Please log in again.';
       }
-      return { ok: false, data, error, status: res.status };
+      return { ok: false, data: null, error, status: res.status };
     }
 
-    return { ok: true, data, error: '', status: res.status };
+    // Auto-unwrap if response format is { success: true, data: ... }
+    const unwrappedData =
+      json && typeof json === 'object' && 'success' in json && 'data' in json
+        ? json.data
+        : json;
+
+    return { ok: true, data: unwrappedData as T, error: '', status: res.status };
   } catch (err: any) {
     return { ok: false, data: null, error: err?.message || fallbackMsg, status: 0 };
   }

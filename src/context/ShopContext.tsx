@@ -514,37 +514,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const addProduct = async (productData: Omit<Product, 'id'> & { id?: string }): Promise<Product | null> => {
-    // Generate a reliable unique ID
-    const guaranteedId = productData.id || `prod-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    const fullProduct: Product = {
-      ...productData,
-      id: guaranteedId,
-      status: productData.status || 'in_stock',
-      isNewArrival: productData.isNewArrival !== false,
-      isBestSeller: Boolean(productData.isBestSeller),
-      rating: productData.rating || 5.0,
-      reviewCount: productData.reviewCount || 0,
-      colors: productData.colors && productData.colors.length > 0
-        ? productData.colors
-        : [{ name: 'Standard', hex: '#111111' }],
-      sizes: productData.sizes && productData.sizes.length > 0
-        ? productData.sizes
-        : ['S', 'M', 'L', 'XL'],
-      details: productData.details && productData.details.length > 0
-        ? productData.details
-        : [
-            '3-Piece Stitched Luxury Ensemble (Shirt, Trouser & Dupatta)',
-            'Pure artisanal Pakistani boutique craftsmanship',
-            'Fine threadwork and precision tailored seams',
-            'Breathable, comfortable high-grade drape fabric',
-          ],
-      composition: productData.composition || '100% Premium Lawn / Cotton',
-    };
-
-    // 1. Instantly save in memory & local state so product is immediately live on Home Page & Dashboard
-    setProducts((prev) => [fullProduct, ...prev.filter((p) => p.id !== guaranteedId)]);
-
-    // 2. Persist to backend database so server processes base64 images into static file paths
     try {
       const token = getAdminToken();
       const res = await fetch(getApiUrl('/api/products'), {
@@ -553,43 +522,31 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(fullProduct),
+        body: JSON.stringify(productData),
       });
 
       const parsed = await parseApiResponse<Product>(res, 'Failed to save product to database');
       if (parsed.ok && parsed.data) {
         const saved = parsed.data;
-        setProducts((prev) => [saved, ...prev.filter((p) => p.id !== saved.id && p.id !== guaranteedId)]);
+        // Update state with permanent saved product from backend database
+        setProducts((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)]);
         showToast(`Product "${saved.name}" published live to store!`, 'success');
+        refreshProducts();
         return saved;
       } else {
-        console.warn('Backend returned non-OK or non-JSON during addProduct:', parsed);
-        showToast(`Product "${fullProduct.name}" published to store!`, 'success');
-        return fullProduct;
+        const errMsg = parsed.error || 'Failed to save product to database';
+        showToast(errMsg, 'error');
+        throw new Error(errMsg);
       }
     } catch (err: any) {
-      console.warn('Network error connecting to backend in addProduct:', err);
-      showToast(`Product "${fullProduct.name}" published to store!`, 'success');
-      return fullProduct;
+      console.error('Error in addProduct:', err);
+      const errMsg = err?.message || 'Failed to connect to backend server';
+      showToast(errMsg, 'error');
+      throw err;
     }
   };
 
   const updateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
-    let localUpdated: Product | null = null;
-    setProducts((prev) =>
-      prev.map((p) => {
-        if (p.id === id) {
-          localUpdated = { ...p, ...updates };
-          return localUpdated;
-        }
-        return p;
-      })
-    );
-
-    if (selectedProduct && selectedProduct.id === id) {
-      setSelectedProduct((prev) => (prev ? { ...prev, ...updates } : null));
-    }
-
     try {
       const token = getAdminToken();
       const res = await fetch(getApiUrl(`/api/products/${id}`), {
@@ -608,17 +565,19 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (selectedProduct && selectedProduct.id === id) {
           setSelectedProduct(updated);
         }
-        showToast('Product successfully updated & synced live!', 'success');
+        showToast('Product successfully updated in database!', 'success');
+        refreshProducts();
         return updated;
       } else {
-        console.warn('Backend update returned non-OK:', parsed);
-        showToast('Product updated in catalog!', 'success');
-        return localUpdated;
+        const errMsg = parsed.error || 'Failed to update product in database';
+        showToast(errMsg, 'error');
+        throw new Error(errMsg);
       }
     } catch (err: any) {
-      console.warn('Network failure updating product in database:', err);
-      showToast('Product updated in catalog!', 'success');
-      return localUpdated;
+      console.error('Network failure updating product in database:', err);
+      const errMsg = err?.message || 'Failed to connect to backend server';
+      showToast(errMsg, 'error');
+      throw err;
     }
   };
 
@@ -640,6 +599,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setCurrentView('home');
         }
         showToast('Product deleted from database', 'info');
+        refreshProducts();
         return true;
       } else {
         showToast(parsed.error || 'Failed to delete product', 'error');

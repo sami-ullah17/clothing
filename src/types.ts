@@ -40,6 +40,8 @@ export interface Product {
   stock: number;
   status?: 'in_stock' | 'out_of_stock';
   reviews?: Review[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CartItem {

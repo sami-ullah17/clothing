@@ -5,6 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import { db, OrderStatus } from './server/db.js';
 import { verifyPassword, generateToken, verifyToken } from './server/auth.js';
+import { saveImageToStorage, getStorageEngine } from './server/storage.js';
 
 dotenv.config();
 
@@ -35,8 +36,21 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Health check endpoint
-app.get(['/api/health', '/api/health/'], (req: Request, res: Response) => {
-  res.json({ status: 'ok', uptime: process.uptime(), time: new Date().toISOString() });
+app.get(['/api/health', '/api/health/'], async (req: Request, res: Response) => {
+  try {
+    const products = await db.getProducts();
+    res.json({
+      success: true,
+      status: 'ok',
+      database: db.getEngine(),
+      storage: getStorageEngine(),
+      productsCount: products.length,
+      uptime: process.uptime(),
+      time: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, status: 'error', error: err?.message });
+  }
 });
 
 // Ensure upload folder exists
@@ -65,48 +79,6 @@ app.use(
 // Admin Auth Middleware
 interface AuthRequest extends Request {
   adminUser?: { email: string; role: string };
-}
-
-// Persist any base64 image directly to /uploads disk storage
-function processImageInput(imageStr: string, namePrefix = 'boutique'): string {
-  if (!imageStr || typeof imageStr !== 'string') return imageStr;
-  if (!imageStr.startsWith('data:image/')) return imageStr;
-
-  try {
-    let mimeType = 'image/jpeg';
-    let base64Payload = imageStr;
-
-    if (imageStr.includes(';base64,')) {
-      const parts = imageStr.split(';base64,');
-      mimeType = parts[0].replace(/^data:/, '').trim() || 'image/jpeg';
-      base64Payload = parts[1] || '';
-    } else {
-      const commaIndex = imageStr.indexOf(',');
-      if (commaIndex !== -1) {
-        mimeType = imageStr.substring(5, commaIndex).replace(';base64', '').trim() || 'image/jpeg';
-        base64Payload = imageStr.substring(commaIndex + 1);
-      }
-    }
-
-    let ext = 'jpg';
-    if (mimeType.includes('png')) ext = 'png';
-    else if (mimeType.includes('webp')) ext = 'webp';
-    else if (mimeType.includes('gif')) ext = 'gif';
-
-    const cleanBase64 = base64Payload.replace(/\s/g, '');
-    const buffer = Buffer.from(cleanBase64, 'base64');
-    if (buffer.length === 0) return imageStr;
-
-    const cleanName = namePrefix.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 25);
-    const uniqueFilename = `${cleanName}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${ext}`;
-    const filePath = path.join(UPLOADS_DIR, uniqueFilename);
-
-    fs.writeFileSync(filePath, buffer);
-    return `/uploads/${uniqueFilename}`;
-  } catch (err) {
-    console.error('Failed to persist base64 image:', err);
-    return imageStr;
-  }
 }
 
 const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -140,7 +112,7 @@ const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
 // AUTH API
 // ----------------------------------------------------
 
-app.post('/api/auth/login', (req: Request, res: Response) => {
+app.post('/api/auth/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email/username and password are required' });
@@ -149,7 +121,7 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
   const cleanEmail = (email || '').trim().toLowerCase();
   const cleanPass = (password || '').trim();
   const admin = db.getAdmin();
-  const settings = db.getSettings();
+  const settings = await db.getSettings();
 
   // Allow various formats: official email, no-hyphen email, simple 'admin' or 'owner', user's email, or owner WhatsApp
   const cleanPhone = cleanEmail.replace(/[^0-9]/g, '');
@@ -217,11 +189,16 @@ app.get('/api/auth/me', (req: AuthRequest, res: Response) => {
 // STORE SETTINGS API
 // ----------------------------------------------------
 
-app.get('/api/settings', (req: Request, res: Response) => {
-  res.json(db.getSettings());
+app.get('/api/settings', async (req: Request, res: Response) => {
+  try {
+    const settings = await db.getSettings();
+    res.json(settings);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
 });
 
-app.put('/api/settings', requireAdmin, (req: Request, res: Response) => {
+app.put('/api/settings', requireAdmin, async (req: Request, res: Response) => {
   const allowed = [
     'storeName',
     'storeTagline',
@@ -244,48 +221,77 @@ app.put('/api/settings', requireAdmin, (req: Request, res: Response) => {
     }
   }
 
-  const updated = db.updateSettings(updates);
-  res.json(updated);
+  try {
+    const updated = await db.updateSettings(updates);
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
 });
 
 // ----------------------------------------------------
 // PRODUCTS API
 // ----------------------------------------------------
 
-app.get(['/api/products', '/api/products/'], (req: Request, res: Response) => {
-  res.json(db.getProducts());
-});
-
-app.get(['/api/products/:id', '/api/products/:id/'], (req: Request, res: Response) => {
-  const prod = db.getProductById(req.params.id);
-  if (!prod) {
-    return res.status(404).json({ error: 'Product not found' });
+app.get(['/api/products', '/api/products/'], async (req: Request, res: Response) => {
+  try {
+    const products = await db.getProducts();
+    res.json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
+  } catch (err: any) {
+    console.error('Error fetching products:', err);
+    res.status(500).json({ success: false, error: 'Failed to retrieve products from database' });
   }
-  res.json(prod);
 });
 
-app.post(['/api/products', '/api/products/'], requireAdmin, (req: Request, res: Response) => {
+app.get(['/api/products/:id', '/api/products/:id/'], async (req: Request, res: Response) => {
+  try {
+    const prod = await db.getProductById(req.params.id);
+    if (!prod) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+    res.json({ success: true, data: prod });
+  } catch (err: any) {
+    console.error('Error fetching product by ID:', err);
+    res.status(500).json({ success: false, error: 'Failed to retrieve product' });
+  }
+});
+
+app.post(['/api/products', '/api/products/'], requireAdmin, async (req: Request, res: Response) => {
   try {
     const { name, category, price } = req.body;
     if (!name || String(name).trim() === '') {
-      return res.status(400).json({ error: 'Product name is required' });
+      return res.status(400).json({ success: false, error: 'Product name is required' });
     }
 
     const parsedPrice = Number(price);
     if (isNaN(parsedPrice) || parsedPrice < 0) {
-      return res.status(400).json({ error: 'Valid product price is required' });
+      return res.status(400).json({ success: false, error: 'Valid product price is required' });
     }
 
     const validCategory = ['men', 'women', 'kids'].includes(category) ? category : 'women';
 
-    // Process any raw base64 images into saved static files in /uploads/
-    let images = Array.isArray(req.body.images) ? req.body.images : [];
-    images = images.map((img: any, idx: number) => {
-      if (typeof img === 'string' && img.startsWith('data:image/')) {
-        return processImageInput(img, `boutique-${String(name).toLowerCase()}-${idx}`);
+    // Process any raw base64 images into permanent storage (Cloudinary, Supabase, or local uploads)
+    let rawImages = Array.isArray(req.body.images) ? req.body.images : [];
+    const permanentImages: string[] = [];
+    for (let idx = 0; idx < rawImages.length; idx++) {
+      const img = rawImages[idx];
+      if (typeof img === 'string') {
+        if (img.startsWith('data:image/') || img.startsWith('data:application/')) {
+          try {
+            const savedUrl = await saveImageToStorage(img, `boutique-${String(name).toLowerCase()}-${idx}`);
+            permanentImages.push(savedUrl);
+          } catch (imgErr) {
+            console.warn(`[API] Failed to persist image ${idx} to permanent storage:`, imgErr);
+          }
+        } else if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('/uploads/')) {
+          permanentImages.push(img);
+        }
       }
-      return img;
-    });
+    }
 
     const productData = {
       ...req.body,
@@ -298,67 +304,91 @@ app.post(['/api/products', '/api/products/'], requireAdmin, (req: Request, res: 
       status: req.body.status || 'in_stock',
       isNewArrival: req.body.isNewArrival !== undefined ? Boolean(req.body.isNewArrival) : true,
       isBestSeller: Boolean(req.body.isBestSeller),
-      images,
+      images: permanentImages,
     };
 
-    const newProd = db.addProduct(productData);
-    res.status(201).json(newProd);
+    const newProd = await db.addProduct(productData);
+    res.status(201).json({ success: true, data: newProd });
   } catch (err: any) {
     console.error('Error creating product in backend:', err);
-    res.status(500).json({ error: err?.message || 'Failed to save product on server' });
+    res.status(500).json({ success: false, error: err?.message || 'Failed to save product on server' });
   }
 });
 
-app.put(['/api/products/:id', '/api/products/:id/'], requireAdmin, (req: Request, res: Response) => {
+app.put(['/api/products/:id', '/api/products/:id/'], requireAdmin, async (req: Request, res: Response) => {
   try {
-    let images = Array.isArray(req.body.images) ? req.body.images : [];
-    images = images.map((img: any, idx: number) => {
-      if (typeof img === 'string' && img.startsWith('data:image/')) {
-        return processImageInput(img, `boutique-${req.params.id}-${idx}`);
+    let rawImages = Array.isArray(req.body.images) ? req.body.images : [];
+    const permanentImages: string[] = [];
+    for (let idx = 0; idx < rawImages.length; idx++) {
+      const img = rawImages[idx];
+      if (typeof img === 'string') {
+        if (img.startsWith('data:image/') || img.startsWith('data:application/')) {
+          try {
+            const savedUrl = await saveImageToStorage(img, `boutique-${req.params.id}-${idx}`);
+            permanentImages.push(savedUrl);
+          } catch (imgErr) {
+            console.warn(`[API] Failed to persist image ${idx} on update:`, imgErr);
+          }
+        } else if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('/uploads/')) {
+          permanentImages.push(img);
+        }
       }
-      return img;
-    });
+    }
 
     const productData = {
       ...req.body,
-      images: images.length > 0 ? images : req.body.images,
+      images: permanentImages.length > 0 ? permanentImages : req.body.images,
     };
 
-    const updated = db.updateProduct(req.params.id, productData);
+    const updated = await db.updateProduct(req.params.id, productData);
     if (!updated) {
-      // If product wasn't found by ID, upsert it so save never fails
-      const newProd = db.addProduct({
+      // Upsert so product is guaranteed saved
+      const newProd = await db.addProduct({
         ...productData,
         id: req.params.id,
         name: req.body.name || 'Boutique Product',
         price: req.body.price ? Number(req.body.price) : 4500,
         category: req.body.category || 'women',
       });
-      return res.json(newProd);
+      return res.json({ success: true, data: newProd });
     }
-    res.json(updated);
+    res.json({ success: true, data: updated });
   } catch (err: any) {
     console.error('Error updating product in backend:', err);
-    res.status(500).json({ error: err?.message || 'Failed to update product on server' });
+    res.status(500).json({ success: false, error: err?.message || 'Failed to update product on server' });
   }
 });
 
-app.delete(['/api/products/:id', '/api/products/:id/'], requireAdmin, (req: Request, res: Response) => {
-  const success = db.deleteProduct(req.params.id);
-  if (!success) {
-    return res.status(404).json({ error: 'Product not found' });
+app.delete(['/api/products/:id', '/api/products/:id/'], requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const success = await db.deleteProduct(req.params.id);
+    if (!success) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+    res.json({ success: true, message: 'Product successfully deleted', id: req.params.id });
+  } catch (err: any) {
+    console.error('Error deleting product in backend:', err);
+    res.status(500).json({ success: false, error: err?.message || 'Failed to delete product' });
   }
-  res.json({ message: 'Product successfully deleted', id: req.params.id });
 });
 
-app.post('/api/products/clear-demo-photos', requireAdmin, (req: Request, res: Response) => {
-  const count = db.clearDemoPhotos();
-  res.json({ message: `Removed demo photos from ${count} products`, count, products: db.getProducts() });
+app.post('/api/products/clear-demo-photos', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const count = await db.clearDemoPhotos();
+    const products = await db.getProducts();
+    res.json({ success: true, message: `Removed demo photos from ${count} products`, count, products });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: 'Failed to clear demo photos' });
+  }
 });
 
-app.post('/api/products/clear-all', requireAdmin, (req: Request, res: Response) => {
-  db.clearAllProducts();
-  res.json({ message: 'All demo products cleared successfully', products: [] });
+app.post('/api/products/clear-all', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    await db.clearAllProducts();
+    res.json({ success: true, message: 'All demo products cleared successfully', products: [] });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: 'Failed to clear all products' });
+  }
 });
 
 // ----------------------------------------------------
@@ -366,110 +396,101 @@ app.post('/api/products/clear-all', requireAdmin, (req: Request, res: Response) 
 // ----------------------------------------------------
 
 // Admin view all customer orders
-app.get('/api/orders', requireAdmin, (req: Request, res: Response) => {
-  res.json(db.getOrders());
+app.get('/api/orders', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const orders = await db.getOrders();
+    res.json({ success: true, data: orders });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: 'Failed to fetch orders' });
+  }
 });
 
 // Customer places order (via WhatsApp action or direct checkout)
-app.post('/api/orders', (req: Request, res: Response) => {
-  const { customerName, phone, items, totalAmount } = req.body;
-  if (!customerName || !phone || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Customer name, phone, and items are required' });
+app.post('/api/orders', async (req: Request, res: Response) => {
+  try {
+    const { customerName, phone, items, totalAmount } = req.body;
+    if (!customerName || !phone || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, error: 'Customer name, phone, and items are required' });
+    }
+
+    const newOrder = await db.addOrder({
+      customerName,
+      phone,
+      whatsappNumber: req.body.whatsappNumber || phone,
+      deliveryAddress: req.body.deliveryAddress || 'Pakpattan / Customer address',
+      city: req.body.city || 'Pakpattan',
+      items,
+      totalAmount: totalAmount || 0,
+      status: 'Pending',
+      notes: req.body.notes || '',
+    });
+
+    res.status(201).json({ success: true, data: newOrder });
+  } catch (err: any) {
+    console.error('Error placing order:', err);
+    res.status(500).json({ success: false, error: 'Failed to save order' });
   }
-
-  const newOrder = db.addOrder({
-    customerName,
-    phone,
-    whatsappNumber: req.body.whatsappNumber || phone,
-    deliveryAddress: req.body.deliveryAddress || 'Pakpattan / Customer address',
-    city: req.body.city || 'Pakpattan',
-    items,
-    totalAmount: totalAmount || 0,
-    status: 'Pending',
-    notes: req.body.notes || '',
-  });
-
-  res.status(201).json(newOrder);
 });
 
 // Admin update order status
-app.put('/api/orders/:id/status', requireAdmin, (req: Request, res: Response) => {
-  const { status } = req.body;
-  const validStatuses: OrderStatus[] = [
-    'Pending',
-    'Confirmed',
-    'Processing',
-    'Shipped',
-    'Delivered',
-    'Cancelled',
-  ];
+app.put('/api/orders/:id/status', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { status } = req.body;
+    const validStatuses: OrderStatus[] = [
+      'Pending',
+      'Confirmed',
+      'Processing',
+      'Shipped',
+      'Delivered',
+      'Cancelled',
+    ];
 
-  if (!status || !validStatuses.includes(status)) {
-    return res.status(400).json({ error: `Status must be one of: ${validStatuses.join(', ')}` });
-  }
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ success: false, error: `Status must be one of: ${validStatuses.join(', ')}` });
+    }
 
-  const updated = db.updateOrderStatus(req.params.id, status);
-  if (!updated) {
-    return res.status(404).json({ error: 'Order not found' });
+    const updated = await db.updateOrderStatus(req.params.id, status);
+    if (!updated) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+    res.json({ success: true, data: updated });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: 'Failed to update order status' });
   }
-  res.json(updated);
 });
 
 // ----------------------------------------------------
 // IMAGE UPLOAD API
 // ----------------------------------------------------
 
-app.post(['/api/upload', '/api/upload/'], requireAdmin, (req: Request, res: Response) => {
+app.post(['/api/upload', '/api/upload/'], requireAdmin, async (req: Request, res: Response) => {
   try {
     const { image, filename } = req.body;
     if (!image || typeof image !== 'string') {
-      return res.status(400).json({ error: 'Image base64 data is required' });
+      return res.status(400).json({ success: false, error: 'Image base64 data is required' });
     }
 
-    let mimeType = 'image/jpeg';
-    let base64Payload = image;
-
-    if (image.includes(';base64,')) {
-      const parts = image.split(';base64,');
-      mimeType = parts[0].replace(/^data:/, '').trim() || 'image/jpeg';
-      base64Payload = parts[1] || '';
-    } else if (image.startsWith('data:')) {
-      const commaIndex = image.indexOf(',');
-      if (commaIndex !== -1) {
-        mimeType = image.substring(5, commaIndex).replace(';base64', '').trim() || 'image/jpeg';
-        base64Payload = image.substring(commaIndex + 1);
-      }
+    if (image.startsWith('blob:')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot upload temporary blob URLs. Upload real image file or base64 data.',
+      });
     }
 
-    // Determine clean file extension
-    let ext = 'jpg';
-    if (mimeType.includes('png')) ext = 'png';
-    else if (mimeType.includes('webp')) ext = 'webp';
-    else if (mimeType.includes('gif')) ext = 'gif';
-    else if (mimeType.includes('svg')) ext = 'svg';
-    else if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = 'jpg';
+    const permanentUrl = await saveImageToStorage(image, filename || 'boutique-item');
 
-    // Strip whitespace/newlines that can break decoding
-    const cleanBase64 = base64Payload.replace(/\s/g, '');
-    const buffer = Buffer.from(cleanBase64, 'base64');
-
-    if (buffer.length === 0) {
-      return res.status(400).json({ error: 'Image data is empty' });
-    }
-
-    const cleanName = (filename || 'boutique-item')
-      .replace(/[^a-zA-Z0-9_-]/g, '_')
-      .slice(0, 30);
-    const uniqueFilename = `${cleanName}-${Date.now()}.${ext}`;
-    const filePath = path.join(UPLOADS_DIR, uniqueFilename);
-
-    fs.writeFileSync(filePath, buffer);
-    const imageUrl = `/uploads/${uniqueFilename}`;
-
-    res.json({ url: imageUrl, filename: uniqueFilename, size: buffer.length });
+    res.json({
+      success: true,
+      url: permanentUrl,
+      filename: filename || 'boutique-item',
+      storage: getStorageEngine(),
+    });
   } catch (err: any) {
     console.error('Image upload failure:', err);
-    res.status(500).json({ error: 'Failed to save image: ' + (err.message || 'unknown error') });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to save image permanently: ' + (err?.message || 'unknown error'),
+    });
   }
 });
 

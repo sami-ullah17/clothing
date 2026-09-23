@@ -203,8 +203,6 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product: initial
                              src={safeThumb}
                              alt={`${localizedName} view ${index + 1}`}
                              className="w-full h-full object-cover"
-                             referrerPolicy="no-referrer"
-                             crossOrigin="anonymous"
                            />
                          ) : (
                            <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
@@ -225,10 +223,8 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product: initial
                     alt={localizedName}
                     className="w-full h-full object-cover"
                     loading="eager"
-                    referrerPolicy="no-referrer"
-                    crossOrigin="anonymous"
                     onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
+                      (e.target as HTMLImageElement).src = '/pributeeq_logo.jpg';
                     }}
                   />
                 ) : (

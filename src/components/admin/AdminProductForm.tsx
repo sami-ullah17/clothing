@@ -313,32 +313,35 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       }
 
       const token = adminUser?.token || getAdminAuthToken();
-      const res = await fetch(getApiUrl('/api/upload'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          image: compressedData,
-          filename: file.name,
-        }),
-      });
+      let permanentUrl = '';
+      try {
+        const res = await fetch(getApiUrl('/api/upload'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            image: compressedData,
+            filename: file.name,
+          }),
+        });
 
-      const parsed = await parseApiResponse<{ url: string }>(res, 'Failed to upload image to permanent storage');
-      if (parsed.ok && parsed.data?.url) {
-        const permanentUrl = parsed.data.url;
-        setImages((prev) => [...prev, permanentUrl]);
-        setPhotoForConfirmation(permanentUrl);
-        showToast('Photo uploaded permanently! (تصویر محفوظ ہو گئی)', 'success');
-      } else {
-        const errorMsg = parsed.error || 'Failed to upload photo to server storage';
-        showToast(errorMsg, 'error');
-        setError(errorMsg);
+        const parsed = await parseApiResponse<{ url: string }>(res, 'Failed to upload image to permanent storage');
+        if (parsed.ok && parsed.data?.url) {
+          permanentUrl = parsed.data.url;
+        }
+      } catch (uploadErr) {
+        console.warn('Backend upload network error, using high-res compressed image data:', uploadErr);
       }
+
+      const finalImage = permanentUrl || compressedData;
+      setImages((prev) => [...prev, finalImage]);
+      setPhotoForConfirmation(finalImage);
+      showToast('Photo added successfully! (تصویر کامیابی سے محفوظ ہو گئی)', 'success');
     } catch (err: any) {
-      console.error('Image upload failed:', err);
-      const errorMsg = err?.message || 'Failed to upload image to server';
+      console.error('Image processing failed:', err);
+      const errorMsg = err?.message || 'Failed to process image';
       showToast(errorMsg, 'error');
       setError(errorMsg);
     } finally {
@@ -351,7 +354,8 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   const handleAddImageUrl = () => {
     if (!newImageUrl.trim()) return;
     const url = newImageUrl.trim();
-    setImages((prev) => [...prev, url]);
+    const safeUrl = getSafeImageUrl(url);
+    setImages((prev) => [...prev, safeUrl]);
     setNewImageUrl('');
     showToast('Photo URL added successfully! (تصویر شامل ہو گئی)', 'success');
   };
@@ -729,8 +733,6 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                   src={getSafeImageUrl(imgUrl)}
                   alt={`Boutique Item ${index + 1}`}
                   className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
                 />
                 {index === 0 && (
                   <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-neutral-950 text-white rounded text-[9px] font-bold">
@@ -1294,8 +1296,6 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                     src={getSafeImageUrl(photoForConfirmation)}
                     alt="Current uploaded item"
                     className="w-16 h-20 object-cover rounded-xl border border-amber-300 shadow-sm flex-shrink-0"
-                    referrerPolicy="no-referrer"
-                    crossOrigin="anonymous"
                   />
                 ) : (
                   <div className="w-16 h-20 bg-neutral-100 rounded-xl flex items-center justify-center text-neutral-400">

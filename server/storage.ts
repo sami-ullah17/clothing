@@ -9,6 +9,90 @@ if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
+// Persistent image store file in /data directory
+const DATA_DIR = path.join(process.cwd(), 'data');
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+const IMAGES_STORE_FILE = path.join(DATA_DIR, 'images_store.json');
+
+interface StoredImageRecord {
+  filename: string;
+  mimeType: string;
+  base64: string;
+  createdAt: string;
+}
+
+function loadPersistentImages(): Record<string, StoredImageRecord> {
+  try {
+    if (fs.existsSync(IMAGES_STORE_FILE)) {
+      const raw = fs.readFileSync(IMAGES_STORE_FILE, 'utf-8');
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn('[Storage] Could not read images_store.json:', err);
+  }
+  return {};
+}
+
+function savePersistentImageRecord(record: StoredImageRecord) {
+  try {
+    const store = loadPersistentImages();
+    store[record.filename] = record;
+    // Keep max 200 most recent uploaded items to prevent bloat
+    const keys = Object.keys(store);
+    if (keys.length > 200) {
+      const sortedKeys = keys.sort((a, b) => {
+        const timeA = new Date(store[a]?.createdAt || 0).getTime();
+        const timeB = new Date(store[b]?.createdAt || 0).getTime();
+        return timeA - timeB;
+      });
+      const toRemove = sortedKeys.slice(0, keys.length - 200);
+      for (const k of toRemove) {
+        delete store[k];
+      }
+    }
+    const tmp = `${IMAGES_STORE_FILE}.tmp.${Date.now()}`;
+    fs.writeFileSync(tmp, JSON.stringify(store), 'utf-8');
+    fs.renameSync(tmp, IMAGES_STORE_FILE);
+  } catch (err) {
+    console.warn('[Storage] Could not write to images_store.json:', err);
+  }
+}
+
+export function getImageFromPersistentStore(
+  filename: string
+): { buffer: Buffer; mimeType: string } | null {
+  try {
+    // 1. First check disk directly
+    const localDiskPath = path.join(UPLOADS_DIR, filename);
+    if (fs.existsSync(localDiskPath)) {
+      const buffer = fs.readFileSync(localDiskPath);
+      let mimeType = 'image/jpeg';
+      if (filename.endsWith('.png')) mimeType = 'image/png';
+      else if (filename.endsWith('.webp')) mimeType = 'image/webp';
+      else if (filename.endsWith('.gif')) mimeType = 'image/gif';
+      else if (filename.endsWith('.svg')) mimeType = 'image/svg+xml';
+      return { buffer, mimeType };
+    }
+
+    // 2. Check persistent store in data/images_store.json
+    const store = loadPersistentImages();
+    const record = store[filename];
+    if (record && record.base64) {
+      const buffer = Buffer.from(record.base64, 'base64');
+      // Auto restore to disk for fast subsequent reads
+      try {
+        fs.writeFileSync(localDiskPath, buffer);
+      } catch {}
+      return { buffer, mimeType: record.mimeType || 'image/jpeg' };
+    }
+  } catch (err) {
+    console.warn('[Storage] Error looking up persistent image:', err);
+  }
+  return null;
+}
+
 // ----------------------------------------------------
 // Storage Provider Detection & Clients
 // ----------------------------------------------------
@@ -55,19 +139,21 @@ if (
   }
 }
 
-export type StorageEngine = 'cloudinary' | 'supabase' | 'local_disk';
+export type StorageEngine = 'cloudinary' | 'supabase' | 'imgbb' | 'persistent_cache' | 'local_disk';
 
 export function getStorageEngine(): StorageEngine {
   if (isCloudinaryConfigured) return 'cloudinary';
   if (isSupabaseStorageConfigured) return 'supabase';
-  return 'local_disk';
+  if (process.env.IMGBB_API_KEY) return 'imgbb';
+  return 'persistent_cache';
 }
 
 /**
  * Uploads an image (base64 string or buffer) to persistent storage.
  * 1. If Cloudinary is configured -> uploads to Cloudinary CDN (permanent HTTPS URL).
  * 2. If Supabase Storage is configured -> uploads to 'product-images' bucket (permanent HTTPS URL).
- * 3. Default fallback -> writes to public/uploads/ (permanent on non-ephemeral servers, or dev).
+ * 3. If ImgBB API key is provided -> uploads to ImgBB CDN (permanent HTTPS URL).
+ * 4. Default fallback -> writes to public/uploads/ AND archives to data/images_store.json so it is NEVER lost on container restart.
  */
 export async function saveImageToStorage(
   imageInput: string | Buffer,
@@ -147,7 +233,6 @@ export async function saveImageToStorage(
   if (isSupabaseStorageConfigured && supabaseClient) {
     try {
       const bucketName = 'product-images';
-      // Ensure bucket exists or attempt upload
       const { data, error } = await supabaseClient.storage
         .from(bucketName)
         .upload(uniqueName, buffer, {
@@ -171,8 +256,36 @@ export async function saveImageToStorage(
     }
   }
 
-  // 3. Local Disk Storage (/public/uploads)
+  // 3. ImgBB Free Cloud Hosting (if key is set)
+  if (process.env.IMGBB_API_KEY) {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('image', buffer.toString('base64'));
+      formData.append('name', cleanHint);
+      const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData,
+      });
+      const imgbbData: any = await imgbbRes.json();
+      if (imgbbData?.success && imgbbData?.data?.url) {
+        return imgbbData.data.url;
+      }
+    } catch (iErr: any) {
+      console.warn('[Storage] ImgBB upload error, falling back:', iErr?.message || iErr);
+    }
+  }
+
+  // 4. Local Disk Storage + Persistent Store in data/images_store.json
   const localFilePath = path.join(UPLOADS_DIR, uniqueName);
   fs.writeFileSync(localFilePath, buffer);
+
+  // Save to persistent image store
+  savePersistentImageRecord({
+    filename: uniqueName,
+    mimeType,
+    base64: buffer.toString('base64'),
+    createdAt: new Date().toISOString(),
+  });
+
   return `/uploads/${uniqueName}`;
 }

@@ -5,7 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import { db, OrderStatus } from './server/db.js';
 import { verifyPassword, generateToken, verifyToken } from './server/auth.js';
-import { saveImageToStorage, getStorageEngine } from './server/storage.js';
+import { saveImageToStorage, getStorageEngine, getImageFromPersistentStore } from './server/storage.js';
 
 dotenv.config();
 
@@ -75,6 +75,20 @@ app.use(
     },
   })
 );
+
+// Fallback for uploaded images across ephemeral container restarts
+app.get(['/uploads/:filename', '/public/uploads/:filename'], (req: Request, res: Response, next: NextFunction) => {
+  const filename = req.params.filename;
+  const restored = getImageFromPersistentStore(filename);
+  if (restored) {
+    res.setHeader('Content-Type', restored.mimeType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    return res.end(restored.buffer);
+  }
+  next();
+});
 
 // Admin Auth Middleware
 interface AuthRequest extends Request {

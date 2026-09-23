@@ -13,9 +13,31 @@ export function getSafeImageUrl(url: string | undefined | null): string {
   if (!url || typeof url !== 'string') return '';
   const trimmed = url.trim();
   if (!trimmed) return '';
+
+  // Data URLs (base64) are 100% self-contained and always display
   if (trimmed.startsWith('data:image/')) return trimmed;
+
+  // Blob URLs
   if (trimmed.startsWith('blob:')) return trimmed;
+
+  // Google Drive sharing links -> Direct image link
+  if (trimmed.includes('drive.google.com')) {
+    const fileIdMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (fileIdMatch && fileIdMatch[1]) {
+      // lh3.googleusercontent.com/d/ID is Google's official public image rendering CDN
+      return `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}`;
+    }
+  }
+
+  // Dropbox shared links -> Direct raw image link
+  if (trimmed.includes('dropbox.com')) {
+    return trimmed.replace('?dl=0', '?raw=1').replace('&dl=0', '&raw=1');
+  }
+
+  // External absolute URLs (HTTP / HTTPS)
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+
+  // Local uploads or images
   if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
     const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
     return getApiUrl(cleanPath);

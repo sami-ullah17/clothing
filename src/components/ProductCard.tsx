@@ -78,8 +78,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             alt={localizedName}
             className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
             loading="lazy"
-            referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
             onError={() => setImageError(true)}
           />
         ) : (

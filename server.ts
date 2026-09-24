@@ -5,7 +5,13 @@ import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import { db, OrderStatus } from './server/db.js';
 import { verifyPassword, generateToken, verifyToken } from './server/auth.js';
-import { saveImageToStorage, getStorageEngine, getImageFromPersistentStore } from './server/storage.js';
+import {
+  saveImageToStorage,
+  getStorageEngine,
+  getImageFromPersistentStore,
+  getStorageConfigStatus,
+  initStorageProviders,
+} from './server/storage.js';
 
 dotenv.config();
 
@@ -76,19 +82,22 @@ app.use(
   })
 );
 
-// Fallback for uploaded images across ephemeral container restarts
-app.get(['/uploads/:filename', '/public/uploads/:filename'], (req: Request, res: Response, next: NextFunction) => {
-  const filename = req.params.filename;
-  const restored = getImageFromPersistentStore(filename);
-  if (restored) {
-    res.setHeader('Content-Type', restored.mimeType);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    return res.end(restored.buffer);
+// Fallback for uploaded images across ephemeral container restarts and cross-domain access
+app.get(
+  ['/uploads/:filename', '/public/uploads/:filename', '/api/uploads/:filename', '/api/images/:filename'],
+  (req: Request, res: Response, next: NextFunction) => {
+    const filename = req.params.filename;
+    const restored = getImageFromPersistentStore(filename);
+    if (restored) {
+      res.setHeader('Content-Type', restored.mimeType);
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.end(restored.buffer);
+    }
+    next();
   }
-  next();
-});
+);
 
 // Admin Auth Middleware
 interface AuthRequest extends Request {
@@ -505,6 +514,79 @@ app.post(['/api/upload', '/api/upload/'], requireAdmin, async (req: Request, res
       success: false,
       error: 'Failed to save image permanently: ' + (err?.message || 'unknown error'),
     });
+  }
+});
+
+// ----------------------------------------------------
+// CLOUD STORAGE & DATABASE CONFIG API
+// ----------------------------------------------------
+
+app.get('/api/admin/cloud-config', requireAdmin, (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    storage: getStorageConfigStatus(),
+    database: db.getDatabaseConfigStatus(),
+    apiUrl: process.env.VITE_API_URL || '',
+    appUrl: process.env.APP_URL || '',
+  });
+});
+
+app.post('/api/admin/cloud-config', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const {
+      VITE_API_URL,
+      CLOUDINARY_URL,
+      CLOUDINARY_API_KEY,
+      CLOUDINARY_API_SECRET,
+      CLOUDINARY_CLOUD_NAME,
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY,
+      DATABASE_URL,
+    } = req.body;
+
+    if (VITE_API_URL !== undefined) process.env.VITE_API_URL = String(VITE_API_URL).trim();
+    if (CLOUDINARY_URL !== undefined) process.env.CLOUDINARY_URL = String(CLOUDINARY_URL).trim();
+    if (CLOUDINARY_API_KEY !== undefined) process.env.CLOUDINARY_API_KEY = String(CLOUDINARY_API_KEY).trim();
+    if (CLOUDINARY_API_SECRET !== undefined) process.env.CLOUDINARY_API_SECRET = String(CLOUDINARY_API_SECRET).trim();
+    if (CLOUDINARY_CLOUD_NAME !== undefined) process.env.CLOUDINARY_CLOUD_NAME = String(CLOUDINARY_CLOUD_NAME).trim();
+    if (SUPABASE_URL !== undefined) process.env.SUPABASE_URL = String(SUPABASE_URL).trim();
+    if (SUPABASE_SERVICE_ROLE_KEY !== undefined) process.env.SUPABASE_SERVICE_ROLE_KEY = String(SUPABASE_SERVICE_ROLE_KEY).trim();
+    if (DATABASE_URL !== undefined) process.env.DATABASE_URL = String(DATABASE_URL).trim();
+
+    // Re-initialize storage and database
+    initStorageProviders();
+    await db.initExternalDatabase();
+
+    // Save to .env
+    try {
+      const envPath = path.join(process.cwd(), '.env');
+      const lines = [
+        '# Auto-configured by Pri-Boutique Store System',
+        `VITE_API_URL="${process.env.VITE_API_URL || ''}"`,
+        `CLOUDINARY_URL="${process.env.CLOUDINARY_URL || ''}"`,
+        `CLOUDINARY_API_KEY="${process.env.CLOUDINARY_API_KEY || ''}"`,
+        `CLOUDINARY_API_SECRET="${process.env.CLOUDINARY_API_SECRET || ''}"`,
+        `CLOUDINARY_CLOUD_NAME="${process.env.CLOUDINARY_CLOUD_NAME || ''}"`,
+        `SUPABASE_URL="${process.env.SUPABASE_URL || ''}"`,
+        `SUPABASE_SERVICE_ROLE_KEY="${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}"`,
+        `DATABASE_URL="${process.env.DATABASE_URL || ''}"`,
+        `ADMIN_EMAIL="${process.env.ADMIN_EMAIL || 'admin@pri-buteeq.com'}"`,
+        `ADMIN_PASSWORD="${process.env.ADMIN_PASSWORD || 'admin123'}"`,
+        `JWT_SECRET="${process.env.JWT_SECRET || 'pri-buteeq-jwt-secret-key-2026-fashion-store'}"`,
+      ];
+      fs.writeFileSync(envPath, lines.join('\n') + '\n', 'utf-8');
+    } catch (e) {
+      console.warn('Could not write to .env:', e);
+    }
+
+    res.json({
+      success: true,
+      message: 'Cloud configuration updated and connected successfully',
+      storage: getStorageConfigStatus(),
+      database: db.getDatabaseConfigStatus(),
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message || 'Failed to update cloud configuration' });
   }
 });
 

@@ -98,46 +98,55 @@ export function getImageFromPersistentStore(
 // ----------------------------------------------------
 
 let isCloudinaryConfigured = false;
-if (
-  process.env.CLOUDINARY_URL ||
-  (process.env.CLOUDINARY_CLOUD_NAME &&
-    process.env.CLOUDINARY_API_KEY &&
-    process.env.CLOUDINARY_API_SECRET)
-) {
-  try {
-    if (process.env.CLOUDINARY_URL) {
-      cloudinary.config();
-    } else {
-      cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET,
-        secure: true,
-      });
+let supabaseClient: SupabaseClient | null = null;
+let isSupabaseStorageConfigured = false;
+
+export function initStorageProviders() {
+  isCloudinaryConfigured = false;
+  if (
+    process.env.CLOUDINARY_URL ||
+    (process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET)
+  ) {
+    try {
+      if (process.env.CLOUDINARY_URL) {
+        cloudinary.config();
+      } else {
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY,
+          api_secret: process.env.CLOUDINARY_API_SECRET,
+          secure: true,
+        });
+      }
+      isCloudinaryConfigured = true;
+      console.log('[Storage] Cloudinary permanent image storage active');
+    } catch (err) {
+      console.warn('[Storage] Failed to initialize Cloudinary:', err);
     }
-    isCloudinaryConfigured = true;
-    console.log('[Storage] Cloudinary permanent image storage active');
-  } catch (err) {
-    console.warn('[Storage] Failed to initialize Cloudinary:', err);
+  }
+
+  supabaseClient = null;
+  isSupabaseStorageConfigured = false;
+  if (
+    !isCloudinaryConfigured &&
+    process.env.SUPABASE_URL &&
+    (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY)
+  ) {
+    try {
+      const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY!;
+      supabaseClient = createClient(process.env.SUPABASE_URL, key);
+      isSupabaseStorageConfigured = true;
+      console.log('[Storage] Supabase permanent image storage active');
+    } catch (err) {
+      console.warn('[Storage] Failed to initialize Supabase Storage client:', err);
+    }
   }
 }
 
-let supabaseClient: SupabaseClient | null = null;
-let isSupabaseStorageConfigured = false;
-if (
-  !isCloudinaryConfigured &&
-  process.env.SUPABASE_URL &&
-  (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY)
-) {
-  try {
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY!;
-    supabaseClient = createClient(process.env.SUPABASE_URL, key);
-    isSupabaseStorageConfigured = true;
-    console.log('[Storage] Supabase permanent image storage active');
-  } catch (err) {
-    console.warn('[Storage] Failed to initialize Supabase Storage client:', err);
-  }
-}
+// Initial call
+initStorageProviders();
 
 export type StorageEngine = 'cloudinary' | 'supabase' | 'imgbb' | 'persistent_cache' | 'local_disk';
 
@@ -146,6 +155,28 @@ export function getStorageEngine(): StorageEngine {
   if (isSupabaseStorageConfigured) return 'supabase';
   if (process.env.IMGBB_API_KEY) return 'imgbb';
   return 'persistent_cache';
+}
+
+export function getStorageConfigStatus() {
+  return {
+    engine: getStorageEngine(),
+    cloudinary: {
+      configured: isCloudinaryConfigured,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME ? '••••' + (process.env.CLOUDINARY_CLOUD_NAME.slice(-4) || '') : (process.env.CLOUDINARY_URL ? 'via URL' : ''),
+      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+      hasSecret: !!process.env.CLOUDINARY_API_SECRET,
+    },
+    supabase: {
+      configured: isSupabaseStorageConfigured,
+      url: process.env.SUPABASE_URL ? '••••' + (process.env.SUPABASE_URL.slice(-12) || '') : '',
+      hasKey: !!(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY),
+    },
+    persistentCache: {
+      active: true,
+      file: IMAGES_STORE_FILE,
+      count: Object.keys(loadPersistentImages()).length,
+    },
+  };
 }
 
 /**

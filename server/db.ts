@@ -72,7 +72,7 @@ class Database {
     this.initExternalDatabase();
   }
 
-  private async initExternalDatabase() {
+  public async initExternalDatabase() {
     // 1. PostgreSQL (Neon, Railway, Supabase DB connection string, etc.)
     const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
     if (dbUrl) {
@@ -125,6 +125,26 @@ class Database {
     this.engine = 'local_json';
     this.isInitialized = true;
     console.log('[Database] Using local permanent JSON database (data/database.json)');
+  }
+
+  public getDatabaseConfigStatus() {
+    return {
+      engine: this.engine,
+      postgres: {
+        configured: !!(process.env.DATABASE_URL || process.env.POSTGRES_URL),
+        connected: this.engine === 'postgres',
+      },
+      supabase: {
+        configured: !!(process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY)),
+        connected: this.engine === 'supabase',
+      },
+      localJson: {
+        active: this.engine === 'local_json',
+        file: DB_FILE,
+        productsCount: this.localData.products.length,
+        ordersCount: this.localData.orders.length,
+      },
+    };
   }
 
   private async createPostgresTables(client: pg.PoolClient) {

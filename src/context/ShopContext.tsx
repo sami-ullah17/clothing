@@ -212,9 +212,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return TRANSLATIONS[language]?.[key] ?? TRANSLATIONS['en']?.[key] ?? fallback ?? key;
   };
 
-  const getProductName = (product: Product | { id: string; name: string }, fallbackName?: string): string => {
-    const id = product.id;
-    return PRODUCT_NAME_TRANSLATIONS[language]?.[id] ?? product.name ?? fallbackName ?? 'Garment';
+  const getProductName = (product: Product | { id: string; name: string } | string, fallbackName?: string): string => {
+    const id = typeof product === 'string' ? product : product?.id;
+    const name = typeof product === 'string' ? fallbackName : product?.name;
+    return PRODUCT_NAME_TRANSLATIONS[language]?.[id] ?? name ?? fallbackName ?? 'Garment';
   };
 
   const getSubcategoryName = (sub: string, fallbackSub?: string): string => {
@@ -443,7 +444,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (Array.isArray(parsed) && parsed.length > 0) {
             return parsed.map((p: any) => ({
               ...p,
-              images: (p.images || []).filter((img: string) => typeof img === 'string' && !img.includes('images.unsplash.com')),
+              images: Array.isArray(p.images) ? p.images.filter((img: any) => typeof img === 'string' && img.trim().length > 0) : [],
             }));
           }
         }

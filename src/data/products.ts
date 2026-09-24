@@ -2,6 +2,36 @@ import { Product } from '../types';
 
 export const SAMPLE_PRODUCTS: Product[] = [
   {
+    id: 'prod-1789823984731',
+    name: 'Silk Organza Stitched Dupatta Ensemble',
+    category: 'women',
+    subcategory: 'Party Wear',
+    price: 7400,
+    stock: 8,
+    status: 'in_stock',
+    isNewArrival: true,
+    isBestSeller: true,
+    description: 'Pure organza luxury ensemble detailed with fine Pakistani threadwork, zari borders, and stitched pure silk slip.',
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1000&q=80',
+    ],
+    rating: 5,
+    reviewCount: 7,
+    colors: [
+      { name: 'Blush Rose', hex: '#F43F5E' },
+      { name: 'Soft Cream', hex: '#FAF7F2' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    details: [
+      '3-Piece Stitched Luxury Ensemble (Shirt, Trouser & Organza Dupatta)',
+      'Pure artisanal Pakistani boutique craftsmanship',
+      'Hand-finished scalloped organza borders',
+      'Breathable, premium drape fabric',
+    ],
+    composition: 'Pure Organza & Silk',
+  },
+  {
     id: 'prod-1789823099046',
     name: 'Chikankari Luxury Pret Suit',
     category: 'women',
@@ -12,7 +42,10 @@ export const SAMPLE_PRODUCTS: Product[] = [
     isNewArrival: true,
     isBestSeller: true,
     description: 'Exquisite handcrafted Chikankari embroidery on pure fine lawn, styled with matching embroidered chiffon dupatta.',
-    images: [],
+    images: [
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=1000&q=80',
+    ],
     rating: 5,
     reviewCount: 8,
     colors: [
@@ -42,7 +75,10 @@ export const SAMPLE_PRODUCTS: Product[] = [
     isNewArrival: true,
     isBestSeller: true,
     description: "Pure cotton bespoke men's tailored kurta featuring refined threadwork on collar and cuffs, paired with straight trousers.",
-    images: [],
+    images: [
+      'https://images.unsplash.com/photo-1597983073493-88cd35cf93b0?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?auto=format&fit=crop&w=1000&q=80',
+    ],
     rating: 5,
     reviewCount: 11,
     colors: [
@@ -70,7 +106,10 @@ export const SAMPLE_PRODUCTS: Product[] = [
     isNewArrival: true,
     isBestSeller: false,
     description: 'Charming festive Eastern wear for kids with soft hypoallergenic lining, tailored for comfort and celebrations.',
-    images: [],
+    images: [
+      'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=1000&q=80',
+    ],
     rating: 5,
     reviewCount: 6,
     colors: [
@@ -97,7 +136,10 @@ export const SAMPLE_PRODUCTS: Product[] = [
     salePercentage: 15,
     stock: 15,
     description: 'Authentic boutique hand-embroidered 3-piece luxury lawn suit with organza embroidered border and digital silk dupatta.',
-    images: [],
+    images: [
+      'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1610030469668-9655ecdd3997?auto=format&fit=crop&w=1000&q=80',
+    ],
     status: 'in_stock',
     isNewArrival: true,
     isBestSeller: true,
@@ -123,7 +165,10 @@ export const SAMPLE_PRODUCTS: Product[] = [
     subcategory: 'Formal',
     price: 5500,
     description: 'Sumptuous micro-velvet tailored kurti with artisanal zardozi work and pure raw silk trousers.',
-    images: [],
+    images: [
+      'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1000&q=80',
+    ],
     stock: 10,
     status: 'in_stock',
     isNewArrival: true,
@@ -158,7 +203,10 @@ export const SAMPLE_PRODUCTS: Product[] = [
       { name: 'Mint Glaze', hex: '#6EE7B7' },
     ],
     sizes: ['S', 'M', 'L'],
-    images: [],
+    images: [
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80',
+    ],
     stock: 10,
     status: 'in_stock',
     rating: 5,

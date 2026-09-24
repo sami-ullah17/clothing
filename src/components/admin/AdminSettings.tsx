@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { StoreSettings } from '../../types';
-import { getApiUrl, getAdminAuthToken } from '../../utils/api';
+import { getApiUrl, getAdminAuthToken, apiFetch } from '../../utils/api';
 import {
   Settings,
   MessageCircle,
@@ -66,7 +66,7 @@ export const AdminSettings: React.FC = () => {
   const fetchCloudConfig = async () => {
     try {
       const token = adminUser?.token || getAdminAuthToken();
-      const res = await fetch(getApiUrl('/api/admin/cloud-config'), {
+      const res = await apiFetch('/api/admin/cloud-config', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -91,7 +91,7 @@ export const AdminSettings: React.FC = () => {
     setCloudMessage(null);
     try {
       const token = adminUser?.token || getAdminAuthToken();
-      const res = await fetch(getApiUrl('/api/admin/cloud-config'), {
+      const res = await apiFetch('/api/admin/cloud-config', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,7 +203,7 @@ export const AdminSettings: React.FC = () => {
           localStorage.getItem('priboutique_admin_token') ||
           localStorage.getItem('pributeeq_admin_token') ||
           'priboutique_owner_token_direct';
-        const res = await fetch(getApiUrl('/api/upload'), {
+        const res = await apiFetch('/api/upload', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

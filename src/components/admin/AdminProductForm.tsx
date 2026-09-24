@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { Product, ProductColor, Category } from '../../types';
-import { getApiUrl, getAdminAuthToken, getSafeImageUrl, parseApiResponse } from '../../utils/api';
+import { getApiUrl, getAdminAuthToken, getSafeImageUrl, parseApiResponse, apiFetch } from '../../utils/api';
 import {
   ArrowLeft,
   Upload,
@@ -315,7 +315,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
       const token = adminUser?.token || getAdminAuthToken();
       let permanentUrl = '';
       try {
-        const res = await fetch(getApiUrl('/api/upload'), {
+        const res = await apiFetch('/api/upload', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

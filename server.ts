@@ -15,6 +15,21 @@ import {
 
 dotenv.config();
 
+// Load persistent cloud config from data/cloud_config.json (prevents dev-server restarts)
+const CONFIG_FILE = path.join(process.cwd(), 'data', 'cloud_config.json');
+try {
+  if (fs.existsSync(CONFIG_FILE)) {
+    const savedConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+    for (const [k, v] of Object.entries(savedConfig)) {
+      if (typeof v === 'string' && v.trim() && !process.env[k]) {
+        process.env[k] = v.trim();
+      }
+    }
+  }
+} catch (e) {
+  console.warn('Could not read cloud_config.json:', e);
+}
+
 const app = express();
 const PORT = 3000;
 
@@ -212,7 +227,7 @@ app.get('/api/auth/me', (req: AuthRequest, res: Response) => {
 // STORE SETTINGS API
 // ----------------------------------------------------
 
-app.get('/api/settings', async (req: Request, res: Response) => {
+app.get(['/api/settings', '/api/settings/'], async (req: Request, res: Response) => {
   try {
     const settings = await db.getSettings();
     res.json(settings);
@@ -221,7 +236,7 @@ app.get('/api/settings', async (req: Request, res: Response) => {
   }
 });
 
-app.put('/api/settings', requireAdmin, async (req: Request, res: Response) => {
+app.put(['/api/settings', '/api/settings/'], requireAdmin, async (req: Request, res: Response) => {
   const allowed = [
     'storeName',
     'storeTagline',
@@ -419,7 +434,7 @@ app.post('/api/products/clear-all', requireAdmin, async (req: Request, res: Resp
 // ----------------------------------------------------
 
 // Admin view all customer orders
-app.get('/api/orders', requireAdmin, async (req: Request, res: Response) => {
+app.get(['/api/orders', '/api/orders/'], requireAdmin, async (req: Request, res: Response) => {
   try {
     const orders = await db.getOrders();
     res.json({ success: true, data: orders });
@@ -429,7 +444,7 @@ app.get('/api/orders', requireAdmin, async (req: Request, res: Response) => {
 });
 
 // Customer places order (via WhatsApp action or direct checkout)
-app.post('/api/orders', async (req: Request, res: Response) => {
+app.post(['/api/orders', '/api/orders/'], async (req: Request, res: Response) => {
   try {
     const { customerName, phone, items, totalAmount } = req.body;
     if (!customerName || !phone || !Array.isArray(items) || items.length === 0) {
@@ -456,7 +471,7 @@ app.post('/api/orders', async (req: Request, res: Response) => {
 });
 
 // Admin update order status
-app.put('/api/orders/:id/status', requireAdmin, async (req: Request, res: Response) => {
+app.put(['/api/orders/:id/status', '/api/orders/:id/status/'], requireAdmin, async (req: Request, res: Response) => {
   try {
     const { status } = req.body;
     const validStatuses: OrderStatus[] = [
@@ -521,7 +536,7 @@ app.post(['/api/upload', '/api/upload/'], requireAdmin, async (req: Request, res
 // CLOUD STORAGE & DATABASE CONFIG API
 // ----------------------------------------------------
 
-app.get('/api/admin/cloud-config', requireAdmin, (req: Request, res: Response) => {
+app.get(['/api/admin/cloud-config', '/api/admin/cloud-config/'], requireAdmin, (req: Request, res: Response) => {
   res.json({
     success: true,
     storage: getStorageConfigStatus(),
@@ -531,7 +546,7 @@ app.get('/api/admin/cloud-config', requireAdmin, (req: Request, res: Response) =
   });
 });
 
-app.post('/api/admin/cloud-config', requireAdmin, async (req: Request, res: Response) => {
+app.post(['/api/admin/cloud-config', '/api/admin/cloud-config/'], requireAdmin, async (req: Request, res: Response) => {
   try {
     const {
       VITE_API_URL,
@@ -557,26 +572,21 @@ app.post('/api/admin/cloud-config', requireAdmin, async (req: Request, res: Resp
     initStorageProviders();
     await db.initExternalDatabase();
 
-    // Save to .env
+    // Persist securely to data/cloud_config.json (avoids triggering dev-server file-watcher reloads)
     try {
-      const envPath = path.join(process.cwd(), '.env');
-      const lines = [
-        '# Auto-configured by Pri-Boutique Store System',
-        `VITE_API_URL="${process.env.VITE_API_URL || ''}"`,
-        `CLOUDINARY_URL="${process.env.CLOUDINARY_URL || ''}"`,
-        `CLOUDINARY_API_KEY="${process.env.CLOUDINARY_API_KEY || ''}"`,
-        `CLOUDINARY_API_SECRET="${process.env.CLOUDINARY_API_SECRET || ''}"`,
-        `CLOUDINARY_CLOUD_NAME="${process.env.CLOUDINARY_CLOUD_NAME || ''}"`,
-        `SUPABASE_URL="${process.env.SUPABASE_URL || ''}"`,
-        `SUPABASE_SERVICE_ROLE_KEY="${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}"`,
-        `DATABASE_URL="${process.env.DATABASE_URL || ''}"`,
-        `ADMIN_EMAIL="${process.env.ADMIN_EMAIL || 'admin@pri-buteeq.com'}"`,
-        `ADMIN_PASSWORD="${process.env.ADMIN_PASSWORD || 'admin123'}"`,
-        `JWT_SECRET="${process.env.JWT_SECRET || 'pri-buteeq-jwt-secret-key-2026-fashion-store'}"`,
-      ];
-      fs.writeFileSync(envPath, lines.join('\n') + '\n', 'utf-8');
+      const configData = {
+        VITE_API_URL: process.env.VITE_API_URL || '',
+        CLOUDINARY_URL: process.env.CLOUDINARY_URL || '',
+        CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
+        CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
+        CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
+        SUPABASE_URL: process.env.SUPABASE_URL || '',
+        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+        DATABASE_URL: process.env.DATABASE_URL || '',
+      };
+      fs.writeFileSync(CONFIG_FILE, JSON.stringify(configData, null, 2), 'utf-8');
     } catch (e) {
-      console.warn('Could not write to .env:', e);
+      console.warn('Could not write to cloud_config.json:', e);
     }
 
     res.json({

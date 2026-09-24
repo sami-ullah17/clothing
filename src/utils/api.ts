@@ -70,13 +70,13 @@ export interface ApiResponse<T> {
 
 /**
  * Robust fetch wrapper with automatic retry for transient connection glitches,
- * cold-starts, or reverse-proxy startup phases.
+ * dev-server restarts, reverse-proxy warmups, or cold starts.
  */
 export async function fetchWithRetry(
   url: string,
   options: RequestInit = {},
-  retries = 2,
-  backoffMs = 400
+  retries = 3,
+  backoffMs = 500
 ): Promise<Response> {
   let lastError: any = null;
   let lastResponse: Response | null = null;
@@ -119,11 +119,28 @@ export async function fetchWithRetry(
 }
 
 /**
+ * Unified API fetch function with automatic retry for transient reverse-proxy warmup,
+ * server reload, or network fluctuations.
+ */
+export async function apiFetch(
+  endpoint: string,
+  options: RequestInit = {},
+  retries = 3,
+  backoffMs = 500
+): Promise<Response> {
+  const url =
+    endpoint.startsWith('http://') || endpoint.startsWith('https://')
+      ? endpoint
+      : getApiUrl(endpoint);
+  return fetchWithRetry(url, options, retries, backoffMs);
+}
+
+/**
  * Checks if the backend server on port 3000 is healthy and responding.
  */
 export async function isBackendReachable(): Promise<boolean> {
   try {
-    const res = await fetch(getApiUrl('/api/health'), {
+    const res = await apiFetch('/api/health', {
       headers: { 'Cache-Control': 'no-cache' },
     });
     return res.ok;
@@ -139,20 +156,20 @@ export async function parseApiResponse<T>(
   try {
     const contentType = res.headers.get('content-type') || '';
 
-    // Non-JSON response (e.g. HTML error page from proxy or crash)
+    // Non-JSON response (e.g. HTML error page from proxy or startup phase)
     if (!contentType.includes('application/json')) {
       const text = await res.text().catch(() => '');
       let error = fallbackMsg;
       if (res.status === 404) {
-        error = 'Backend API endpoint not found (404). Please ensure the backend server is running.';
+        error = 'Backend server is initializing. Please retry in a moment.';
       } else if (res.status === 413) {
         error = 'Upload too large (413). The image file exceeds allowed size.';
       } else if (res.status === 429) {
         error = 'Quota exceeded (429). Rate limit reached. Please try again in a few moments.';
       } else if (res.status === 401 || res.status === 403) {
-        error = 'Authentication error (401/403): Invalid or expired admin credentials.';
+        error = 'Authentication error (401/403): Invalid or expired credentials.';
       } else if (res.status >= 500) {
-        error = `Server error (${res.status}): ${text.slice(0, 120) || 'Please retry in a moment'}`;
+        error = `Server temporarily busy (${res.status}). Please retry in a moment.`;
       } else {
         error = `Unexpected response (${res.status}): expected JSON but received ${contentType || 'text'}`;
       }
@@ -164,7 +181,7 @@ export async function parseApiResponse<T>(
     if (!res.ok || json?.success === false) {
       let error = json?.error || fallbackMsg;
       if (res.status === 404) {
-        error = json?.error || 'Resource or endpoint not found (404).';
+        error = json?.error || 'Resource not found (404).';
       } else if (res.status === 429 || String(error).toLowerCase().includes('quota')) {
         error = 'Quota exceeded: Request limit or storage quota reached. Please try again later.';
       } else if (res.status === 401 || res.status === 403) {

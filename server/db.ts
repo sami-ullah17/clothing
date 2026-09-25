@@ -128,17 +128,28 @@ class Database {
   }
 
   public getDatabaseConfigStatus() {
+    const isPostgresConnected = this.engine === 'postgres';
+    const isSupabaseConnected = this.engine === 'supabase';
+    const hasPostgresConfig = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL);
+    const hasSupabaseConfig = !!(
+      process.env.SUPABASE_URL &&
+      (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY)
+    );
+
     return {
       engine: this.engine,
       postgres: {
-        configured: !!(process.env.DATABASE_URL || process.env.POSTGRES_URL),
-        connected: this.engine === 'postgres',
+        status: isPostgresConnected ? 'Connected' : 'Not Configured',
+        configured: hasPostgresConfig,
+        connected: isPostgresConnected,
       },
       supabase: {
-        configured: !!(process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY)),
-        connected: this.engine === 'supabase',
+        status: isSupabaseConnected ? 'Connected' : 'Not Configured',
+        configured: hasSupabaseConfig,
+        connected: isSupabaseConnected,
       },
       localJson: {
+        status: this.engine === 'local_json' ? 'Active' : 'Standby',
         active: this.engine === 'local_json',
         file: DB_FILE,
         productsCount: this.localData.products.length,

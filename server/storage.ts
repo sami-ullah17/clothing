@@ -103,14 +103,17 @@ let isSupabaseStorageConfigured = false;
 
 export function initStorageProviders() {
   isCloudinaryConfigured = false;
-  if (
-    process.env.CLOUDINARY_URL ||
-    (process.env.CLOUDINARY_CLOUD_NAME &&
-      process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET)
-  ) {
+
+  const hasCloudinaryKeys = !!(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  );
+  const hasCloudinaryUrl = !!process.env.CLOUDINARY_URL;
+
+  if (hasCloudinaryKeys || hasCloudinaryUrl) {
     try {
-      if (process.env.CLOUDINARY_URL) {
+      if (hasCloudinaryUrl && !hasCloudinaryKeys) {
         cloudinary.config();
       } else {
         cloudinary.config({
@@ -119,12 +122,20 @@ export function initStorageProviders() {
           api_secret: process.env.CLOUDINARY_API_SECRET,
           secure: true,
         });
+
+        // Auto-generate server-side CLOUDINARY_URL if needed
+        if (!process.env.CLOUDINARY_URL && process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+          process.env.CLOUDINARY_URL = `cloudinary://${process.env.CLOUDINARY_API_KEY}:${process.env.CLOUDINARY_API_SECRET}@${process.env.CLOUDINARY_CLOUD_NAME}`;
+        }
       }
       isCloudinaryConfigured = true;
       console.log('[Storage] Cloudinary permanent image storage active');
     } catch (err) {
-      console.warn('[Storage] Failed to initialize Cloudinary:', err);
+      console.warn('[Storage] Optional Cloudinary initialization warning, falling back to local store:', err);
+      isCloudinaryConfigured = false;
     }
+  } else {
+    isCloudinaryConfigured = false;
   }
 
   supabaseClient = null;
@@ -140,7 +151,7 @@ export function initStorageProviders() {
       isSupabaseStorageConfigured = true;
       console.log('[Storage] Supabase permanent image storage active');
     } catch (err) {
-      console.warn('[Storage] Failed to initialize Supabase Storage client:', err);
+      console.warn('[Storage] Optional Supabase Storage initialization warning:', err);
     }
   }
 }
@@ -161,17 +172,15 @@ export function getStorageConfigStatus() {
   return {
     engine: getStorageEngine(),
     cloudinary: {
+      status: isCloudinaryConfigured ? 'Connected' : 'Not Configured',
       configured: isCloudinaryConfigured,
-      cloudName: process.env.CLOUDINARY_CLOUD_NAME ? '••••' + (process.env.CLOUDINARY_CLOUD_NAME.slice(-4) || '') : (process.env.CLOUDINARY_URL ? 'via URL' : ''),
-      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
-      hasSecret: !!process.env.CLOUDINARY_API_SECRET,
     },
     supabase: {
+      status: isSupabaseStorageConfigured ? 'Connected' : 'Not Configured',
       configured: isSupabaseStorageConfigured,
-      url: process.env.SUPABASE_URL ? '••••' + (process.env.SUPABASE_URL.slice(-12) || '') : '',
-      hasKey: !!(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY),
     },
-    persistentCache: {
+    localFallback: {
+      status: 'Active',
       active: true,
       file: IMAGES_STORE_FILE,
       count: Object.keys(loadPersistentImages()).length,

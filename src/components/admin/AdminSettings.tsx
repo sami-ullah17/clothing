@@ -48,22 +48,12 @@ export const AdminSettings: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
-  // Cloud & Database Automation State
-  const [cloudConfig, setCloudConfig] = useState({
-    VITE_API_URL: '',
-    CLOUDINARY_URL: '',
-    CLOUDINARY_API_KEY: '',
-    CLOUDINARY_API_SECRET: '',
-    CLOUDINARY_CLOUD_NAME: '',
-    SUPABASE_URL: '',
-    SUPABASE_SERVICE_ROLE_KEY: '',
-    DATABASE_URL: '',
-  });
-  const [cloudStatus, setCloudStatus] = useState<any>(null);
-  const [isSavingCloud, setIsSavingCloud] = useState(false);
-  const [cloudMessage, setCloudMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  // Environment & Infrastructure Status State
+  const [infraStatus, setInfraStatus] = useState<any>(null);
+  const [isRefreshingStatus, setIsRefreshingStatus] = useState(false);
+  const [statusNotification, setStatusNotification] = useState<string | null>(null);
 
-  const fetchCloudConfig = async () => {
+  const fetchInfraStatus = async () => {
     try {
       const token = adminUser?.token || getAdminAuthToken();
       const res = await apiFetch('/api/admin/cloud-config', {
@@ -71,57 +61,38 @@ export const AdminSettings: React.FC = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        setCloudStatus(data);
-        if (data.apiUrl) {
-          setCloudConfig((prev) => ({ ...prev, VITE_API_URL: data.apiUrl }));
-        }
+        setInfraStatus(data);
       }
     } catch (err) {
-      console.warn('Could not load cloud config:', err);
+      console.warn('Could not load environment status:', err);
     }
   };
 
   useEffect(() => {
-    fetchCloudConfig();
+    fetchInfraStatus();
   }, [adminUser]);
 
-  const handleSaveCloudConfig = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSavingCloud(true);
-    setCloudMessage(null);
+  const handleRefreshStatus = async () => {
+    setIsRefreshingStatus(true);
+    setStatusNotification(null);
     try {
       const token = adminUser?.token || getAdminAuthToken();
       const res = await apiFetch('/api/admin/cloud-config', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(cloudConfig),
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      if (data.success) {
-        setCloudStatus(data);
-        setCloudMessage({
-          text: 'Cloud & Database configuration updated and connected successfully! (کلاؤڈ سیٹنگز کامیابی سے کنیکٹ ہو گئیں)',
-          type: 'success',
-        });
-        showToast('Cloud connections updated!', 'success');
+      if (res.ok) {
+        const data = await res.json();
+        setInfraStatus(data);
+        setStatusNotification('Backend environment connection statuses verified and updated!');
+        showToast('Connection status refreshed', 'success');
       } else {
-        setCloudMessage({
-          text: data.error || 'Failed to update cloud configuration',
-          type: 'error',
-        });
-        showToast(data.error || 'Update failed', 'error');
+        showToast('Failed to refresh status', 'error');
       }
     } catch {
-      setCloudMessage({
-        text: 'Network error connecting to cloud settings',
-        type: 'error',
-      });
-      showToast('Network error', 'error');
+      showToast('Network error checking backend status', 'error');
     } finally {
-      setIsSavingCloud(false);
+      setIsRefreshingStatus(false);
     }
   };
 
@@ -604,268 +575,170 @@ export const AdminSettings: React.FC = () => {
         </div>
 
         {/* ---------------------------------------------------- */}
-        {/* Cloud Storage & Database Connection Section */}
+        {/* Environment & Cloud Services Connection Status */}
         {/* ---------------------------------------------------- */}
         <div className="bg-white p-6 rounded-3xl border border-neutral-200/80 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-neutral-100 gap-2">
             <div>
               <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-2">
                 <Cloud className="w-4 h-4 text-amber-700" />
-                <span>Cloud Storage & Online Database (کلاؤڈ آن لائن سیٹنگز)</span>
+                <span>Environment & Cloud Services Status (سرور و کلاؤڈ کنکشن اسٹیٹس)</span>
               </h3>
               <p className="text-xs text-neutral-500">
-                Self-healing automated image storage and cloud provider integration for permanent 24/7 store availability.
+                Automated detection of server environment variables. All secrets remain strictly on the backend.
               </p>
             </div>
 
             <button
               type="button"
-              onClick={fetchCloudConfig}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-semibold rounded-xl transition-colors self-start"
+              onClick={handleRefreshStatus}
+              disabled={isRefreshingStatus}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-semibold rounded-xl transition-colors self-start disabled:opacity-50"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Refresh Status</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingStatus ? 'animate-spin' : ''}`} />
+              <span>{isRefreshingStatus ? 'Checking...' : 'Refresh Status'}</span>
             </button>
           </div>
 
-          {/* Live Status Indicators */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Storage Engine Status */}
-            <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Image Storage</span>
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold uppercase">
-                    Active
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-neutral-900 mt-2">
-                  {cloudStatus?.storage?.engine === 'cloudinary' ? 'Cloudinary Global CDN' :
-                   cloudStatus?.storage?.engine === 'supabase' ? 'Supabase Bucket CDN' :
-                   cloudStatus?.storage?.engine === 'imgbb' ? 'ImgBB Cloud' :
-                   'High-Speed Permanent Store'}
-                </div>
-                <p className="text-[11px] text-emerald-800/80 mt-1">
-                  {cloudStatus?.storage?.persistentCache?.count || 0} cached images guaranteed permanent
-                </p>
-              </div>
+          {statusNotification && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span>{statusNotification}</span>
             </div>
+          )}
 
-            {/* Frontend API Connection */}
-            <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
-                    <Server className="w-4 h-4 text-amber-700" />
-                    <span>API Base URL</span>
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600 text-white font-bold uppercase">
-                    Connected
-                  </span>
+          {/* Connection Status Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* 1. Cloudinary */}
+            {(() => {
+              const isConnected = infraStatus?.cloudinary?.status === 'Connected' || infraStatus?.storage?.cloudinary?.configured;
+              return (
+                <div className={`p-4 rounded-2xl border flex flex-col justify-between ${isConnected ? 'bg-emerald-50/70 border-emerald-200' : 'bg-neutral-50/80 border-neutral-200'}`}>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-800 flex items-center gap-1.5">
+                        <Cloud className="w-4 h-4 text-amber-600" />
+                        <span>Cloudinary</span>
+                      </span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${isConnected ? 'bg-emerald-600 text-white' : 'bg-neutral-200 text-neutral-700'}`}>
+                        {isConnected ? 'Connected' : 'Not Configured'}
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold text-neutral-900 mt-1">
+                      {isConnected ? 'Cloud CDN Active' : 'Fallback Active'}
+                    </div>
+                    <p className="text-[11px] text-neutral-600 mt-1">
+                      {isConnected ? 'Images upload to Cloudinary CDN' : 'Optional. Local permanent storage in use'}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-xs font-bold text-neutral-900 mt-2 truncate">
-                  {cloudConfig.VITE_API_URL || 'Auto (Relative / Current Host)'}
-                </div>
-                <p className="text-[11px] text-amber-800/80 mt-1">
-                  Cross-origin ready for mobile & web
-                </p>
-              </div>
-            </div>
+              );
+            })()}
 
-            {/* Database Engine Status */}
-            <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
-                    <Database className="w-4 h-4 text-blue-700" />
-                    <span>Database Engine</span>
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-600 text-white font-bold uppercase">
-                    Ready
-                  </span>
+            {/* 2. Supabase */}
+            {(() => {
+              const isConnected = infraStatus?.supabase?.status === 'Connected' || infraStatus?.database?.supabase?.connected;
+              return (
+                <div className={`p-4 rounded-2xl border flex flex-col justify-between ${isConnected ? 'bg-emerald-50/70 border-emerald-200' : 'bg-neutral-50/80 border-neutral-200'}`}>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-800 flex items-center gap-1.5">
+                        <Database className="w-4 h-4 text-emerald-600" />
+                        <span>Supabase</span>
+                      </span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${isConnected ? 'bg-emerald-600 text-white' : 'bg-neutral-200 text-neutral-700'}`}>
+                        {isConnected ? 'Connected' : 'Not Configured'}
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold text-neutral-900 mt-1">
+                      {isConnected ? 'Cloud Storage & DB Active' : 'Fallback Active'}
+                    </div>
+                    <p className="text-[11px] text-neutral-600 mt-1">
+                      {isConnected ? 'Connected via backend environment' : 'Optional. Local permanent database in use'}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-xs font-bold text-neutral-900 mt-2 capitalize">
-                  {cloudStatus?.database?.engine === 'postgres' ? 'PostgreSQL Database' :
-                   cloudStatus?.database?.engine === 'supabase' ? 'Supabase REST DB' :
-                   'Persistent Store (Local JSON)'}
+              );
+            })()}
+
+            {/* 3. PostgreSQL */}
+            {(() => {
+              const isConnected = infraStatus?.postgres?.status === 'Connected' || infraStatus?.database?.postgres?.connected;
+              return (
+                <div className={`p-4 rounded-2xl border flex flex-col justify-between ${isConnected ? 'bg-emerald-50/70 border-emerald-200' : 'bg-neutral-50/80 border-neutral-200'}`}>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-800 flex items-center gap-1.5">
+                        <Database className="w-4 h-4 text-blue-600" />
+                        <span>PostgreSQL</span>
+                      </span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${isConnected ? 'bg-emerald-600 text-white' : 'bg-neutral-200 text-neutral-700'}`}>
+                        {isConnected ? 'Connected' : 'Not Configured'}
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold text-neutral-900 mt-1">
+                      {isConnected ? 'Relational DB Active' : 'Fallback Active'}
+                    </div>
+                    <p className="text-[11px] text-neutral-600 mt-1">
+                      {isConnected ? 'Connected via DATABASE_URL' : 'Optional. Local JSON storage in use'}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[11px] text-blue-800/80 mt-1">
-                  {cloudStatus?.database?.localJson?.productsCount || 7} catalog products synced
-                </p>
-              </div>
-            </div>
+              );
+            })()}
+
+            {/* 4. API URL */}
+            {(() => {
+              const isAutomatic = infraStatus?.api?.isAutomatic !== false;
+              return (
+                <div className="p-4 rounded-2xl border bg-amber-50/70 border-amber-200 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                        <Server className="w-4 h-4 text-amber-700" />
+                        <span>API Base</span>
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600 text-white font-bold uppercase">
+                        {isAutomatic ? 'Automatic' : 'Connected'}
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold text-neutral-900 mt-1">
+                      {isAutomatic ? 'Relative /api (Same Origin)' : 'Custom Origin Connected'}
+                    </div>
+                    <p className="text-[11px] text-amber-900/80 mt-1">
+                      Zero manual setup required
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
-          {/* Urdu & English Explanation Box */}
-          <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-2 text-xs text-neutral-700">
-            <div className="font-bold text-neutral-900 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-600" />
-              <span>تصاویر آن لائن کیوں محفوظ اور لائیو رہیں گی؟ (How Online Images Work)</span>
+          {/* Built-in Autonomous Engine Details */}
+          <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="font-bold text-xs text-neutral-900 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Autonomous Built-in Engine (ہر لمحہ فعال اور محفوظ)</span>
+              </div>
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-bold uppercase">
+                Active & Persistent
+              </span>
             </div>
-            <p className="text-neutral-600 leading-relaxed font-urdu text-[13px]">
-              ہمارے سسٹم میں تصویر اپلوڈ ہوتے ہی سرور ڈسک، پرماننٹ کیش اور ڈوئل اینکوڈنگ میں محفوظ ہو جاتی ہے۔ اگر آپ کے پاس Cloudinary یا Supabase کی کیز نہیں ہیں، تب بھی تصاویر ہمیشہ لائیو اور درست نظر آئیں گی۔ اور اگر آپ نیچے اپنی کیز درج کریں گے تو سسٹم فوری طور پر کلاؤڈ سی ڈی این پر خودکار طریقے سے سوئچ کر لے گا۔
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              بوتیک کا ڈیٹا اور تمام مصنوعات کی تصاویر سرور کے مستقل اسٹوریج (<code className="text-neutral-800 font-mono bg-stone-200/60 px-1 py-0.5 rounded">data/database.json</code> اور <code className="text-neutral-800 font-mono bg-stone-200/60 px-1 py-0.5 rounded">data/images_store.json</code>) میں محفوظ ہیں۔ Cloudinary، Supabase، یا PostgreSQL کی عدم موجودگی میں بھی تمام فیچرز 100% بلاتعطل کام کرتے رہیں گے۔
             </p>
           </div>
 
-          {/* Form Fields for Cloud Credentials */}
-          <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* VITE_API_URL */}
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-neutral-800 mb-1">
-                  1. فرنٹ اینڈ API بیس یو آر ایل (VITE_API_URL)
-                </label>
-                <input
-                  type="text"
-                  value={cloudConfig.VITE_API_URL}
-                  onChange={(e) => setCloudConfig((prev) => ({ ...prev, VITE_API_URL: e.target.value }))}
-                  placeholder="Auto-detected (leave blank for automatic relative /api or enter custom domain)"
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-900 font-mono focus:outline-none focus:ring-1 focus:ring-amber-500"
-                />
-                <span className="text-[10px] text-neutral-400 mt-1 block">
-                  خالی چھوڑیں تاکہ موجودہ ڈومین پر خود بخود چلے، یا اپنی کسٹم ڈومین درج کریں۔
-                </span>
-              </div>
-
-              {/* Cloudinary */}
-              <div className="sm:col-span-2 pt-2 border-t border-neutral-100">
-                <span className="text-xs font-bold text-neutral-900 block mb-2">
-                  2. کلاؤڈ نری آن لائن امیج اسٹوریج (Cloudinary CDN)
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                  CLOUDINARY_CLOUD_NAME
-                </label>
-                <input
-                  type="text"
-                  value={cloudConfig.CLOUDINARY_CLOUD_NAME}
-                  onChange={(e) => setCloudConfig((prev) => ({ ...prev, CLOUDINARY_CLOUD_NAME: e.target.value }))}
-                  placeholder="e.g. my-boutique-cloud"
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-900 font-mono focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                  CLOUDINARY_API_KEY
-                </label>
-                <input
-                  type="text"
-                  value={cloudConfig.CLOUDINARY_API_KEY}
-                  onChange={(e) => setCloudConfig((prev) => ({ ...prev, CLOUDINARY_API_KEY: e.target.value }))}
-                  placeholder="e.g. 123456789012345"
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-900 font-mono focus:outline-none"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                  CLOUDINARY_API_SECRET
-                </label>
-                <input
-                  type="password"
-                  value={cloudConfig.CLOUDINARY_API_SECRET}
-                  onChange={(e) => setCloudConfig((prev) => ({ ...prev, CLOUDINARY_API_SECRET: e.target.value }))}
-                  placeholder="••••••••••••••••••••••••••••••••"
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-900 font-mono focus:outline-none"
-                />
-              </div>
-
-              {/* Supabase */}
-              <div className="sm:col-span-2 pt-2 border-t border-neutral-100">
-                <span className="text-xs font-bold text-neutral-900 block mb-2">
-                  3. سپابیس کلاؤڈ ڈیٹا بیس اور بکٹ اسٹوریج (Supabase)
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                  SUPABASE_URL
-                </label>
-                <input
-                  type="text"
-                  value={cloudConfig.SUPABASE_URL}
-                  onChange={(e) => setCloudConfig((prev) => ({ ...prev, SUPABASE_URL: e.target.value }))}
-                  placeholder="https://xyzcompany.supabase.co"
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-900 font-mono focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                  SUPABASE_SERVICE_ROLE_KEY
-                </label>
-                <input
-                  type="password"
-                  value={cloudConfig.SUPABASE_SERVICE_ROLE_KEY}
-                  onChange={(e) => setCloudConfig((prev) => ({ ...prev, SUPABASE_SERVICE_ROLE_KEY: e.target.value }))}
-                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-900 font-mono focus:outline-none"
-                />
-              </div>
-
-              {/* PostgreSQL DATABASE_URL */}
-              <div className="sm:col-span-2 pt-2 border-t border-neutral-100">
-                <span className="text-xs font-bold text-neutral-900 block mb-2">
-                  4. آپشنل پوسٹ گریس ڈیٹا بیس (DATABASE_URL)
-                </span>
-                <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                  PostgreSQL Connection String (Supabase / Neon / Railway)
-                </label>
-                <input
-                  type="password"
-                  value={cloudConfig.DATABASE_URL}
-                  onChange={(e) => setCloudConfig((prev) => ({ ...prev, DATABASE_URL: e.target.value }))}
-                  placeholder="postgresql://user:password@host:5432/dbname"
-                  className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-900 font-mono focus:outline-none"
-                />
-              </div>
+          {/* Security Information Box */}
+          <div className="p-4 bg-blue-50/60 border border-blue-200 rounded-2xl space-y-2 text-xs text-blue-900">
+            <div className="font-bold flex items-center gap-2 text-blue-950">
+              <Shield className="w-4 h-4 text-blue-700" />
+              <span>حفاظتی گائیڈ اور کلاؤڈ کنفیگریشن (Security Notice)</span>
             </div>
-
-            {/* Cloud Message */}
-            {cloudMessage && (
-              <div
-                className={`p-3 rounded-2xl border text-xs flex items-center gap-2 ${
-                  cloudMessage.type === 'success'
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                    : 'bg-rose-50 border-rose-200 text-rose-800'
-                }`}
-              >
-                {cloudMessage.type === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                )}
-                <span>{cloudMessage.text}</span>
-              </div>
-            )}
-
-            {/* Save Cloud Config Button */}
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={handleSaveCloudConfig}
-                disabled={isSavingCloud}
-                className="px-6 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs rounded-xl shadow transition-all flex items-center gap-2 active:scale-[0.99] disabled:opacity-50"
-              >
-                {isSavingCloud ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Connecting & Verifying...</span>
-                  </>
-                ) : (
-                  <>
-                    <Key className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Save & Connect Cloud Services (کنکشن محفوظ کریں)</span>
-                  </>
-                )}
-              </button>
-            </div>
+            <p className="text-blue-800/90 leading-relaxed">
+              سیکیورٹی تقاضوں کے مطابق تمام خفیہ کیز (جیسے <code className="font-mono bg-blue-100/70 px-1 py-0.5 rounded text-blue-950">CLOUDINARY_API_SECRET</code> اور <code className="font-mono bg-blue-100/70 px-1 py-0.5 rounded text-blue-950">SUPABASE_SERVICE_ROLE_KEY</code>) براؤزر میں درج نہیں کی جاتیں۔ اگر آپ بیرونی کلاؤڈ سروسز جوڑنا چاہتے ہیں تو انہیں سرور کے ہوسٹنگ ماحول یا سرور سائیڈ <code className="font-mono bg-blue-100/70 px-1 py-0.5 rounded text-blue-950">.env</code> میں درج کریں (تفصیلات کے لیے <code className="font-mono bg-blue-100/70 px-1 py-0.5 rounded text-blue-950">.env.example</code> دیکھیں)۔ سرور انہیں خود بخود پہچان لے گا۔
+            </p>
           </div>
         </div>
 

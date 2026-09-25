@@ -15,21 +15,6 @@ import {
 
 dotenv.config();
 
-// Load persistent cloud config from data/cloud_config.json (prevents dev-server restarts)
-const CONFIG_FILE = path.join(process.cwd(), 'data', 'cloud_config.json');
-try {
-  if (fs.existsSync(CONFIG_FILE)) {
-    const savedConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
-    for (const [k, v] of Object.entries(savedConfig)) {
-      if (typeof v === 'string' && v.trim() && !process.env[k]) {
-        process.env[k] = v.trim();
-      }
-    }
-  }
-} catch (e) {
-  console.warn('Could not read cloud_config.json:', e);
-}
-
 const app = express();
 const PORT = 3000;
 
@@ -537,66 +522,69 @@ app.post(['/api/upload', '/api/upload/'], requireAdmin, async (req: Request, res
 // ----------------------------------------------------
 
 app.get(['/api/admin/cloud-config', '/api/admin/cloud-config/'], requireAdmin, (req: Request, res: Response) => {
+  const isCustomApi = !!(process.env.VITE_API_URL && process.env.VITE_API_URL.trim());
+  const storageStatus = getStorageConfigStatus();
+  const dbStatus = db.getDatabaseConfigStatus();
+
   res.json({
     success: true,
-    storage: getStorageConfigStatus(),
-    database: db.getDatabaseConfigStatus(),
-    apiUrl: process.env.VITE_API_URL || '',
-    appUrl: process.env.APP_URL || '',
+    storage: storageStatus,
+    database: dbStatus,
+    cloudinary: {
+      status: storageStatus.cloudinary.status,
+      configured: storageStatus.cloudinary.configured,
+    },
+    supabase: {
+      status: dbStatus.supabase.status,
+      configured: dbStatus.supabase.configured,
+    },
+    postgres: {
+      status: dbStatus.postgres.status,
+      configured: dbStatus.postgres.configured,
+    },
+    api: {
+      status: isCustomApi ? 'Connected' : 'Automatic',
+      apiUrl: isCustomApi ? 'Custom External Domain' : 'Automatic (Relative /api on current origin)',
+      isAutomatic: !isCustomApi,
+    },
   });
 });
 
 app.post(['/api/admin/cloud-config', '/api/admin/cloud-config/'], requireAdmin, async (req: Request, res: Response) => {
   try {
-    const {
-      VITE_API_URL,
-      CLOUDINARY_URL,
-      CLOUDINARY_API_KEY,
-      CLOUDINARY_API_SECRET,
-      CLOUDINARY_CLOUD_NAME,
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY,
-      DATABASE_URL,
-    } = req.body;
-
-    if (VITE_API_URL !== undefined) process.env.VITE_API_URL = String(VITE_API_URL).trim();
-    if (CLOUDINARY_URL !== undefined) process.env.CLOUDINARY_URL = String(CLOUDINARY_URL).trim();
-    if (CLOUDINARY_API_KEY !== undefined) process.env.CLOUDINARY_API_KEY = String(CLOUDINARY_API_KEY).trim();
-    if (CLOUDINARY_API_SECRET !== undefined) process.env.CLOUDINARY_API_SECRET = String(CLOUDINARY_API_SECRET).trim();
-    if (CLOUDINARY_CLOUD_NAME !== undefined) process.env.CLOUDINARY_CLOUD_NAME = String(CLOUDINARY_CLOUD_NAME).trim();
-    if (SUPABASE_URL !== undefined) process.env.SUPABASE_URL = String(SUPABASE_URL).trim();
-    if (SUPABASE_SERVICE_ROLE_KEY !== undefined) process.env.SUPABASE_SERVICE_ROLE_KEY = String(SUPABASE_SERVICE_ROLE_KEY).trim();
-    if (DATABASE_URL !== undefined) process.env.DATABASE_URL = String(DATABASE_URL).trim();
-
-    // Re-initialize storage and database
+    // Re-check environment variables from server environment and re-evaluate providers
     initStorageProviders();
     await db.initExternalDatabase();
 
-    // Persist securely to data/cloud_config.json (avoids triggering dev-server file-watcher reloads)
-    try {
-      const configData = {
-        VITE_API_URL: process.env.VITE_API_URL || '',
-        CLOUDINARY_URL: process.env.CLOUDINARY_URL || '',
-        CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
-        CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
-        CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
-        SUPABASE_URL: process.env.SUPABASE_URL || '',
-        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-        DATABASE_URL: process.env.DATABASE_URL || '',
-      };
-      fs.writeFileSync(CONFIG_FILE, JSON.stringify(configData, null, 2), 'utf-8');
-    } catch (e) {
-      console.warn('Could not write to cloud_config.json:', e);
-    }
+    const isCustomApi = !!(process.env.VITE_API_URL && process.env.VITE_API_URL.trim());
+    const storageStatus = getStorageConfigStatus();
+    const dbStatus = db.getDatabaseConfigStatus();
 
     res.json({
       success: true,
-      message: 'Cloud configuration updated and connected successfully',
-      storage: getStorageConfigStatus(),
-      database: db.getDatabaseConfigStatus(),
+      message: 'Infrastructure and connection statuses refreshed successfully',
+      storage: storageStatus,
+      database: dbStatus,
+      cloudinary: {
+        status: storageStatus.cloudinary.status,
+        configured: storageStatus.cloudinary.configured,
+      },
+      supabase: {
+        status: dbStatus.supabase.status,
+        configured: dbStatus.supabase.configured,
+      },
+      postgres: {
+        status: dbStatus.postgres.status,
+        configured: dbStatus.postgres.configured,
+      },
+      api: {
+        status: isCustomApi ? 'Connected' : 'Automatic',
+        apiUrl: isCustomApi ? 'Custom External Domain' : 'Automatic (Relative /api on current origin)',
+        isAutomatic: !isCustomApi,
+      },
     });
   } catch (err: any) {
-    res.status(500).json({ success: false, error: err?.message || 'Failed to update cloud configuration' });
+    res.status(500).json({ success: false, error: err?.message || 'Failed to refresh cloud configuration' });
   }
 });
 

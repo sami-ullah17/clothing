@@ -1,11 +1,50 @@
-export const API_BASE_URL = (
-  (typeof import.meta !== 'undefined' &&
-    ((import.meta as any).env?.VITE_API_URL || (import.meta as any).env?.VITE_API_BASE_URL)) ||
-  ''
-).replace(/\/$/, '');
+// ====================================================
+// PRI-BOUTIQUE AUTOMATED API CONFIGURATION
+// ====================================================
 
+/**
+ * Automatically determine the API Base URL.
+ * - If VITE_API_URL is omitted or empty, empty string '' is used,
+ *   which automatically defaults to relative API routes (e.g. /api/products)
+ *   on the current website origin in both development and production.
+ * - If VITE_API_URL is configured (e.g. for external microservice architectures),
+ *   it is sanitized without trailing slashes.
+ */
+const metaEnv = typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined;
+const rawApiUrl = (
+  metaEnv ? (metaEnv.VITE_API_URL || metaEnv.VITE_API_BASE_URL || '') : ''
+).trim();
+
+export const API_BASE_URL =
+  !rawApiUrl || rawApiUrl === 'undefined' || rawApiUrl === 'null' || rawApiUrl === '/'
+    ? ''
+    : rawApiUrl.replace(/\/+$/, '');
+
+/**
+ * Returns the fully qualified or relative API endpoint URL.
+ * Automatically handles root slashes and prevents duplicate /api/api prefixes.
+ */
 export function getApiUrl(endpoint: string): string {
+  if (!endpoint) return API_BASE_URL || '/api';
+
+  // Return full external URLs as-is
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    return endpoint;
+  }
+
+  // Ensure leading slash
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+  // If no external API_BASE_URL is configured, use the relative path directly
+  if (!API_BASE_URL) {
+    return cleanEndpoint;
+  }
+
+  // If API_BASE_URL already ends with /api and endpoint starts with /api, avoid duplication
+  if (API_BASE_URL.endsWith('/api') && cleanEndpoint.startsWith('/api')) {
+    return `${API_BASE_URL}${cleanEndpoint.slice(4)}`;
+  }
+
   return `${API_BASE_URL}${cleanEndpoint}`;
 }
 
@@ -37,18 +76,28 @@ export function getSafeImageUrl(url: string | undefined | null): string {
   // External absolute URLs (HTTP / HTTPS)
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
 
-  // Local uploads or images
+  // Local uploads or public paths
   if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
     const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-    return getApiUrl(cleanPath);
+    if (API_BASE_URL) {
+      const origin = API_BASE_URL.replace(/\/api$/, '');
+      return `${origin}${cleanPath}`;
+    }
+    return cleanPath;
   }
   if (trimmed.startsWith('/images/') || trimmed.startsWith('images/')) {
     const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-    return getApiUrl(cleanPath);
+    if (API_BASE_URL) {
+      const origin = API_BASE_URL.replace(/\/api$/, '');
+      return `${origin}${cleanPath}`;
+    }
+    return cleanPath;
   }
+
   if (trimmed.startsWith('/')) {
-    return getApiUrl(trimmed);
+    return trimmed;
   }
+
   return trimmed;
 }
 

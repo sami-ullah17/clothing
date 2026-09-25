@@ -16,7 +16,7 @@ import {
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Enable CORS for external frontend deployments (e.g. Netlify, Vercel, localhost)
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -486,9 +486,11 @@ app.put(['/api/orders/:id/status', '/api/orders/:id/status/'], requireAdmin, asy
 // IMAGE UPLOAD API
 // ----------------------------------------------------
 
-app.post(['/api/upload', '/api/upload/'], requireAdmin, async (req: Request, res: Response) => {
+app.post(['/api/upload', '/api/upload/', '/api/uploads', '/api/uploads/'], requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { image, filename } = req.body;
+    const image = req.body?.image || req.body?.file || req.body?.data || req.body?.photo || req.body?.imageUrl;
+    const filename = req.body?.filename || req.body?.name || req.body?.title || 'boutique-item';
+
     if (!image || typeof image !== 'string') {
       return res.status(400).json({ success: false, error: 'Image base64 data is required' });
     }
@@ -500,12 +502,12 @@ app.post(['/api/upload', '/api/upload/'], requireAdmin, async (req: Request, res
       });
     }
 
-    const permanentUrl = await saveImageToStorage(image, filename || 'boutique-item');
+    const permanentUrl = await saveImageToStorage(image, filename);
 
     res.json({
       success: true,
       url: permanentUrl,
-      filename: filename || 'boutique-item',
+      filename,
       storage: getStorageEngine(),
     });
   } catch (err: any) {
@@ -521,72 +523,71 @@ app.post(['/api/upload', '/api/upload/'], requireAdmin, async (req: Request, res
 // CLOUD STORAGE & DATABASE CONFIG API
 // ----------------------------------------------------
 
-app.get(['/api/admin/cloud-config', '/api/admin/cloud-config/'], requireAdmin, (req: Request, res: Response) => {
+function buildCloudConfigStatus() {
   const isCustomApi = !!(process.env.VITE_API_URL && process.env.VITE_API_URL.trim());
   const storageStatus = getStorageConfigStatus();
   const dbStatus = db.getDatabaseConfigStatus();
 
-  res.json({
+  const isCloudinaryConfigured = storageStatus.cloudinary.configured;
+  const isSupabaseConfigured = dbStatus.supabase.configured || storageStatus.supabase.configured;
+  const isDbConfigured = dbStatus.postgres.configured || dbStatus.supabase.configured;
+  const isDbConnected = dbStatus.postgres.connected || dbStatus.supabase.connected;
+
+  return {
     success: true,
-    storage: storageStatus,
-    database: dbStatus,
+    apiUrl: process.env.VITE_API_URL || '',
     cloudinary: {
-      status: storageStatus.cloudinary.status,
-      configured: storageStatus.cloudinary.configured,
+      configured: isCloudinaryConfigured,
+      status: isCloudinaryConfigured ? 'Connected' : 'Not Configured',
     },
     supabase: {
-      status: dbStatus.supabase.status,
-      configured: dbStatus.supabase.configured,
+      configured: isSupabaseConfigured,
+      status: isSupabaseConfigured ? 'Connected' : 'Not Configured',
     },
-    postgres: {
-      status: dbStatus.postgres.status,
-      configured: dbStatus.postgres.configured,
+    database: {
+      configured: isDbConfigured,
+      connected: isDbConnected,
+      status: isDbConnected ? 'Connected' : 'Not Configured',
+      engine: dbStatus.engine,
+      postgres: dbStatus.postgres,
+      supabase: dbStatus.supabase,
+      localJson: dbStatus.localJson,
     },
     api: {
       status: isCustomApi ? 'Connected' : 'Automatic',
-      apiUrl: isCustomApi ? 'Custom External Domain' : 'Automatic (Relative /api on current origin)',
+      apiUrl: process.env.VITE_API_URL || '',
       isAutomatic: !isCustomApi,
     },
-  });
-});
+    storage: storageStatus,
+  };
+}
 
-app.post(['/api/admin/cloud-config', '/api/admin/cloud-config/'], requireAdmin, async (req: Request, res: Response) => {
-  try {
-    // Re-check environment variables from server environment and re-evaluate providers
-    initStorageProviders();
-    await db.initExternalDatabase();
-
-    const isCustomApi = !!(process.env.VITE_API_URL && process.env.VITE_API_URL.trim());
-    const storageStatus = getStorageConfigStatus();
-    const dbStatus = db.getDatabaseConfigStatus();
-
-    res.json({
-      success: true,
-      message: 'Infrastructure and connection statuses refreshed successfully',
-      storage: storageStatus,
-      database: dbStatus,
-      cloudinary: {
-        status: storageStatus.cloudinary.status,
-        configured: storageStatus.cloudinary.configured,
-      },
-      supabase: {
-        status: dbStatus.supabase.status,
-        configured: dbStatus.supabase.configured,
-      },
-      postgres: {
-        status: dbStatus.postgres.status,
-        configured: dbStatus.postgres.configured,
-      },
-      api: {
-        status: isCustomApi ? 'Connected' : 'Automatic',
-        apiUrl: isCustomApi ? 'Custom External Domain' : 'Automatic (Relative /api on current origin)',
-        isAutomatic: !isCustomApi,
-      },
-    });
-  } catch (err: any) {
-    res.status(500).json({ success: false, error: err?.message || 'Failed to refresh cloud configuration' });
+app.get(
+  ['/api/admin/cloud-config', '/api/admin/cloud-config/', '/api/cloud-config', '/api/cloud-config/'],
+  requireAdmin,
+  (req: Request, res: Response) => {
+    res.json(buildCloudConfigStatus());
   }
-});
+);
+
+app.post(
+  ['/api/admin/cloud-config', '/api/admin/cloud-config/', '/api/cloud-config', '/api/cloud-config/'],
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      // Re-evaluate providers against server environment
+      initStorageProviders();
+      await db.initExternalDatabase();
+
+      res.json({
+        ...buildCloudConfigStatus(),
+        message: 'Infrastructure and connection statuses refreshed successfully',
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err?.message || 'Failed to refresh cloud configuration' });
+    }
+  }
+);
 
 // ----------------------------------------------------
 // API ERROR & 404 CATCH-ALL (Guarantees JSON, NEVER HTML)

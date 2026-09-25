@@ -2,6 +2,12 @@
   command = "npm run build"
   publish = "dist"
 
+# Do not hijack API routes into HTML index.html
+[[redirects]]
+  from = "/api/*"
+  to = "/api/:splat"
+  status = 200
+
 # Single-page application redirects for React client-side routing
 [[redirects]]
   from = "/*"

@@ -4,6 +4,9 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
+  const backendPort = process.env.BACKEND_PORT || process.env.PORT || '3000';
+  const backendUrl = process.env.BACKEND_URL || `http://127.0.0.1:${backendPort}`;
+
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
@@ -16,12 +19,14 @@ export default defineConfig(() => {
       host: '0.0.0.0',
       proxy: {
         '/api': {
-          target: 'http://localhost:3000',
+          target: backendUrl,
           changeOrigin: true,
+          secure: false,
         },
         '/uploads': {
-          target: 'http://localhost:3000',
+          target: backendUrl,
           changeOrigin: true,
+          secure: false,
         },
       },
       hmr: process.env.DISABLE_HMR !== 'true',
